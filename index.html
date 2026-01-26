@@ -54,6 +54,17 @@
       margin-bottom: 15px;
       text-align: left;
     }
+
+    .card-interno {
+      margin-top: 12px;
+      padding: 10px;
+      background: #f7f7f7;
+      border-left: 4px solid #4a90e2;
+    }
+
+    .lista-inscritos {
+      margin-top: 8px;
+    }
   </style>
 </head>
 
@@ -198,24 +209,35 @@
       });
 
       Object.keys(grupos).forEach(local => {
-        conteudo.innerHTML += `<div class="card"><b>${local}</b><br><br>`;
+        // Card do LOCAL
+        conteudo.innerHTML += `
+      <div class="card">
+        <h3>${local}</h3>
+    `;
 
         Object.keys(grupos[local]).forEach(pid => {
           const p = progMap[pid];
           if (!p) return;
 
+          // Sub-card da DATA / PROGRAMAÇÃO
           conteudo.innerHTML += `
-            <b>${formatarData(p.data)} – ${p.descricao} (${p.horario})</b><br>
+        <div class="card card-interno">
+          <b>${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
+          <div class="lista-inscritos">
             ${grupos[local][pid]
-              .map(i => `• ${i.nome} (${i.instrumento})`)
-              .join('<br>')}
-            <br><br>`;
+              .map(i => `<div>• ${i.nome} <span>(${i.instrumento})</span></div>`)
+              .join('')}
+          </div>
+        </div>
+      `;
         });
 
         conteudo.innerHTML += `</div>`;
       });
 
-      conteudo.innerHTML += `<button class="secondary" onclick="menuInicial()">⬅ Voltar ao menu</button>`;
+      conteudo.innerHTML += `
+    <button class="secondary" onclick="menuInicial()">⬅ Voltar ao menu</button>
+  `;
     }
 
     function formatarData(d) {
