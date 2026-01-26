@@ -62,12 +62,21 @@ function selecionarInstrumento(i) {
 }
 
 async function salvar() {
+    const btn = document.getElementById('btnConfirmar');
     const nomeInput = document.getElementById('nome');
     const nome = nomeInput.value.trim();
+
     if (!nome) {
         alert('Por favor, informe o seu nome.');
         return;
     }
+
+    btn.disabled = true;
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        <span class="visually-hidden">Confirmando...</span>
+    `;
 
     const payload = {
         local: escolha.local.nome,
@@ -86,20 +95,29 @@ async function salvar() {
 
         if (r.error) {
             alert(`Erro: ${r.error}`);
+            btn.disabled = false;
+            btn.innerHTML = textoOriginal;
         } else {
-            alert('✅ Inscrição confirmada!');
-            resetAndGoHome();
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>';
+            btn.classList.remove('btn-dark');
+            btn.classList.add('btn-success');
+
+            setTimeout(() => {
+                alert('✅ Inscrição confirmada!');
+                resetAndGoHome();
+            }, 400);
         }
     } catch (error) {
         console.error('Error saving data:', error);
         alert('Ocorreu um erro ao salvar sua inscrição. Tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
     }
 }
 
 async function verInscritos() {
     navigateTo(showInscritos);
 }
-
 
 function resetAndGoHome() {
     escolha = {};

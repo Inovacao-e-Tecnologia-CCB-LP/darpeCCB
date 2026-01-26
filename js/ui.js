@@ -109,8 +109,12 @@ function showConfirmar() {
                         class="form-control form-control-lg" 
                         placeholder="Digite seu nome completo">
                 </div>
+
                 <div class="d-grid">
-                    <button class="btn btn-dark btn-lg" onclick="salvar()">
+                    <button 
+                        id="btnConfirmar"
+                        class="btn btn-dark btn-lg"
+                        onclick="salvar()">
                         Confirmar
                     </button>
                 </div>
