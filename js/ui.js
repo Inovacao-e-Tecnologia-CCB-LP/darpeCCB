@@ -10,29 +10,34 @@ function showMenuInicial() {
         </div>
         <h2 class="h4 mb-4">Escolha uma das opções abaixo para continuar:</h2>
         <div class="d-grid gap-2 col-md-6 mx-auto">
-            <button class="btn btn-primary btn-lg" onclick="navigateTo(showEscolherLocal)">➕ Confirmar presença</button>
-            <button class="btn btn-secondary btn-lg" onclick="verInscritos()">👀 Visualizar inscrições</button>
+            <button class="btn btn-dark btn-lg" onclick="navigateTo(showEscolherLocal)">
+                 Confirmar presença
+            </button>
+            <button class="btn btn-outline-dark btn-lg" onclick="verInscritos()">
+                 Visualizar inscrições
+            </button>
         </div>`;
 }
 
 function showEscolherLocal() {
-    setTitle('📌 Escolha o local');
+    setTitle(' Escolha o local');
     const g = document.createElement('div');
     g.className = 'd-grid gap-2 col-md-6 mx-auto';
     
     dataStore.locais.forEach(l => {
         const btn = document.createElement('button');
-        btn.className = 'btn btn-info btn-lg';
+        btn.className = 'btn btn-outline-dark btn-lg';
         btn.textContent = l.nome;
         btn.onclick = () => selecionarLocal(l);
         g.appendChild(btn);
     });
+
     conteudo.innerHTML = '';
     conteudo.appendChild(g);
 }
 
 function showEscolherData() {
-    setTitle('📅 Escolha a data');
+    setTitle(' Escolha a data');
     const g = document.createElement('div');
     g.className = 'd-grid gap-2 col-md-8 mx-auto';
 
@@ -40,17 +45,18 @@ function showEscolherData() {
         .filter(p => p.local_id == escolha.local.id)
         .forEach(p => {
             const btn = document.createElement('button');
-            btn.className = 'btn btn-info btn-lg';
+            btn.className = 'btn btn-outline-dark btn-lg';
             btn.innerHTML = `${formatarData(p.data)} – ${p.descricao} (${p.horario})`;
             btn.onclick = () => selecionarData(p);
             g.appendChild(btn);
         });
+
     conteudo.innerHTML = '';
     conteudo.appendChild(g);
 }
 
 function showEscolherInstrumento() {
-    setTitle('🎶 Escolha o instrumento');
+    setTitle(' Escolha o instrumento');
     const g = document.createElement('div');
     g.className = 'd-grid gap-2 col-md-6 mx-auto';
 
@@ -60,26 +66,33 @@ function showEscolherInstrumento() {
             (i.tipo === 'sopro' && escolha.local.permite_sopros)
         ) {
             const btn = document.createElement('button');
-            btn.className = 'btn btn-info btn-lg';
+            btn.className = 'btn btn-outline-dark btn-lg';
             btn.textContent = i.nome;
             btn.onclick = () => selecionarInstrumento(i.nome);
             g.appendChild(btn);
         }
     });
+
     conteudo.innerHTML = '';
     conteudo.appendChild(g);
 }
 
 function showConfirmar() {
-    setTitle('✅ Confirmar presença');
+    setTitle(' Confirmar presença');
     conteudo.innerHTML = `
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="mb-3">
-                    <input id="nome" type="text" class="form-control form-control-lg" placeholder="Digite seu nome completo">
+                    <input 
+                        id="nome" 
+                        type="text" 
+                        class="form-control form-control-lg" 
+                        placeholder="Digite seu nome completo">
                 </div>
                 <div class="d-grid">
-                    <button class="btn btn-success btn-lg" onclick="salvar()">Confirmar</button>
+                    <button class="btn btn-dark btn-lg" onclick="salvar()">
+                        Confirmar
+                    </button>
                 </div>
             </div>
         </div>`;
@@ -87,9 +100,12 @@ function showConfirmar() {
 
 async function showInscritos() {
     setTitle('Visualizar Inscrições');
-    conteudo.innerHTML = '<div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>';
+    conteudo.innerHTML = `
+        <div class="spinner-border text-dark" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>`;
 
-     try {
+    try {
         const inscritos = await fetch(`${API}?action=inscricoes`).then(r => r.json());
         
         const progMap = {};
@@ -109,37 +125,51 @@ async function showInscritos() {
         
         for (const local in grupos) {
             html += `
-            <div class="accordion-item">
+            <div class="accordion-item border-dark">
                 <h2 class="accordion-header" id="heading-${index}">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}" aria-expanded="false" aria-controls="collapse-${index}">
+                    <button class="accordion-button collapsed bg-dark text-white" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#collapse-${index}"
+                        aria-expanded="false" aria-controls="collapse-${index}">
                         ${local}
                     </button>
                 </h2>
-                <div id="collapse-${index}" class="accordion-collapse collapse" aria-labelledby="heading-${index}" data-bs-parent="#accordionInscritos">
-                    <div class="accordion-body">`;
-            
+                <div id="collapse-${index}" class="accordion-collapse collapse"
+                    aria-labelledby="heading-${index}" data-bs-parent="#accordionInscritos">
+                    <div class="accordion-body bg-light">`;
+
             for (const pid in grupos[local]) {
                 const p = progMap[pid];
-                if(p) {
+                if (p) {
                     html += `
-                        <div class="card mb-3">
-                            <div class="card-header">
+                        <div class="card mb-3 border-dark">
+                            <div class="card-header bg-dark text-white">
                                 <b>${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
                             </div>
                             <ul class="list-group list-group-flush">
-                                ${grupos[local][pid].map(i => `<li class="list-group-item">${i.nome} <span class="text-muted">(${i.instrumento})</span></li>`).join('')}
+                                ${grupos[local][pid]
+                                    .map(i => `
+                                        <li class="list-group-item">
+                                            ${i.nome}
+                                            <span class="text-muted">(${i.instrumento})</span>
+                                        </li>`)
+                                    .join('')}
                             </ul>
                         </div>`;
                 }
             }
+
             html += `</div></div></div>`;
             index++;
         }
+
         html += '</div>';
         conteudo.innerHTML = html;
 
     } catch (error) {
         console.error('Error fetching inscriptions:', error);
-        conteudo.innerHTML = '<div class="alert alert-danger">Erro ao carregar as inscrições.</div>';
+        conteudo.innerHTML = `
+            <div class="alert alert-dark text-center">
+                ❌ Erro ao carregar as inscrições.
+            </div>`;
     }
 }
