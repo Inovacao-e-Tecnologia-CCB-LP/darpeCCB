@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>DARPE - Lençóis Paulista</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f5f8;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    button {
+      padding: 16px;
+      font-size: 20px;
+      border-radius: 12px;
+      border: none;
+      background: #033d60;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .secondary {
+      background: #6c757d;
+    }
+
+    input {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+  <h1 id="titulo"></h1>
+  <div id="conteudo"></div>
+
+  <script>
+    const API = 'https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSnCm_ft032qBZjQqd6u3QEztucWbtsisLAgTvqMUff/exec';
+
+    let dataStore = {};
+    let escolha = {};
+
+    const titulo = document.getElementById('titulo');
+    const conteudo = document.getElementById('conteudo');
+
+    function navegar(tela) {
+      tela();
+    }
+
+    async function init() {
+      titulo.innerText = 'Carregando...';
+      conteudo.innerHTML = '⏳';
+
+      const r = await fetch(`${API}?action=bootstrap`).then(r => r.json());
+      dataStore = r;
+      menuInicial();
+    }
+
+    function menuInicial() {
+      titulo.innerText = 'DARPE - Lençóis Paulista';
+      conteudo.innerHTML = `
+        <h2>Escolha uma das opções abaixo para continuar:</h2><br>
+        <div class="grid">
+          <button onclick="navegar(escolherLocal)">➕ Confirmar presença</button>
+          <button class="secondary" onclick="verInscritos()">👀 Visualizar inscrições</button>
+        </div>`;
+    }
+
+    function escolherLocal() {
+      titulo.innerText = '📌 Escolha o local';
+      conteudo.innerHTML = '<div class="grid"></div>';
+      const g = conteudo.firstChild;
+
+      dataStore.locais.forEach(l => {
+        g.innerHTML += `<button onclick='selecionarLocal(${JSON.stringify(l)})'>${l.nome}</button>`;
+      });
+    }
+
+    function selecionarLocal(l) {
+      escolha.local = l;
+      navegar(escolherData);
+    }
+
+    function escolherData() {
+      titulo.innerText = '📅 Escolha a data';
+      conteudo.innerHTML = '<div class="grid"></div>';
+      const g = conteudo.firstChild;
+
+      dataStore.programacao
+        .filter(p => p.local_id == escolha.local.id)
+        .forEach(p => {
+          g.innerHTML += `<button onclick='selecionarData(${JSON.stringify(p)})'>
+            ${formatarData(p.data)} – ${p.descricao} (${p.horario})
+          </button>`;
+        });
+    }
+
+    function selecionarData(p) {
+      escolha.programacao = p;
+      navegar(escolherInstrumento);
+    }
+
+    function escolherInstrumento() {
+      titulo.innerText = '🎶 Escolha o instrumento';
+      conteudo.innerHTML = '<div class="grid"></div>';
+      const g = conteudo.firstChild;
+
+      dataStore.instrumentos.forEach(i => {
+        if (
+          (i.tipo === 'corda' && escolha.local.permite_cordas) ||
+          (i.tipo === 'sopro' && escolha.local.permite_sopros)
+        ) {
+          g.innerHTML += `<button onclick='selecionarInstrumento("${i.nome}")'>${i.nome}</button>`;
+        }
+      });
+    }
+
+    function selecionarInstrumento(i) {
+      escolha.instrumento = i;
+      navegar(confirmar);
+    }
+
+    function confirmar() {
+      titulo.innerText = '✅ Confirmar presença';
+      conteudo.innerHTML = `
+        <input id="nome" placeholder="Digite seu nome ">
+        <div class="grid">
+          <button onclick="salvar()">Confirmar</button>
+        </div>`;
+    }
+
+    async function salvar() {
+      const nome = document.getElementById('nome').value.trim();
+      if (!nome) return alert('Informe o nome');
+
+      const r = await fetch(API, {
+        method: 'POST',
+        body: JSON.stringify({
+          local: escolha.local.nome,
+          programacao_id: escolha.programacao.id,
+          tipo_visita: escolha.programacao.tipo_visita,
+          instrumento: escolha.instrumento,
+          nome,
+          limite: escolha.local.limite
+        })
+      }).then(r => r.json());
+
+      if (r.error) return alert(r.error);
+
+      alert('✅ Inscrição confirmada!');
+      menuInicial();
+    }
+
+    async function verInscritos() {
+      titulo.innerText = 'Inscritos';
+      conteudo.innerHTML = '⏳';
+
+      const inscritos = await fetch(`${API}?action=inscricoes`).then(r => r.json());
+      conteudo.innerHTML = '';
+
+      const progMap = {};
+      dataStore.programacao.forEach(p => progMap[p.id] = p);
+
+      const grupos = {};
+      inscritos.forEach(i => {
+        if (!grupos[i.local]) grupos[i.local] = {};
+        if (!grupos[i.local][i.programacao_id]) {
+          grupos[i.local][i.programacao_id] = [];
+        }
+        grupos[i.local][i.programacao_id].push(i);
+      });
+
+      Object.keys(grupos).forEach(local => {
+        conteudo.innerHTML += `<div class="card"><b>${local}</b><br><br>`;
+
+        Object.keys(grupos[local]).forEach(pid => {
+          const p = progMap[pid];
+          if (!p) return;
+
+          conteudo.innerHTML += `
+            <b>${formatarData(p.data)} – ${p.descricao} (${p.horario})</b><br>
+            ${grupos[local][pid]
+              .map(i => `• ${i.nome} (${i.instrumento})`)
+              .join('<br>')}
+            <br><br>`;
+        });
+
+        conteudo.innerHTML += `</div>`;
+      });
+
+      conteudo.innerHTML += `<button class="secondary" onclick="menuInicial()">⬅ Voltar ao menu</button>`;
+    }
+
+    function formatarData(d) {
+      return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR');
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
