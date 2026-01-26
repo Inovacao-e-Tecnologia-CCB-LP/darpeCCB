@@ -9,3 +9,7 @@ body {
 .card .card-header {
     background-color: #e9ecef;
 }
+
+.accordion-button.bg-dark::after {
+    filter: invert(1);
+}

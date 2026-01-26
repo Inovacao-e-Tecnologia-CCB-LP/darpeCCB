@@ -23,7 +23,7 @@ function showEscolherLocal() {
     setTitle(' Escolha o local');
     const g = document.createElement('div');
     g.className = 'd-grid gap-2 col-md-6 mx-auto';
-    
+
     dataStore.locais.forEach(l => {
         const btn = document.createElement('button');
         btn.className = 'btn btn-outline-dark btn-lg';
@@ -107,7 +107,7 @@ async function showInscritos() {
 
     try {
         const inscritos = await fetch(`${API}?action=inscricoes`).then(r => r.json());
-        
+
         const progMap = {};
         dataStore.programacao.forEach(p => progMap[p.id] = p);
 
@@ -122,7 +122,7 @@ async function showInscritos() {
 
         let html = '<div class="accordion" id="accordionInscritos">';
         let index = 0;
-        
+
         for (const local in grupos) {
             html += `
             <div class="accordion-item border-dark">
@@ -143,16 +143,16 @@ async function showInscritos() {
                     html += `
                         <div class="card mb-3 border-dark">
                             <div class="card-header bg-dark text-white">
-                                <b>${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
+                                <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
                             </div>
                             <ul class="list-group list-group-flush">
                                 ${grupos[local][pid]
-                                    .map(i => `
+                            .map(i => `
                                         <li class="list-group-item">
                                             ${i.nome}
                                             <span class="text-muted">(${i.instrumento})</span>
                                         </li>`)
-                                    .join('')}
+                            .join('')}
                             </ul>
                         </div>`;
                 }
