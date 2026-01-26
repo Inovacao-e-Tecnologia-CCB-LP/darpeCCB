@@ -87,7 +87,11 @@ async function salvar() {
         if (r.error) {
             alert(`Erro: ${r.error}`);
         } else {
+<<<<<<< HEAD
             alert('✅ Inscrição confirmada!');
+=======
+            alert(' Inscrição confirmada! Deus Abençoe');
+>>>>>>> 1ff9204 (:construction: Alteração de Cores/All Black)
             resetAndGoHome();
         }
     } catch (error) {
