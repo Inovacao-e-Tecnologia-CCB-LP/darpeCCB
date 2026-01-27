@@ -107,7 +107,7 @@ function showConfirmar() {
                         id="nome" 
                         type="text" 
                         class="form-control form-control-lg" 
-                        placeholder="Digite seu nome completo (Nome e Sobrenome)">
+                        placeholder="Nome e Sobrenome">
                 </div>
 
                 <div class="d-grid">
