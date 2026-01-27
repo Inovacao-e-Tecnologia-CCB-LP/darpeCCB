@@ -94,6 +94,9 @@ async function salvar() {
     try {
         const r = await fetch(API, {
             method: 'POST',
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+            },
             body: JSON.stringify(payload)
         }).then(r => r.json());
 
