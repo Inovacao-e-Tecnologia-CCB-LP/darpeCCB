@@ -11,13 +11,15 @@ function showMenuInicial() {
         <h2 class="h4 mb-4">Escolha uma das opções abaixo para continuar:</h2>
         <div class="d-grid gap-2 col-md-6 mx-auto">
             <button class="btn btn-dark btn-lg" onclick="navigateTo(showEscolherLocal)">
-                 Confirmar presença
+                Confirmar presença
             </button>
             <button class="btn btn-outline-dark btn-lg" onclick="verInscritos()">
-                 Visualizar inscrições
+                Visualizar inscrições
             </button>
         </div>`;
 }
+
+/* ================= ESCOLHAS ================= */
 
 function showEscolherLocal() {
     setTitle(' Escolha o local');
@@ -67,8 +69,7 @@ function showEscolherData() {
                 <i class="bi bi-music-note-beamed fs-4 me-2"></i>
                 <span><strong>Música:</strong> Camisa branca, calça preta</span>
             </div>
-        </div>
-    `;
+        </div>`;
 
     conteudo.innerHTML = '';
     conteudo.appendChild(g);
@@ -109,7 +110,6 @@ function showConfirmar() {
                         class="form-control form-control-lg" 
                         placeholder="Nome e Sobrenome">
                 </div>
-
                 <div class="d-grid">
                     <button 
                         id="btnConfirmar"
@@ -121,6 +121,8 @@ function showConfirmar() {
             </div>
         </div>`;
 }
+
+/* ================= INSCRITOS (COM EXCLUSÃO) ================= */
 
 async function showInscritos() {
     setTitle('Visualizar Inscrições');
@@ -141,9 +143,7 @@ async function showInscritos() {
         const grupos = {};
         inscritos.forEach(i => {
             if (!grupos[i.local]) grupos[i.local] = {};
-            if (!grupos[i.local][i.programacao_id]) {
-                grupos[i.local][i.programacao_id] = [];
-            }
+            if (!grupos[i.local][i.programacao_id]) grupos[i.local][i.programacao_id] = [];
             grupos[i.local][i.programacao_id].push(i);
         });
 
@@ -154,35 +154,45 @@ async function showInscritos() {
             html += `
             <div class="accordion-item border-dark">
                 <h2 class="accordion-header" id="heading-${index}">
-                    <button class="accordion-button collapsed bg-dark text-white" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#collapse-${index}"
-                        aria-expanded="false" aria-controls="collapse-${index}">
+                    <button class="accordion-button collapsed bg-dark text-white"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapse-${index}">
                         ${local}
                     </button>
                 </h2>
                 <div id="collapse-${index}" class="accordion-collapse collapse"
-                    aria-labelledby="heading-${index}" data-bs-parent="#accordionInscritos">
+                    data-bs-parent="#accordionInscritos">
                     <div class="accordion-body bg-light">`;
 
             for (const pid in grupos[local]) {
                 const p = progMap[pid];
-                if (p) {
+                if (!p) continue;
+
+                html += `
+                <div class="card mb-3 border-dark">
+                    <div class="card-header bg-dark text-white">
+                        <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
+                    </div>
+                    <ul class="list-group list-group-flush">`;
+
+                grupos[local][pid].forEach(i => {
+                    const auth = podeDeletar(i.id);
                     html += `
-                        <div class="card mb-3 border-dark">
-                            <div class="card-header bg-dark text-white">
-                                <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                ${grupos[local][pid]
-                            .map(i => `
-                                        <li class="list-group-item">
-                                            ${i.nome}
-                                            <span class="text-muted">(${i.instrumento})</span>
-                                        </li>`)
-                            .join('')}
-                            </ul>
-                        </div>`;
-                }
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                ${i.nome}
+                                <span class="text-muted">(${i.instrumento})</span>
+                            </span>
+                            ${auth ? `
+                                <button class="btn btn-sm btn-outline-danger"
+                                    onclick="excluirInscricao(${i.id}, this)">
+                                                            <i class="bi bi-trash"></i></button>` : ''}
+                        </li>`;
+                });
+
+                html += `
+                    </ul>
+                </div>`;
             }
 
             html += `</div></div></div>`;
@@ -193,11 +203,9 @@ async function showInscritos() {
         conteudo.innerHTML = html;
 
     } catch (error) {
-        if (error.name === 'AbortError') {
-            console.log('Fetch aborted');
-            return;
-        }
-        console.error('Error fetching inscriptions:', error);
+        if (error.name === 'AbortError') return;
+
+        console.error(error);
         conteudo.innerHTML = `
             <div class="alert alert-dark text-center">
                 ❌ Erro ao carregar as inscrições.
