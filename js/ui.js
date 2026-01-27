@@ -129,8 +129,11 @@ async function showInscritos() {
             <span class="visually-hidden">Carregando...</span>
         </div>`;
 
+    abortController = new AbortController();
+    const signal = abortController.signal;
+
     try {
-        const inscritos = await fetch(`${API}?action=inscricoes`).then(r => r.json());
+        const inscritos = await fetch(`${API}?action=inscricoes`, { signal }).then(r => r.json());
 
         const progMap = {};
         dataStore.programacao.forEach(p => progMap[p.id] = p);
@@ -190,6 +193,10 @@ async function showInscritos() {
         conteudo.innerHTML = html;
 
     } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log('Fetch aborted');
+            return;
+        }
         console.error('Error fetching inscriptions:', error);
         conteudo.innerHTML = `
             <div class="alert alert-dark text-center">

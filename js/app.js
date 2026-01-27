@@ -2,6 +2,7 @@ const API = 'https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSn
 
 let dataStore = {};
 let escolha = {};
+let abortController;
 const navigationStack = [];
 
 const titulo = document.getElementById('titulo');
@@ -12,6 +13,9 @@ document.addEventListener('DOMContentLoaded', init);
 backButton.addEventListener('click', goBack);
 
 function goBack() {
+    if (abortController) {
+        abortController.abort();
+    }
     if (navigationStack.length > 1) {
         navigationStack.pop(); // Pop current screen
         const previousScreen = navigationStack[navigationStack.length - 1];
@@ -120,6 +124,9 @@ async function verInscritos() {
 }
 
 function resetAndGoHome() {
+    if (abortController) {
+        abortController.abort();
+    }
     escolha = {};
     navigationStack.length = 0; // Clear history
     navigateTo(showMenuInicial);
