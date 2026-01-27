@@ -1,5 +1,34 @@
 const API = 'https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSnCm_ft032qBZjQqd6u3QEztucWbtsisLAgTvqMUff/exec';
 
+/*======testeeeee===============================================*/
+
+
+function abrirModalAdmin() {
+    document.getElementById('senhaAdmin').value = '';
+    document.getElementById('erroAdmin').classList.add('d-none');
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('modalAdmin')
+    );
+    modal.show();
+}
+
+
+function validarSenhaAdmin() {
+
+   
+    const modalEl = document.getElementById('modalAdmin');
+    const modal = bootstrap.Modal.getInstance(modalEl) 
+               || new bootstrap.Modal(modalEl);
+    modal.hide();
+
+   
+    navigateTo(mostrarAdmin);
+}
+
+
+
+
 /* ================= LOCAL STORAGE DELETE CONTROL ================= */
 
 const LS_KEY = 'inscricoes_autorizadas';
@@ -39,6 +68,7 @@ const titulo = document.getElementById('titulo');
 const conteudo = document.getElementById('conteudo');
 const backButton = document.getElementById('backButton');
 
+
 document.addEventListener('DOMContentLoaded', init);
 backButton.addEventListener('click', goBack);
 
@@ -49,6 +79,7 @@ function goBack() {
         navigationStack[navigationStack.length - 1]();
         updateBackButton();
     }
+    mostrarBotaoAdmin();
 }
 
 function navigateTo(screenFn, ...args) {
@@ -63,6 +94,7 @@ function updateBackButton() {
 }
 
 async function init() {
+    esconderBotaoAdmin();
     setTitle('Carregando...');
     conteudo.innerHTML = '<div class="spinner-border"></div>';
 

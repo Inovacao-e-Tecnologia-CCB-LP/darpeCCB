@@ -3,6 +3,7 @@ function setTitle(text) {
 }
 
 function showMenuInicial() {
+    mostrarBotaoAdmin()
     setTitle('DARPE - Lençóis Paulista');
     conteudo.innerHTML = `
         <div class="text-center mb-4">
@@ -18,6 +19,60 @@ function showMenuInicial() {
             </button>
         </div>`;
 }
+
+const adminButton = document.getElementById('adminButton');
+
+function esconderBotaoAdmin() {
+    adminButton.style.display = 'none';
+    backButton.style.display = 'none'
+}
+
+function mostrarBotaoAdmin() {
+    adminButton.style.display = 'inline-block';
+}
+
+function mostrarAdmin() {
+  setTitle('Área Administrativa');
+  backButton.style.display = 'block';
+  
+  
+
+  conteudo.innerHTML = `
+    <div class="row g-4">
+
+      <div class="col-md-4">
+        <div class="card shadow-sm admin-card" onclick="abrirCrudLocais()">
+          <div class="card-body text-center">
+            <i class="bi bi-geo-alt fs-1"></i>
+            <h5>Locais</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card shadow-sm admin-card" onclick="abrirCrudInstrumentos()">
+          <div class="card-body text-center">
+            <i class="bi bi-music-note-list fs-1"></i>
+            <h5>Instrumentos</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card shadow-sm admin-card" onclick="abrirAdminInscricoes()">
+          <div class="card-body text-center">
+            <i class="bi bi-trash fs-1"></i>
+            <h5>Inscrições</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+
+
 
 /* ================= ESCOLHAS ================= */
 
@@ -126,6 +181,7 @@ function showConfirmar() {
 
 async function showInscritos() {
     setTitle('Visualizar Inscrições');
+    
     conteudo.innerHTML = `
         <div class="spinner-border text-dark" role="status">
             <span class="visually-hidden">Carregando...</span>
