@@ -183,7 +183,7 @@ async function excluirInscricao(id, btn) {
             'Sucesso',
             'Inscrição excluída com sucesso !!'
         );
-        verInscritos();
+        showInscritos();
 
     } catch (err) {
         abrirModalAviso(
