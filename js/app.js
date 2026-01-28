@@ -16,7 +16,7 @@ function abrirModalAdmin() {
 let isAdmin = false;
 
 async function validarSenhaAdmin() {
-  const senhaDigitada = document.getElementById("senhaAdmin").value;
+  senhaDigitada = document.getElementById("senhaAdmin").value;
   const erro = document.getElementById("erroSenha");
 
   const btn = document.getElementById("btnEntrarAdmin");
@@ -238,6 +238,7 @@ async function excluirInscricao(id, btn) {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
+        entity: "inscricoes",
         action: "delete",
         id,
         delete_token: auth.token,
