@@ -13,3 +13,14 @@ body {
 .accordion-button.bg-dark::after {
     filter: invert(1);
 }
+
+
+.admin-card {
+  transition: transform .2s ease, box-shadow .2s ease;
+  cursor: pointer;
+}
+
+.admin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+}

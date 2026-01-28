@@ -3,9 +3,13 @@ const API = 'https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSn
 /*======testeeeee===============================================*/
 
 
+
+let senhaDigitada = '';
+
+
 function abrirModalAdmin() {
     document.getElementById('senhaAdmin').value = '';
-    document.getElementById('erroAdmin').classList.add('d-none');
+    document.getElementById('erroSenha').classList.add('d-none');
 
     const modal = new bootstrap.Modal(
         document.getElementById('modalAdmin')
@@ -13,19 +17,60 @@ function abrirModalAdmin() {
     modal.show();
 }
 
+let isAdmin = false;
 
-function validarSenhaAdmin() {
+async function validarSenhaAdmin() {
+    senhaDigitada = document.getElementById('senhaAdmin').value;
+    const erro = document.getElementById('erroSenha');
 
-   
-    const modalEl = document.getElementById('modalAdmin');
-    const modal = bootstrap.Modal.getInstance(modalEl) 
-               || new bootstrap.Modal(modalEl);
-    modal.hide();
+    const btn = document.getElementById('btnEntrarAdmin');
+    const textoBtn = document.getElementById('textoBtnAdmin');
+    const spinner = document.getElementById('spinnerBtnAdmin');
 
-   
-    navigateTo(mostrarAdmin);
+    erro.classList.add('d-none');
+
+    // ativa carregamento
+    btn.disabled = true;
+    textoBtn.classList.add('d-none');
+    spinner.classList.remove('d-none');
+
+    try {
+      const response = await fetch(API, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        action: 'auth',
+        password: senhaDigitada
+    })
+});
+
+const data = await response.json();
+        if (senhaDigitada === data.password) {
+            isAdmin = true;
+
+            // fecha modal
+            const modalEl = document.getElementById('modalAdmin');
+            bootstrap.Modal.getInstance(modalEl).hide();
+
+            navigateTo(mostrarAdmin);
+        } else {
+            erro.classList.remove('d-none');
+        }
+
+    } catch (e) {
+        console.error(e);
+        erro.innerText = 'Erro ao validar senha';
+        erro.classList.remove('d-none');
+
+    } finally {
+        // desativa carregamento
+        btn.disabled = false;
+        textoBtn.classList.remove('d-none');
+        spinner.classList.add('d-none');
+    }
 }
-
 
 
 

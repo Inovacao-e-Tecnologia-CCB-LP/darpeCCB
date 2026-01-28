@@ -48,37 +48,31 @@
 <div class="modal fade" id="modalAdmin" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-dark">
-
+      
       <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title">
-          <i class="bi bi-shield-lock me-2"></i>
-          Área Administrativa
-        </h5>
+        <h5 class="modal-title">Acesso Administrativo</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Senha de acesso</label>
-          <input
-            type="password"
-            id="senhaAdmin"
-            class="form-control"
-            placeholder="Digite a senha"
-          >
-        </div>
-
-        <div id="erroAdmin" class="text-danger small d-none">
-          ❌ Senha inválida
+        <input 
+          type="password"
+          id="senhaAdmin"
+          class="form-control"
+          placeholder="Digite a senha"
+        >
+        <div id="erroSenha" class="text-danger mt-2 d-none">
+           Senha incorreta
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-outline-dark" data-bs-dismiss="modal">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
           Cancelar
         </button>
-        <button class="btn btn-dark" onclick="validarSenhaAdmin()">
-          Entrar
+        <button class="btn btn-dark" onclick="validarSenhaAdmin()" id="btnEntrarAdmin">
+          <span id="textoBtnAdmin">Entrar</span>
+          <span id="spinnerBtnAdmin" class="spinner-border spinner-border-sm d-none" role="status"></span>
         </button>
       </div>
 
