@@ -38,7 +38,7 @@ async function validarSenhaAdmin() {
       const response = await fetch(API, {
     method: 'POST',
     headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'text/plain;charset=utf-8'
     },
     body: JSON.stringify({
         action: 'auth',
@@ -71,7 +71,6 @@ const data = await response.json();
         spinner.classList.add('d-none');
     }
 }
-
 
 
 /* ================= LOCAL STORAGE DELETE CONTROL ================= */
