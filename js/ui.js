@@ -1,8 +1,5 @@
 
 
-
-
-
 function setTitle(text) {
     document.getElementById('titulo').innerText = text;
 }
@@ -383,36 +380,56 @@ function excluirInstrumento(id) {
 
   const btnOk = document.getElementById('confirmOk');
 
-  // remove qualquer ação antiga
+  // remove handlers antigos
   btnOk.onclick = null;
 
   btnOk.onclick = async () => {
+    const textoOriginal = btnOk.innerHTML;
+
     try {
       btnOk.disabled = true;
       btnOk.innerHTML = `
         <span class="spinner-border spinner-border-sm"></span> Excluindo
       `;
 
-      await fetch(API, {
+      const response = await fetch(API, {
         method: 'POST',
+        headers: {
+          // ✅ Apps Script
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
         body: JSON.stringify({
+          entity: 'instrumentos',
           action: 'delete',
-          id: id
-        })
+          id: id,
+          password: senhaDigitada, // 🔑 valida no back
+        }),
       });
 
-      bootstrap.Modal.getInstance(
-        document.getElementById('confirmModal')
-      ).hide();
+      const data = await response.json();
 
-      carregarInstrumentos();
+      // ❌ erro vindo do back
+      if (data.error) {
+        alert(`❌ ${data.error}`);
+        return;
+      }
+
+      // ✅ sucesso
+      if (data.success === true) {
+        bootstrap.Modal.getInstance(
+          document.getElementById('confirmModal')
+        ).hide();
+
+        carregarInstrumentos();
+      }
 
     } catch (err) {
       console.error(err);
-      alert('Erro ao excluir instrumento');
+      alert('Erro de comunicação com o servidor');
+
     } finally {
       btnOk.disabled = false;
-      btnOk.innerHTML = 'Excluir';
+      btnOk.innerHTML = textoOriginal;
     }
   };
 
@@ -420,10 +437,6 @@ function excluirInstrumento(id) {
     document.getElementById('confirmModal')
   ).show();
 }
-
-
-
-
 
 /* ================= ESCOLHAS ================= */
 
