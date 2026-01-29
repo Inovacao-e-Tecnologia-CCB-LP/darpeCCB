@@ -1,4 +1,4 @@
-function mostrarAdmin() {
+async function mostrarAdmin() {
   setTitle("Área Administrativa");
   backButton.style.display = "block";
 
@@ -44,7 +44,7 @@ function irParaCrudInstrumentos() {
   navigateTo(abrirCrudInstrumentos);
 }
 
-function abrirCrudLocais() {
+async function abrirCrudLocais() {
   setTitle("Admin • Locais");
 
   conteudo.innerHTML = `
@@ -76,8 +76,7 @@ async function carregarLocais() {
       </div>
     `;
 
-    const res = await fetch(`${API}?action=bootstrap`);
-    const data = await res.json();
+    const data = await appScriptApi.bootstrap()
 
     const locais = data.locais || [];
 

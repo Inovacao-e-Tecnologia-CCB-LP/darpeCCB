@@ -10,7 +10,7 @@ async function showInscritos() {
     const signal = abortController.signal;
 
     try {
-        const inscritos = await fetch(`${API}?action=inscricoes`, { signal }).then(r => r.json());
+        const inscritos = await appScriptApi.action('inscricoes')
 
         const progMap = {};
         dataStore.programacao.forEach(p => progMap[p.id] = p);

@@ -50,11 +50,7 @@ async function salvar() {
   };
 
   try {
-    const r = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
-    }).then((r) => r.json());
+    const r = await appScriptApi.post(payload);
 
     if (r.error) throw r.error;
 
@@ -103,16 +99,12 @@ async function excluirInscricao(id, btn) {
     `;
 
   try {
-    const r = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        entity: "inscricoes",
-        action: "delete",
-        id,
-        delete_token: auth.token,
-      }),
-    }).then((r) => r.json());
+    const r = await appScriptApi.post({
+      entity: "inscricoes",
+      action: "delete",
+      id,
+      delete_token: auth.token,
+    });
 
     if (!r.success) throw new Error();
 
