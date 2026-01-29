@@ -1,45 +1,7 @@
-
-
-function setTitle(text) {
-    document.getElementById('titulo').innerText = text;
-}
-
-function showMenuInicial() {
-    mostrarBotaoAdmin()
-    setTitle('DARPE - Lençóis Paulista');
-    conteudo.innerHTML = `
-        <div class="text-center mb-4">
-            <img src="logo-ccb-light.png" alt="CCB Logo" style="max-width: 200px;">
-        </div>
-        <h2 class="h4 mb-4">Escolha uma das opções abaixo para continuar:</h2>
-        <div class="d-grid gap-2 col-md-6 mx-auto">
-            <button class="btn btn-dark btn-lg" onclick="navigateTo(showEscolherLocal)">
-                Confirmar presença
-            </button>
-            <button class="btn btn-outline-dark btn-lg" onclick="verInscritos()">
-                Visualizar inscrições
-            </button>
-        </div>`;
-}
-
-const adminButton = document.getElementById('adminButton');
-
-function esconderBotaoAdmin() {
-    adminButton.style.display = 'none';
-    backButton.style.display = 'none'
-}
-
-function mostrarBotaoAdmin() {
-
-    adminButton.style.display = 'inline-block';
-}
-
 function mostrarAdmin() {
   setTitle('Área Administrativa');
   backButton.style.display = 'block';
   
-  
-
   conteudo.innerHTML = `
     <div class="row g-4">
 
@@ -302,6 +264,19 @@ async function carregarInstrumentos() {
   }
 }
 
+async function abrirModalNovoInstrumento() {
+  const nome = prompt('Nome do instrumento:');
+  if (!nome) return;
+
+  const tipo = prompt('Tipo do instrumento (corda ou sopro):');
+  if (!tipo || !['corda', 'sopro'].includes(tipo.toLowerCase())) {
+    alert('Tipo inválido. Use "corda" ou "sopro".');
+    return;
+  }
+
+  await criarInstrumento(nome.trim(), tipo.toLowerCase());
+}
+
 async function criarInstrumento(nome, tipo) {
   const res = await fetch(API, {
     method: 'POST',
@@ -436,199 +411,4 @@ function excluirInstrumento(id) {
   new bootstrap.Modal(
     document.getElementById('confirmModal')
   ).show();
-}
-
-/* ================= ESCOLHAS ================= */
-
-function showEscolherLocal() {
-    setTitle(' Escolha o local');
-    const g = document.createElement('div');
-    g.className = 'd-grid gap-2 col-md-6 mx-auto';
-
-    dataStore.locais.forEach(l => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-outline-dark btn-lg';
-        btn.textContent = l.nome;
-        btn.onclick = () => selecionarLocal(l);
-        g.appendChild(btn);
-    });
-
-    conteudo.innerHTML = '';
-    conteudo.appendChild(g);
-}
-
-function showEscolherData() {
-    setTitle(' Escolha a data');
-
-    const g = document.createElement('div');
-    g.className = 'd-grid gap-2 col-md-8 mx-auto mb-4';
-
-    dataStore.programacao
-        .filter(p => p.local_id == escolha.local.id)
-        .forEach(p => {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-outline-dark btn-lg';
-            btn.innerHTML = `${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})`;
-            btn.onclick = () => selecionarData(p);
-            g.appendChild(btn);
-        });
-
-    const obs = document.createElement('div');
-    obs.className = 'col-md-8 mx-auto';
-    obs.innerHTML = `
-        <div class="alert alert-light border rounded">
-            <h6 class="mb-3 text-center fw-bold">
-                <i class="bi bi-info-circle me-1"></i> Trajes
-            </h6>
-            <div class="d-flex align-items-center mb-2">
-                <i class="bi bi-book fs-4 me-2"></i>
-                <span><strong>Evangelização:</strong> Terno</span>
-            </div>
-            <div class="d-flex align-items-center">
-                <i class="bi bi-music-note-beamed fs-4 me-2"></i>
-                <span><strong>Música:</strong> Camisa branca, calça preta</span>
-            </div>
-        </div>`;
-
-    conteudo.innerHTML = '';
-    conteudo.appendChild(g);
-    conteudo.appendChild(obs);
-}
-
-function showEscolherInstrumento() {
-    setTitle(' Escolha o instrumento');
-    const g = document.createElement('div');
-    g.className = 'd-grid gap-2 col-md-6 mx-auto';
-
-    dataStore.instrumentos.forEach(i => {
-        if (
-            (i.tipo === 'corda' && escolha.local.permite_cordas) ||
-            (i.tipo === 'sopro' && escolha.local.permite_sopros)
-        ) {
-            const btn = document.createElement('button');
-            btn.className = 'btn btn-outline-dark btn-lg';
-            btn.textContent = i.nome;
-            btn.onclick = () => selecionarInstrumento(i.nome);
-            g.appendChild(btn);
-        }
-    });
-
-    conteudo.innerHTML = '';
-    conteudo.appendChild(g);
-}
-
-function showConfirmar() {
-    setTitle(' Confirmar presença');
-    conteudo.innerHTML = `
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <input 
-                        id="nome" 
-                        type="text" 
-                        class="form-control form-control-lg" 
-                        placeholder="Nome e Sobrenome">
-                </div>
-                <div class="d-grid">
-                    <button 
-                        id="btnConfirmar"
-                        class="btn btn-dark btn-lg"
-                        onclick="salvar()">
-                        Confirmar
-                    </button>
-                </div>
-            </div>
-        </div>`;
-}
-
-/* ================= INSCRITOS (COM EXCLUSÃO) ================= */
-
-async function showInscritos() {
-    setTitle('Visualizar Inscrições');
-    
-    conteudo.innerHTML = `
-        <div class="spinner-border text-dark" role="status">
-            <span class="visually-hidden">Carregando...</span>
-        </div>`;
-
-    abortController = new AbortController();
-    const signal = abortController.signal;
-
-    try {
-        const inscritos = await fetch(`${API}?action=inscricoes`, { signal }).then(r => r.json());
-
-        const progMap = {};
-        dataStore.programacao.forEach(p => progMap[p.id] = p);
-
-        const grupos = {};
-        inscritos.forEach(i => {
-            if (!grupos[i.local]) grupos[i.local] = {};
-            if (!grupos[i.local][i.programacao_id]) grupos[i.local][i.programacao_id] = [];
-            grupos[i.local][i.programacao_id].push(i);
-        });
-
-        let html = '<div class="accordion" id="accordionInscritos">';
-        let index = 0;
-
-        for (const local in grupos) {
-            html += `
-            <div class="accordion-item border-dark">
-                <h2 class="accordion-header" id="heading-${index}">
-                    <button class="accordion-button collapsed bg-dark text-white"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapse-${index}">
-                        ${local}
-                    </button>
-                </h2>
-                <div id="collapse-${index}" class="accordion-collapse collapse"
-                    data-bs-parent="#accordionInscritos">
-                    <div class="accordion-body bg-light">`;
-
-            for (const pid in grupos[local]) {
-                const p = progMap[pid];
-                if (!p) continue;
-
-                html += `
-                <div class="card mb-3 border-dark">
-                    <div class="card-header bg-dark text-white">
-                        <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
-                    </div>
-                    <ul class="list-group list-group-flush">`;
-
-                grupos[local][pid].forEach(i => {
-                    const auth = podeDeletar(i.id);
-                    html += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>
-                                ${i.nome}
-                                <span class="text-muted">(${i.instrumento})</span>
-                            </span>
-                            ${auth ? `
-                                <button class="btn btn-sm btn-outline-danger"
-                                    onclick="excluirInscricao(${i.id}, this)">
-                                                            <i class="bi bi-trash"></i></button>` : ''}
-                        </li>`;
-                });
-
-                html += `
-                    </ul>
-                </div>`;
-            }
-
-            html += `</div></div></div>`;
-            index++;
-        }
-
-        html += '</div>';
-        conteudo.innerHTML = html;
-
-    } catch (error) {
-        if (error.name === 'AbortError') return;
-
-        console.error(error);
-        conteudo.innerHTML = `
-            <div class="alert alert-dark text-center">
-                ❌ Erro ao carregar as inscrições.
-            </div>`;
-    }
 }

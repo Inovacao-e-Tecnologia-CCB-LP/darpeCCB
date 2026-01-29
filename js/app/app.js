@@ -1,0 +1,77 @@
+const API =
+  "https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSnCm_ft032qBZjQqd6u3QEztucWbtsisLAgTvqMUff/exec";
+
+/* ================= APP ================= */
+
+let dataStore = {};
+let escolha = {};
+let abortController;
+const navigationStack = [];
+const titulo = document.getElementById("titulo");
+const conteudo = document.getElementById("conteudo");
+const backButton = document.getElementById("backButton");
+
+document.addEventListener("DOMContentLoaded", init);
+backButton.addEventListener("click", goBack);
+
+function goBack() {
+  if (abortController) abortController.abort();
+  if (navigationStack.length > 1) {
+    navigationStack.pop();
+    navigationStack[navigationStack.length - 1]();
+    updateBackButton();
+  }
+}
+
+function navigateTo(screenFn, ...args) {
+  esconderBotaoAdmin();
+  const screen = () => screenFn(...args);
+  navigationStack.push(screen);
+  screen();
+  updateBackButton();
+}
+
+function updateBackButton() {
+  backButton.style.display = navigationStack.length > 1 ? "block" : "none";
+}
+
+async function init() {
+  esconderBotaoAdmin();
+  backButton.style.display = 'none';
+  setTitle("Carregando...");
+  conteudo.innerHTML = '<div class="spinner-border"></div>';
+
+  try {
+    dataStore = await fetch(`${API}?action=bootstrap`).then((r) => r.json());
+    navigateTo(showMenuInicial);
+  } catch {
+    conteudo.innerHTML =
+      '<div class="alert alert-danger">Erro ao carregar dados.</div>';
+  }
+}
+
+function selecionarLocal(l) {
+  escolha.local = l;
+  navigateTo(showEscolherData);
+}
+
+function selecionarData(p) {
+  escolha.programacao = p;
+  navigateTo(showEscolherInstrumento);
+}
+
+function selecionarInstrumento(i) {
+  escolha.instrumento = i;
+  navigateTo(showConfirmar);
+}
+
+async function verInscritos() {
+  navigateTo(showInscritos);
+}
+
+function resetAndGoHome() {
+  abortController?.abort();
+  escolha = {};
+  navigationStack.length = 0;
+  navigateTo(showMenuInicial);
+}
