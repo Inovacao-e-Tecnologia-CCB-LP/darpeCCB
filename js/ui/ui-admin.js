@@ -1,7 +1,7 @@
 function mostrarAdmin() {
-  setTitle('Área Administrativa');
-  backButton.style.display = 'block';
-  
+  setTitle("Área Administrativa");
+  backButton.style.display = "block";
+
   conteudo.innerHTML = `
     <div class="row g-4">
 
@@ -45,7 +45,7 @@ function irParaCrudInstrumentos() {
 }
 
 function abrirCrudLocais() {
-  setTitle('Admin • Locais');
+  setTitle("Admin • Locais");
 
   conteudo.innerHTML = `
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -67,7 +67,7 @@ function abrirCrudLocais() {
 }
 
 async function carregarLocais() {
-  const lista = document.getElementById('listaLocais');
+  const lista = document.getElementById("listaLocais");
 
   try {
     lista.innerHTML = `
@@ -105,21 +105,25 @@ async function carregarLocais() {
           <tbody>
     `;
 
-    locais.forEach(l => {
+    locais.forEach((l) => {
       html += `
         <tr>
           <td>${l.nome}</td>
 
           <td class="text-center">
-            ${l.permite_cordas
-              ? '<i class="bi bi-check-circle-fill text-success"></i>'
-              : '<i class="bi bi-x-circle-fill text-danger"></i>'}
+            ${
+              l.permite_cordas
+                ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                : '<i class="bi bi-x-circle-fill text-danger"></i>'
+            }
           </td>
 
           <td class="text-center">
-            ${l.permite_sopros
-              ? '<i class="bi bi-check-circle-fill text-success"></i>'
-              : '<i class="bi bi-x-circle-fill text-danger"></i>'}
+            ${
+              l.permite_sopros
+                ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                : '<i class="bi bi-x-circle-fill text-danger"></i>'
+            }
           </td>
 
           <td class="text-center">${l.limite}</td>
@@ -146,7 +150,6 @@ async function carregarLocais() {
     `;
 
     lista.innerHTML = html;
-
   } catch (err) {
     console.error(err);
     lista.innerHTML = `
@@ -158,7 +161,7 @@ async function carregarLocais() {
 }
 
 function abrirCrudInstrumentos() {
-  setTitle('Admin • Instrumentos');
+  setTitle("Admin • Instrumentos");
 
   // empilha navegação (voltar retorna pra área admin)
   navigateTo(renderCrudInstrumentos);
@@ -185,13 +188,13 @@ function renderCrudInstrumentos() {
 }
 
 async function carregarInstrumentos() {
-  const lista = document.getElementById('listaInstrumentos');
+  const lista = document.getElementById("listaInstrumentos");
 
   try {
     const res = await fetch(`${API}?action=bootstrap`);
     const data = await res.json();
 
-    const instrumentos = data.instrumentos || [];
+    let instrumentos = data.instrumentos || [];
 
     if (!instrumentos.length) {
       lista.innerHTML = `
@@ -201,6 +204,17 @@ async function carregarInstrumentos() {
       `;
       return;
     }
+
+    // 🔥 ORDENAÇÃO:
+    // 1️⃣ Corda primeiro
+    // 2️⃣ Sopro depois
+    // 3️⃣ Ordem alfabética dentro de cada tipo
+    instrumentos.sort((a, b) => {
+      if (a.tipo !== b.tipo) {
+        return a.tipo === "corda" ? -1 : 1;
+      }
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
 
     let html = `
       <div class="table-responsive rounded shadow-sm overflow-hidden">
@@ -215,30 +229,35 @@ async function carregarInstrumentos() {
           <tbody>
     `;
 
-    instrumentos.forEach(i => {
+    instrumentos.forEach((i) => {
+      const tipoFormatado =
+        i.tipo.charAt(0).toUpperCase() + i.tipo.slice(1) + "s";
+
       html += `
         <tr>
-          <!-- NOME (coluna nome) -->
+          <!-- NOME -->
           <td>${i.nome}</td>
 
-         
+          <!-- TIPO -->
           <td class="text-center">
-            <span class="badge ${i.tipo === 'corda' ? 'bg-primary' : 'bg-success'}">
-              ${i.tipo}
+            <span class="badge ${
+              i.tipo === "corda" ? "bg-primary" : "bg-success"
+            }">
+              ${tipoFormatado}
             </span>
           </td>
 
-          <!-- AÇÕES (coluna id) -->
+          <!-- AÇÕES -->
           <td class="text-center">
             <button
               class="btn btn-sm btn-outline-dark me-1"
-              onclick="editarInstrumento(${i.id})">
+              onclick="editarInstrumento(${i.id}, this)">
               <i class="bi bi-pencil"></i>
             </button>
 
             <button
               class="btn btn-sm btn-outline-danger"
-              onclick="excluirInstrumento(${i.id})">
+              onclick="excluirInstrumento(${i.id}, this)">
               <i class="bi bi-trash"></i>
             </button>
           </td>
@@ -264,12 +283,13 @@ async function carregarInstrumentos() {
   }
 }
 
+
 async function abrirModalNovoInstrumento() {
-  const nome = prompt('Nome do instrumento:');
+  const nome = prompt("Nome do instrumento:");
   if (!nome) return;
 
-  const tipo = prompt('Tipo do instrumento (corda ou sopro):');
-  if (!tipo || !['corda', 'sopro'].includes(tipo.toLowerCase())) {
+  const tipo = prompt("Tipo do instrumento (corda ou sopro):");
+  if (!tipo || !["corda", "sopro"].includes(tipo.toLowerCase())) {
     alert('Tipo inválido. Use "corda" ou "sopro".');
     return;
   }
@@ -279,14 +299,14 @@ async function abrirModalNovoInstrumento() {
 
 async function criarInstrumento(nome, tipo) {
   const res = await fetch(API, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({
-      entity: 'instrumentos',
-      action: 'create',
+      entity: "instrumentos",
+      action: "create",
       password: senhaDigitada,
       nome: nome,
-      tipo: tipo
-    })
+      tipo: tipo,
+    }),
   });
 
   const data = await res.json();
@@ -299,116 +319,287 @@ async function criarInstrumento(nome, tipo) {
   carregarInstrumentos();
 }
 
+async function editarInstrumento(id, btn) {
+  const textoOriginal = btn.innerHTML;
+  let salvou = false; // 🔑 FLAG
 
-
-async function editarInstrumento(id) {
   try {
+    // 🔄 spinner no ✏️
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+
     const res = await fetch(`${API}?action=bootstrap`);
     const data = await res.json();
 
     const instrumento = (data.instrumentos || []).find(i => i.id === id);
 
     if (!instrumento) {
-      alert('Instrumento não encontrado');
+      abrirModalAviso("Erro", "Instrumento não encontrado");
+      btn.disabled = false;
+      btn.innerHTML = textoOriginal;
       return;
     }
 
-    // simples e funcional (pode virar modal depois)
-    const novoNome = prompt('Nome do instrumento:', instrumento.nome);
-    if (!novoNome) return;
+    document.getElementById("modalInstrumentoTitulo").innerText =
+      "Editar Instrumento";
 
-    const novoTipo = prompt(
-      'Tipo do instrumento (corda ou sopro):',
-      instrumento.tipo
+    document.getElementById("instrumentoId").value = instrumento.id;
+    document.getElementById("instrumentoNome").value = instrumento.nome;
+    marcarTipoRadio(instrumento.tipo);
+
+    const modalEl = document.getElementById("modalInstrumento");
+    const modal = new bootstrap.Modal(modalEl);
+
+    // ❌ só restaura se NÃO salvou
+    modalEl.addEventListener(
+      "hidden.bs.modal",
+      () => {
+        if (!salvou) {
+          btn.disabled = false;
+          btn.innerHTML = textoOriginal;
+        }
+      },
+      { once: true }
     );
 
-    if (!novoTipo || !['corda', 'sopro'].includes(novoTipo.toLowerCase())) {
-      alert('Tipo inválido');
-      return;
-    }
+    const btnSalvar = document.getElementById("btnSalvarInstrumento");
+    btnSalvar.onclick = null;
 
-    await fetch(API, {
-      method: 'POST',
-      body: JSON.stringify({
-        entity: 'instrumentos',
-        action: 'update',
-        id: id,
-        password: senhaDigitada,
-        nome: novoNome.trim(),
-        tipo: novoTipo.toLowerCase()
-      })
-    });
+    btnSalvar.onclick = async () => {
+      const nome = document.getElementById("instrumentoNome").value.trim();
+      const tipo = getTipoRadioSelecionado();
 
-    carregarInstrumentos();
+      if (!nome || !["corda", "sopro"].includes(tipo)) {
+        abrirModalAviso(
+          "Aviso",
+          "Preencha corretamente nome e tipo do instrumento"
+        );
+        return;
+      }
+
+      const textoSalvar = btnSalvar.innerHTML;
+
+      try {
+        salvou = true; // ✅ MARCA QUE SALVOU
+
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = `
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Salvando
+        `;
+
+        await fetch(API, {
+          method: "POST",
+          body: JSON.stringify({
+            entity: "instrumentos",
+            action: "update",
+            id,
+            password: senhaDigitada,
+            nome,
+            tipo,
+          }),
+        });
+
+        modal.hide();
+
+        // ⏳ spinner do ✏️ CONTINUA aqui
+        await carregarInstrumentos();
+
+        // ✅ só agora para o spinner
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+
+      } catch (err) {
+        console.error(err);
+        abrirModalAviso("Erro", "Erro ao editar instrumento");
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = textoSalvar;
+      }
+    };
+
+    modal.show();
 
   } catch (err) {
     console.error(err);
-    alert('Erro ao editar instrumento');
+    abrirModalAviso("Erro", "Erro ao carregar instrumento");
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
   }
 }
 
 
-function excluirInstrumento(id) {
-  document.getElementById('confirmTitle').innerText = 'Excluir Instrumento';
-  document.getElementById('confirmMessage').innerText =
-    'Deseja realmente excluir este instrumento?';
 
-  const btnOk = document.getElementById('confirmOk');
 
-  // remove handlers antigos
+function excluirInstrumento(id, btnTrash) {
+  document.getElementById("confirmTitle").innerText = "Excluir Instrumento";
+  document.getElementById("confirmMessage").innerText =
+    "Deseja realmente excluir este instrumento?";
+
+  const btnOk = document.getElementById("confirmOk");
   btnOk.onclick = null;
 
   btnOk.onclick = async () => {
-    const textoOriginal = btnOk.innerHTML;
+    const textoOk = btnOk.innerHTML;
+    const textoTrash = btnTrash.innerHTML;
 
     try {
+      // 🔄 spinner no OK
       btnOk.disabled = true;
       btnOk.innerHTML = `
-        <span class="spinner-border spinner-border-sm"></span> Excluindo
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Excluindo
+      `;
+
+      // 🔄 spinner no 🗑
+      btnTrash.disabled = true;
+      btnTrash.innerHTML = `
+        <span class="spinner-border spinner-border-sm"></span>
       `;
 
       const response = await fetch(API, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          // ✅ Apps Script
-          'Content-Type': 'text/plain;charset=utf-8',
+          "Content-Type": "text/plain;charset=utf-8",
         },
         body: JSON.stringify({
-          entity: 'instrumentos',
-          action: 'delete',
-          id: id,
-          password: senhaDigitada, // 🔑 valida no back
+          entity: "instrumentos",
+          action: "delete",
+          id,
+          password: senhaDigitada,
         }),
       });
 
       const data = await response.json();
 
-      // ❌ erro vindo do back
       if (data.error) {
-        alert(`❌ ${data.error}`);
+        abrirModalAviso("Erro", data.error);
         return;
       }
 
-      // ✅ sucesso
-      if (data.success === true) {
-        bootstrap.Modal.getInstance(
-          document.getElementById('confirmModal')
-        ).hide();
+      bootstrap.Modal.getInstance(
+        document.getElementById("confirmModal")
+      ).hide();
 
-        carregarInstrumentos();
-      }
+      // ⏳ espera a tabela atualizar
+      await carregarInstrumentos();
+
+      // 🔙 só agora remove os spinners
+      btnOk.disabled = false;
+      btnOk.innerHTML = textoOk;
+
+      btnTrash.disabled = false;
+      btnTrash.innerHTML = textoTrash;
 
     } catch (err) {
       console.error(err);
-      alert('Erro de comunicação com o servidor');
-
-    } finally {
-      btnOk.disabled = false;
-      btnOk.innerHTML = textoOriginal;
+      abrirModalAviso("Erro", "Erro de comunicação com o servidor");
     }
   };
 
   new bootstrap.Modal(
-    document.getElementById('confirmModal')
+    document.getElementById("confirmModal")
   ).show();
+}
+
+
+
+function abrirModalNovoInstrumento() {
+  document.getElementById("modalInstrumentoTitulo").innerText =
+    "Novo Instrumento";
+
+  document.getElementById("instrumentoId").value = "";
+  document.getElementById("instrumentoNome").value = "";
+
+  document
+    .querySelectorAll('input[name="instrumentoTipo"]')
+    .forEach((r) => (r.checked = false));
+
+  document.getElementById("btnSalvarInstrumento").onclick = salvarInstrumento;
+
+  new bootstrap.Modal(document.getElementById("modalInstrumento")).show();
+}
+
+async function salvarInstrumento() {
+  const id = document.getElementById("instrumentoId").value;
+  const nome = document.getElementById("instrumentoNome").value.trim();
+  const tipo = getTipoRadioSelecionado();
+
+  if (!nome || !tipo) {
+    abrirModalAviso("Aviso", "Preencha todos os campos");
+    return;
+  }
+
+  const payload = {
+    entity: "instrumentos",
+    password: senhaDigitada,
+    nome,
+    tipo,
+  };
+
+  if (id) {
+    payload.action = "update";
+    payload.id = Number(id);
+  } else {
+    payload.action = "create";
+  }
+
+  const btn = document.getElementById("btnSalvarInstrumento");
+  const textoOriginal = btn.innerHTML;
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = `
+      <span class="spinner-border spinner-border-sm"></span> Salvando
+    `;
+
+    mostrarLoading("listaInstrumentos");
+
+    const res = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      abrirModalAviso("Erro", data.error);
+      return;
+    }
+
+    bootstrap.Modal.getInstance(
+      document.getElementById("modalInstrumento"),
+    ).hide();
+
+    await carregarInstrumentos();
+  } catch (err) {
+    console.error(err);
+    abrirModalAviso("Erro", "Erro ao salvar instrumento");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+  }
+}
+
+function mostrarLoading(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  el.innerHTML = `
+    <div class="text-center my-4">
+      <div class="spinner-border text-dark"></div>
+    </div>
+  `;
+}
+
+function getTipoRadioSelecionado() {
+  const radio = document.querySelector('input[name="instrumentoTipo"]:checked');
+  return radio ? radio.value : "";
+}
+
+function marcarTipoRadio(tipo) {
+  const radio = document.querySelector(
+    `input[name="instrumentoTipo"][value="${tipo}"]`,
+  );
+  if (radio) radio.checked = true;
 }

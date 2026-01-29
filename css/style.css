@@ -24,3 +24,38 @@ body {
   transform: translateY(-4px);
   box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
 }
+
+/* ===========================
+   INPUTS (GLOBAL)
+=========================== */
+
+.form-control {
+  border: 2px solid #474747;
+  color: #000;
+}
+
+.form-control::placeholder {
+  color: #555;
+}
+
+.form-control:focus {
+  border-color: #000;
+  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.25);
+}
+
+/* ===========================
+   RADIOS & CHECKBOXES (GLOBAL)
+=========================== */
+
+.form-check-input {
+  border: 2px solid #474747;
+}
+
+.form-check-input:checked {
+  background-color: #000;
+  border-color: #000;
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.25);
+}
