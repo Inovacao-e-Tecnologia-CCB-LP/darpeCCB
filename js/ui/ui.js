@@ -1,5 +1,5 @@
 function setTitle(text) {
-  document.getElementById("titulo").innerText = text;
+    document.getElementById("titulo").innerText = text;
 }
 
 function showMenuInicial() {
@@ -27,12 +27,5 @@ function esconderBotaoAdmin() {
 }
 
 function mostrarBotaoAdmin() {
-  adminButton.style.display = 'inline-block';
-}
-
-async function getComponent(name) {
-    let component;
-    await fetch(`js/ui/components/${name}.html`).then(response => response.text()).then(text => {component = text});
-    console.log(component)
-    return component;
+    adminButton.style.display = 'inline-block';
 }

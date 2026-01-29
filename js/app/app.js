@@ -1,4 +1,6 @@
 const appScriptApi = new AppScriptApi()
+const UI = new UiComponents()
+UI.getComponents();
 
 /* ================= APP ================= */
 

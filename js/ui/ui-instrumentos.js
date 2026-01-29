@@ -5,7 +5,7 @@ function abrirCrudInstrumentos() {
 }
 
 async function renderCrudInstrumentos() {
-    conteudo.innerHTML = await getComponent('painel-instrumentos');
+    conteudo.innerHTML = UI.painelInstrumentos;
     carregarInstrumentos();
 }
 

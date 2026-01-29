@@ -1,6 +1,6 @@
 async function abrirCrudLocais() {
     setTitle("Admin • Locais");
-    conteudo.innerHTML = await getComponent('painel-locais');
+    conteudo.innerHTML = UI.painelLocais;
     carregarLocais();
 }
 

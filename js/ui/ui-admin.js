@@ -1,7 +1,7 @@
 async function mostrarAdmin() {
   setTitle("Área Administrativa");
   backButton.style.display = "block";
-  conteudo.innerHTML = await getComponent('painel-admin');
+  conteudo.innerHTML = UI.painelAdmin;
 }
 
 function irParaCrudLocais() {
