@@ -29,3 +29,10 @@ function esconderBotaoAdmin() {
 function mostrarBotaoAdmin() {
   adminButton.style.display = 'inline-block';
 }
+
+async function getComponent(name) {
+    let component;
+    await fetch(`js/ui/components/${name}.html`).then(response => response.text()).then(text => {component = text});
+    console.log(component)
+    return component;
+}
