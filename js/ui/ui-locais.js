@@ -1,6 +1,6 @@
 async function abrirCrudLocais() {
     setTitle("Admin • Locais");
-    conteudo.innerHTML = UI.painelLocais;
+    conteudo.innerHTML = Ui.PainelLocais();
     carregarLocais();
 }
 
