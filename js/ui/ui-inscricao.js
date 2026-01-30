@@ -64,24 +64,5 @@ function showEscolherInstrumento() {
 
 function showConfirmar() {
     setTitle(' Confirmar presença');
-    conteudo.innerHTML = `
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <input 
-                        id="nome" 
-                        type="text" 
-                        class="form-control form-control-lg" 
-                        placeholder="Nome e Sobrenome">
-                </div>
-                <div class="d-grid">
-                    <button 
-                        id="btnConfirmar"
-                        class="btn btn-dark btn-lg"
-                        onclick="salvar()">
-                        Confirmar
-                    </button>
-                </div>
-            </div>
-        </div>`;
+    conteudo.innerHTML = Ui.ConfirmarPresenca();
 }
