@@ -33,20 +33,7 @@ function showEscolherData() {
 
     const obs = document.createElement('div');
     obs.className = 'col-md-8 mx-auto';
-    obs.innerHTML = `
-        <div class="alert alert-light border rounded">
-            <h6 class="mb-3 text-center fw-bold">
-                <i class="bi bi-info-circle me-1"></i> Trajes
-            </h6>
-            <div class="d-flex align-items-center mb-2">
-                <i class="bi bi-book fs-4 me-2"></i>
-                <span><strong>Evangelização:</strong> Terno</span>
-            </div>
-            <div class="d-flex align-items-center">
-                <i class="bi bi-music-note-beamed fs-4 me-2"></i>
-                <span><strong>Música:</strong> Camisa branca, calça preta</span>
-            </div>
-        </div>`;
+    obs.innerHTML = Ui.ObservacaoTrajes();
 
     conteudo.innerHTML = '';
     conteudo.appendChild(g);
