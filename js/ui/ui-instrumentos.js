@@ -103,19 +103,6 @@ async function carregarInstrumentos() {
     }
 }
 
-async function abrirModalNovoInstrumento() {
-    const nome = prompt("Nome do instrumento:");
-    if (!nome) return;
-
-    const tipo = prompt("Tipo do instrumento (corda ou sopro):");
-    if (!tipo || !["corda", "sopro"].includes(tipo.toLowerCase())) {
-        alert('Tipo inválido. Use "corda" ou "sopro".');
-        return;
-    }
-
-    await criarInstrumento(nome.trim(), tipo.toLowerCase());
-}
-
 async function criarInstrumento(nome, tipo) {
     const res = post({
         entity: "instrumentos",
