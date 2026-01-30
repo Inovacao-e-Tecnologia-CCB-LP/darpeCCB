@@ -7,7 +7,7 @@ async function showMenuInicial() {
     setTitle("Carregando...");
     conteudo.innerHTML = '<div class="spinner-border"></div>';
     dataStore = await appScriptApi.bootstrap();
-    setTitle('DARPE - Lençóis Paulista');
+    setTitle('DARPE');
     conteudo.innerHTML = Ui.Home();
 }
 

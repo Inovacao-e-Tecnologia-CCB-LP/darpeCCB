@@ -1,5 +1,6 @@
 body {
-    background-color: #f8f9fa;
+    overflow-x: hidden;
+    background-color: #f1f1f1;
 }
 
 #titulo {
@@ -65,4 +66,8 @@ body {
     margin-top: 18vh; /* sobe o modal */
     align-items: flex-start;
   }
+}
+
+.logo{
+  width: 300px;
 }
