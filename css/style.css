@@ -60,7 +60,7 @@ body {
   box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.25);
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
   #modalAdmin .modal-dialog {
     margin-top: 18vh; /* sobe o modal */
     align-items: flex-start;
