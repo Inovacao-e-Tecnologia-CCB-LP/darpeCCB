@@ -13,9 +13,9 @@ async function carregarInstrumentos() {
     const lista = document.getElementById("listaInstrumentos");
 
     try {
-        const data = await appScriptApi.bootstrap();
+        const data = await appScriptApi.post({entity: 'instrumentos', action: 'view'});
 
-        let instrumentos = data.instrumentos || [];
+        let instrumentos = data || [];
 
         if (!instrumentos.length) {
             lista.innerHTML = `
@@ -144,9 +144,9 @@ async function editarInstrumento(id, btn) {
         btn.disabled = true;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-        const data = await appScriptApi.bootstrap();
+        const data = await appScriptApi.post({entity: 'instrumentos', action: 'view'});
 
-        const instrumento = (data.instrumentos || []).find(i => i.id === id);
+        const instrumento = (data || []).find(i => i.id === id);
 
         if (!instrumento) {
             abrirModalAviso("Erro", "Instrumento não encontrado");

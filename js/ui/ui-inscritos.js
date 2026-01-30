@@ -1,6 +1,8 @@
+let inscritos;
+
 async function showInscritos() {
     setTitle('Visualizar Inscrições');
-    
+
     conteudo.innerHTML = `
         <div class="spinner-border text-dark" role="status">
             <span class="visually-hidden">Carregando...</span>
@@ -10,7 +12,7 @@ async function showInscritos() {
     const signal = abortController.signal;
 
     try {
-        const inscritos = await appScriptApi.action('inscricoes')
+        inscritos = await appScriptApi.action('inscricoes')
 
         const progMap = {};
         dataStore.programacao.forEach(p => progMap[p.id] = p);
@@ -50,8 +52,9 @@ async function showInscritos() {
 
                 html += `
                 <div class="card mb-3 border-dark">
-                    <div class="card-header bg-dark text-white">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                         <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
+                        <button type="button" class="btn btn-success" onclick="compartilhar(${pid}, '${local}')"><i class="bi bi-whatsapp"></i> Compartilhar</button>
                     </div>
                     <ul class="list-group list-group-flush">`;
 
@@ -91,4 +94,37 @@ async function showInscritos() {
                 ❌ Erro ao carregar as inscrições.
             </div>`;
     }
+}
+
+async function compartilhar(pid, local) {
+    const progMap = {};
+    dataStore.programacao.forEach(p => progMap[p.id] = p);
+
+    const p = progMap[pid];
+
+    const grupos = {};
+    inscritos.forEach(i => {
+        if (!i.local) return;
+        if (!grupos[i.local]) grupos[i.local] = {};
+        if (!grupos[i.local][i.programacao_id]) grupos[i.local][i.programacao_id] = [];
+        grupos[i.local][i.programacao_id].push(i);
+    });
+    console.log(p)
+    console.log(local)
+
+    const dataFormatada = new Date(p.data).toLocaleDateString("pt-BR")
+
+    let mensagem = `📍 *${local}*\n\n`;
+    mensagem += `🎵 *${p.tipo_visita}*\n`
+    mensagem += `📅 ${dataFormatada}\n`
+    mensagem += `⏰ ${p.horario}\n\n`
+    mensagem += `👥 Inscritos:\n`
+
+    grupos[local][pid].forEach(i => mensagem += `- ${i.nome} _(${i.instrumento})_\n`)
+
+    mensagem = window.encodeURIComponent(mensagem)
+
+    console.log(mensagem)
+
+    window.location.href = `https://api.whatsapp.com/send?text=${mensagem}`
 }

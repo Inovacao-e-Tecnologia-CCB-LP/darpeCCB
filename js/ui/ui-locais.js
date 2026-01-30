@@ -14,9 +14,9 @@ async function carregarLocais() {
       </div>
     `;
 
-        const data = await appScriptApi.bootstrap()
+        const data = await appScriptApi.post({entity: 'locais', action: 'view'})
 
-        const locais = data.locais || [];
+        const locais = data || [];
 
         if (!locais.length) {
             lista.innerHTML = `
