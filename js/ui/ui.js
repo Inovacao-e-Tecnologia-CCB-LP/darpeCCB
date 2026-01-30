@@ -2,9 +2,12 @@ function setTitle(text) {
     document.getElementById("titulo").innerText = text;
 }
 
-function showMenuInicial() {
+async function showMenuInicial() {
     mostrarBotaoAdmin()
     setTitle('DARPE - Lençóis Paulista');
+    setTitle("Carregando...");
+    conteudo.innerHTML = '<div class="spinner-border"></div>';
+    dataStore = await appScriptApi.bootstrap();
     conteudo.innerHTML = Ui.Home();
 }
 
