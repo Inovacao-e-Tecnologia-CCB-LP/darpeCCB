@@ -12,7 +12,7 @@ async function showInscritos() {
     const signal = abortController.signal;
 
     try {
-        inscritos = await appScriptApi.action('inscricoes')
+        inscritos = await appScriptApi.action({ action: 'view', entity: 'inscricoes' });
 
         const progMap = {};
         dataStore.programacao.forEach(p => progMap[p.id] = p);

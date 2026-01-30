@@ -12,7 +12,7 @@ class AppScriptApi {
         return await fetch(`${this.url}?action=bootstrap`).then((r) => r.json());
     }
 
-    async action(action, signal) {
-        return await fetch(`${this.url}?action=${action}`, { signal }).then(r => r.json());
+    async action({action, entity}, signal) {
+        return await fetch(`${this.url}?action=${action}&entity=${entity}`, { signal }).then(r => r.json());
     }
 }

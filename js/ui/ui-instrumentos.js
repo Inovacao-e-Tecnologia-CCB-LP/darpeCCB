@@ -13,7 +13,7 @@ async function carregarInstrumentos() {
     const lista = document.getElementById("listaInstrumentos");
 
     try {
-        const data = await appScriptApi.post({entity: 'instrumentos', action: 'view'});
+        const data = await appScriptApi.action({ action: 'view', entity: 'instrumentos' });
 
         let instrumentos = data || [];
 
@@ -120,6 +120,7 @@ async function criarInstrumento(nome, tipo) {
     }
 
     carregarInstrumentos();
+    dataStore = await appScriptApi.bootstrap();
 }
 
 async function editarInstrumento(id, btn) {
@@ -131,7 +132,7 @@ async function editarInstrumento(id, btn) {
         btn.disabled = true;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-        const data = await appScriptApi.post({entity: 'instrumentos', action: 'view'});
+        const data = await appScriptApi.action({ entity: 'instrumentos', action: 'view' });
 
         const instrumento = (data || []).find(i => i.id === id);
 
@@ -203,6 +204,7 @@ async function editarInstrumento(id, btn) {
 
                 // ⏳ spinner do ✏️ CONTINUA aqui
                 await carregarInstrumentos();
+                dataStore = await appScriptApi.bootstrap();
 
                 // ✅ só agora para o spinner
                 btn.disabled = false;
@@ -271,6 +273,7 @@ function excluirInstrumento(id, btnTrash) {
 
             // ⏳ espera a tabela atualizar
             await carregarInstrumentos();
+            dataStore = await appScriptApi.bootstrap();
 
             // 🔙 só agora remove os spinners
             btnOk.disabled = false;
@@ -353,6 +356,7 @@ async function salvarInstrumento() {
         ).hide();
 
         await carregarInstrumentos();
+        dataStore = await appScriptApi.bootstrap();
     } catch (err) {
         console.error(err);
         abrirModalAviso("Erro", "Erro ao salvar instrumento");

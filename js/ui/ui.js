@@ -6,7 +6,6 @@ async function showMenuInicial() {
     mostrarBotaoAdmin()
     setTitle("Carregando...");
     conteudo.innerHTML = '<div class="spinner-border"></div>';
-    dataStore = await appScriptApi.bootstrap();
     setTitle('DARPE');
     conteudo.innerHTML = Ui.Home();
 }

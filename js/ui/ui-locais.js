@@ -14,7 +14,7 @@ async function carregarLocais() {
       </div>
     `;
 
-    const data = await appScriptApi.post({ entity: 'locais', action: 'view' })
+    const data = await appScriptApi.action({ action: 'view', entity: 'locais' });
 
     const locais = data || [];
 
@@ -138,6 +138,7 @@ async function criarLocal(nome, tipo, permite_cordas, permite_sopros, limite) {
   }
 
   carregarLocais();
+  dataStore = await appScriptApi.bootstrap();
 }
 
 async function editarLocal(id, btn) {
@@ -149,7 +150,7 @@ async function editarLocal(id, btn) {
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-    const data = await appScriptApi.post({ entity: 'locais', action: 'view' });
+    const data = await appScriptApi.action({ entity: 'locais', action: 'view' });
 
     const local = (data || []).find(i => i.id === id);
 
@@ -233,6 +234,7 @@ async function editarLocal(id, btn) {
 
         // ⏳ spinner do ✏️ CONTINUA aqui
         await carregarLocais();
+        dataStore = await appScriptApi.bootstrap();
 
         // ✅ só agora para o spinner
         btn.disabled = false;
@@ -301,6 +303,7 @@ function excluirLocal(id, btnTrash) {
 
       // ⏳ espera a tabela atualizar
       await carregarLocais();
+      dataStore = await appScriptApi.bootstrap();
 
       // 🔙 só agora remove os spinners
       btnOk.disabled = false;
@@ -376,6 +379,8 @@ async function salvarLocal() {
     ).hide();
 
     await carregarLocais();
+    dataStore = await appScriptApi.bootstrap();
+
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar local");
