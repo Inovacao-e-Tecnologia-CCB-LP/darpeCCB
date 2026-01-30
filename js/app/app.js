@@ -1,5 +1,5 @@
-const API =
-  "https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSnCm_ft032qBZjQqd6u3QEztucWbtsisLAgTvqMUff/exec";
+const appScriptApi = new AppScriptApi()
+const Ui = new UiComponents();
 
 /* ================= APP ================= */
 
@@ -42,7 +42,7 @@ async function init() {
   conteudo.innerHTML = '<div class="spinner-border"></div>';
 
   try {
-    dataStore = await fetch(`${API}?action=bootstrap`).then((r) => r.json());
+    dataStore = await appScriptApi.bootstrap();
     navigateTo(showMenuInicial);
   } catch {
     conteudo.innerHTML =

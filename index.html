@@ -239,6 +239,138 @@
       </div>
     </div>
 
+<div class="modal fade" id="modalLocal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title" id="modalLocalTitulo">
+              Novo Local
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <input type="hidden" id="localId" />
+
+            <div class="mb-3">
+              <label class="form-label">Nome do Local</label>
+              <input
+                type="text"
+                class="form-control"
+                id="localNome"
+                placeholder="Ex: Hospital"
+              />
+            </div>
+
+            <!-- TIPO COM RADIO -->
+            <div class="mb-3">
+              <label class="form-label d-block">Permite cordas?</label>
+
+              <div class="form-check form-check-inline align-items-center">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="permiteCordas"
+                  id="permiteCordas"
+                  value="true"
+                />
+                <label
+                  class="form-check-label d-flex align-items-center gap-2"
+                  for="permiteCordas"
+                >
+                  Sim
+                </label>
+              </div>
+
+              <div class="form-check form-check-inline align-items-center">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="permiteCordas"
+                  id="naoPermiteCordas"
+                  value="false"
+                />
+                <label
+                  class="form-check-label d-flex align-items-center gap-2"
+                  for="naoPermiteCordas"
+                >
+                  Não
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label d-block">Permite sopros?</label>
+
+              <div class="form-check form-check-inline align-items-center">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="permiteSopros"
+                  id="permiteSopros"
+                  value="true"
+                />
+                <label
+                  class="form-check-label d-flex align-items-center gap-2"
+                  for="permiteSopros"
+                >
+                  Sim
+                </label>
+              </div>
+
+              <div class="form-check form-check-inline align-items-center">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="permiteSopros"
+                  id="naoPermiteSopros"
+                  value="false"
+                />
+                <label
+                  class="form-check-label d-flex align-items-center gap-2"
+                  for="naoPermiteSopros"
+                >
+                  Não
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Limite de pessoas do Local</label>
+              <input
+                type="number"
+                class="form-control"
+                id="localLimite"
+              />
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-dark"
+              id="btnSalvarLocal"
+            >
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <main id="conteudo" class="container mt-4 text-center"></main>
 
     <script
@@ -247,10 +379,15 @@
       crossorigin="anonymous"
     ></script>
     <script src="js/app/helpers.js"></script>
+    <script src="js/app/api.js"></script>
+    <script src="js/ui/components/ui-components.js"></script>
     <script src="js/app/app.js"></script>
     <script src="js/app/services.js"></script>
     <script src="js/app/auth.js"></script>
     <script src="js/ui/ui.js"></script>
+    <script src="js/ui/ui-locais.js"></script>
+    <script src="js/ui/ui-modals.js"></script>
+    <script src="js/ui/ui-instrumentos.js"></script>
     <script src="js/ui/ui-admin.js"></script>
     <script src="js/ui/ui-inscricao.js"></script>
     <script src="js/ui/ui-inscritos.js"></script>
