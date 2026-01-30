@@ -54,7 +54,9 @@ async function showInscritos() {
                 <div class="card mb-3 border-dark">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                         <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
-                        <button type="button" class="btn btn-success" onclick="compartilhar(${pid}, '${local}')"><i class="bi bi-whatsapp"></i> Compartilhar</button>
+                        <button type="button" class="btn btn-success" onclick="compartilhar(${pid}, '${local}')">
+                            <i class="bi bi-whatsapp"></i>
+                        </button>
                     </div>
                     <ul class="list-group list-group-flush">`;
 
