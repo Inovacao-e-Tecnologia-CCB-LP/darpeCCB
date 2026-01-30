@@ -4,10 +4,10 @@ function setTitle(text) {
 
 async function showMenuInicial() {
     mostrarBotaoAdmin()
-    setTitle('DARPE - Lençóis Paulista');
     setTitle("Carregando...");
     conteudo.innerHTML = '<div class="spinner-border"></div>';
     dataStore = await appScriptApi.bootstrap();
+    setTitle('DARPE - Lençóis Paulista');
     conteudo.innerHTML = Ui.Home();
 }
 
