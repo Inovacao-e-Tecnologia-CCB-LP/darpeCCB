@@ -1,0 +1,81 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Regras de Datas</h5>
+    <button class="btn btn-dark btn-sm" onclick="abrirModalNovaRegra()">
+        <i class="bi bi-plus-circle"></i> Nova Regra
+    </button>
+</div>
+
+<div id="listaRegrasDatas">
+    <div class="text-center my-4">
+        <div class="spinner-border text-dark"></div>
+    </div>
+</div>
+
+<!-- Modal Regra -->
+<div class="modal fade" id="modalRegra" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalRegraTitulo">Nova Regra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="regraId">
+
+                <div class="mb-3">
+                    <label for="regraLocal" class="form-label">Local</label>
+                    <select class="form-select" id="regraLocal">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="regraTipo" class="form-label">Tipo de Visita</label>
+                    <input type="text" class="form-control" id="regraTipo" placeholder="Ex: Ensaio Regional">
+                </div>
+
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="regraDiaSemana" class="form-label">Dia da Semana</label>
+                        <select class="form-select" id="regraDiaSemana">
+                            <option value="1">Segunda-feira</option>
+                            <option value="2">Terça-feira</option>
+                            <option value="3">Quarta-feira</option>
+                            <option value="4">Quinta-feira</option>
+                            <option value="5">Sexta-feira</option>
+                            <option value="6">Sábado</option>
+                            <option value="7">Domingo</option>
+                        </select>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label for="regraOrdinal" class="form-label">Ocorrência</label>
+                        <select class="form-select" id="regraOrdinal">
+                            <option value="0">Todas as semanas</option>
+                            <option value="1">1ª semana</option>
+                            <option value="2">2ª semana</option>
+                            <option value="3">3ª semana</option>
+                            <option value="4">4ª semana</option>
+                            <option value="5">5ª semana</option>
+                            <option value="-1">Última semana</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="regraHorario" class="form-label">Horário</label>
+                    <input type="time" class="form-control" id="regraHorario">
+                </div>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="regraAtivo" checked>
+                    <label class="form-check-label" for="regraAtivo">Ativo</label>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-dark" id="btnSalvarRegra">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>

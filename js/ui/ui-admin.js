@@ -12,6 +12,10 @@ function irParaCrudInstrumentos() {
   navigateTo(abrirCrudInstrumentos);
 }
 
+function irParaCrudRegrasDatas() {
+  navigateTo(abrirCrudRegrasDatas);
+}
+
 function mostrarLoading(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
