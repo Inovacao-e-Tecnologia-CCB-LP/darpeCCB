@@ -1,396 +1,283 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DARPE</title>
-    <link rel="icon" href="Img/darpe-logo.png">
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
-      rel="stylesheet"
-    />
-    <link href="css/style.css" rel="stylesheet" />
-  </head>
 
-  <body>
-    <header class="bg-dark text-white text-center p-3 shadow">
-      <div class="container">
-        <div class="row align-items-center">
-          <!-- Voltar -->
-          <div class="col-2 p-0 text-start">
-            <button
-              id="backButton"
-              class="btn btn-dark border-light text-white"
-            >
-              Voltar
-            </button>
-          </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DARPE</title>
+  <link rel="icon" href="Img/darpe-logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="css/style.css" rel="stylesheet" />
+</head>
 
-          <!-- Título -->
-          <div class="col-8">
-            <h1 id="titulo" class="h3 m-0">DARPE</h1>
-          </div>
-
-          <!-- Admin -->
-          <div class="col-2 text-end">
-            <button
-              id="adminButton"
-              class="btn btn-outline-light btn-lg"
-              onclick="abrirModalAdmin()"
-              title="Área Administrativa"
-            >
-              <i class="bi bi-shield-lock"></i>
-            </button>
-          </div>
+<body>
+  <header class="bg-dark text-white text-center p-3 shadow">
+    <div class="container">
+      <div class="row align-items-center">
+        <!-- Voltar -->
+        <div class="col-2 p-0 text-start">
+          <button id="backButton" class="btn btn-dark border-light text-white">
+            Voltar
+          </button>
         </div>
-      </div>
-    </header>
 
-    <!-- Modal Admin -->
-    <div class="modal fade" id="modalAdmin" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-dark">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title">Acesso Administrativo</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
+        <!-- Título -->
+        <div class="col-8">
+          <h1 id="titulo" class="h3 m-0">DARPE</h1>
+        </div>
 
-          <div class="modal-body">
-            <input
-              type="password"
-              id="senhaAdmin"
-              class="form-control"
-              placeholder="Digite a senha"
-            />
-            <div id="erroSenha" class="text-danger mt-2 d-none">
-              Senha incorreta
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">
-              Cancelar
-            </button>
-            <button
-              class="btn btn-dark"
-              onclick="validarSenhaAdmin()"
-              id="btnEntrarAdmin"
-            >
-              <span id="textoBtnAdmin">Entrar</span>
-              <span
-                id="spinnerBtnAdmin"
-                class="spinner-border spinner-border-sm d-none"
-                role="status"
-              ></span>
-            </button>
-          </div>
+        <!-- Admin -->
+        <div class="col-2 text-end">
+          <button id="adminButton" class="btn btn-outline-light btn-lg" onclick="abrirModalAdmin()"
+            title="Área Administrativa">
+            <i class="bi bi-shield-lock"></i>
+          </button>
         </div>
       </div>
     </div>
+  </header>
 
-    <div class="modal fade" id="modalAviso" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title" id="modalAvisoTitulo">Aviso</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
+  <!-- Modal Admin -->
+  <div class="modal fade" id="modalAdmin" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-dark">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title">Acesso Administrativo</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="password" id="senhaAdmin" class="form-control" placeholder="Digite a senha" />
+          <div id="erroSenha" class="text-danger mt-2 d-none">
+            Senha incorreta
           </div>
-          <div class="modal-body" id="modalAvisoMensagem"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
-              OK
-            </button>
-          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button class="btn btn-dark" onclick="validarSenhaAdmin()" id="btnEntrarAdmin">
+            <span id="textoBtnAdmin">Entrar</span>
+            <span id="spinnerBtnAdmin" class="spinner-border spinner-border-sm d-none" role="status"></span>
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="modal fade" id="modalInstrumento" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title" id="modalInstrumentoTitulo">
-              Novo Instrumento
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
+  <div class="modal fade" id="modalInstrumento" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="modalInstrumentoTitulo">
+            Novo Instrumento
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="instrumentoId" />
+
+          <div class="mb-3">
+            <label class="form-label">Nome do instrumento</label>
+            <input type="text" class="form-control" id="instrumentoNome" placeholder="Ex: Violino" />
           </div>
 
-          <div class="modal-body">
-            <input type="hidden" id="instrumentoId" />
+          <!-- TIPO COM RADIO -->
+          <div class="mb-3">
+            <label class="form-label d-block">Tipo</label>
 
-            <div class="mb-3">
-              <label class="form-label">Nome do instrumento</label>
-              <input
-                type="text"
-                class="form-control"
-                id="instrumentoNome"
-                placeholder="Ex: Violino"
-              />
+            <div class="form-check form-check-inline align-items-center">
+              <input class="form-check-input" type="radio" name="instrumentoTipo" id="tipoCorda" value="corda" />
+              <label class="form-check-label d-flex align-items-center gap-2" for="tipoCorda">
+                <img src="Img/Cordas.png" alt="Corda" width="24" height="24" />
+                Cordas
+              </label>
             </div>
 
-            <!-- TIPO COM RADIO -->
-            <div class="mb-3">
-              <label class="form-label d-block">Tipo</label>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="instrumentoTipo"
-                  id="tipoCorda"
-                  value="corda"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="tipoCorda"
-                >
-                  <img
-                    src="Img/Cordas.png"
-                    alt="Corda"
-                    width="24"
-                    height="24"
-                  />
-                  Cordas
-                </label>
-              </div>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="instrumentoTipo"
-                  id="tipoSopro"
-                  value="sopro"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="tipoSopro"
-                >
-                  <img src="Img/Sopro.png" alt="Sopro" width="24" height="24" />
-                  Sopros
-                </label>
-              </div>
+            <div class="form-check form-check-inline align-items-center">
+              <input class="form-check-input" type="radio" name="instrumentoTipo" id="tipoSopro" value="sopro" />
+              <label class="form-check-label d-flex align-items-center gap-2" for="tipoSopro">
+                <img src="Img/Sopro.png" alt="Sopro" width="24" height="24" />
+                Sopros
+              </label>
             </div>
           </div>
+        </div>
 
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancelar
-            </button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
 
-            <button
-              type="button"
-              class="btn btn-dark"
-              id="btnSalvarInstrumento"
-            >
-              Salvar
-            </button>
-          </div>
+          <button type="button" class="btn btn-dark" id="btnSalvarInstrumento">
+            Salvar
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="modal fade" id="confirmModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="confirmTitle">Confirmação</h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
-          <div class="modal-body" id="confirmMessage">Tem certeza?</div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancelar
-            </button>
-            <button type="button" class="btn btn-danger" id="confirmOk">
-              Excluir
-            </button>
-          </div>
+  <div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="confirmTitle">Confirmação</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="confirmMessage">Tem certeza?</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmOk">
+            Excluir
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-<div class="modal fade" id="modalLocal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title" id="modalLocalTitulo">
-              Novo Local
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
+  <div class="modal fade" id="modalLocal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="modalLocalTitulo">
+            Novo Local
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="localId" />
+
+          <!-- NOME -->
+          <div class="mb-3">
+            <label class="form-label">Nome do Local</label>
+            <input type="text" class="form-control" id="localNome" placeholder="Ex: Hospital" />
           </div>
 
-          <div class="modal-body">
-            <input type="hidden" id="localId" />
+          <!-- ENDEREÇO -->
+          <div class="mb-3">
+            <label class="form-label">Endereço</label>
 
-            <div class="mb-3">
-              <label class="form-label">Nome do Local</label>
-              <input
-                type="text"
-                class="form-control"
-                id="localNome"
-                placeholder="Ex: Hospital"
-              />
-            </div>
-
-            <!-- TIPO COM RADIO -->
-            <div class="mb-3">
-              <label class="form-label d-block">Permite cordas?</label>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteCordas"
-                  id="permiteCordas"
-                  value="true"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="permiteCordas"
-                >
-                  Sim
-                </label>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <input type="text" class="form-control" id="localRua" placeholder="Rua" />
               </div>
 
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteCordas"
-                  id="naoPermiteCordas"
-                  value="false"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="naoPermiteCordas"
-                >
-                  Não
-                </label>
+              <div class="col-md-3 mb-2">
+                <input type="text" class="form-control" id="localNumero" placeholder="Número" />
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <input type="text" class="form-control" id="localBairro" placeholder="Bairro" />
               </div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label d-block">Permite sopros?</label>
+            <small class="text-muted">
+              Será salvo como: <code>R. Rua, Número, Bairro</code>
+            </small>
+          </div>
 
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteSopros"
-                  id="permiteSopros"
-                  value="true"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="permiteSopros"
-                >
-                  Sim
-                </label>
-              </div>
+          <!-- PERMITE CORDAS -->
+          <div class="mb-3">
+            <label class="form-label d-block">Permite cordas?</label>
 
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteSopros"
-                  id="naoPermiteSopros"
-                  value="false"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="naoPermiteSopros"
-                >
-                  Não
-                </label>
-              </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="permiteCordas" id="permiteCordas" value="true" />
+              <label class="form-check-label" for="permiteCordas">
+                Sim
+              </label>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Limite de pessoas do Local</label>
-              <input
-                type="number"
-                class="form-control"
-                id="localLimite"
-              />
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="permiteCordas" id="naoPermiteCordas" value="false" />
+              <label class="form-check-label" for="naoPermiteCordas">
+                Não
+              </label>
             </div>
           </div>
 
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancelar
-            </button>
+          <!-- PERMITE SOPROS -->
+          <div class="mb-3">
+            <label class="form-label d-block">Permite sopros?</label>
 
-            <button
-              type="button"
-              class="btn btn-dark"
-              id="btnSalvarLocal"
-            >
-              Salvar
-            </button>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="permiteSopros" id="permiteSopros" value="true" />
+              <label class="form-check-label" for="permiteSopros">
+                Sim
+              </label>
+            </div>
+
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="permiteSopros" id="naoPermiteSopros" value="false" />
+              <label class="form-check-label" for="naoPermiteSopros">
+                Não
+              </label>
+            </div>
           </div>
+
+          <!-- LIMITE -->
+          <div class="mb-3">
+            <label class="form-label">Limite de pessoas do Local</label>
+            <input type="number" class="form-control" id="localLimite" min="0" />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="button" class="btn btn-dark" id="btnSalvarLocal">
+            Salvar
+          </button>
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="modal fade" id="modalAviso" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title" id="modalAvisoTitulo">Aviso</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalAvisoMensagem"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
-    <main id="conteudo" class="container mt-4 text-center"></main>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-    <script src="js/app/helpers.js"></script>
-    <script src="js/app/api.js"></script>
-    <script src="js/ui/components/ui-components.js"></script>
-    <script src="js/app/app.js"></script>
-    <script src="js/app/services.js"></script>
-    <script src="js/app/auth.js"></script>
-    <script src="js/ui/ui.js"></script>
-    <script src="js/ui/ui-locais.js"></script>
-    <script src="js/ui/ui-modals.js"></script>
-    <script src="js/ui/ui-instrumentos.js"></script>
-    <script src="js/ui/ui-admin.js"></script>
-    <script src="js/ui/ui-inscricao.js"></script>
-    <script src="js/ui/ui-inscritos.js"></script>
-  </body>
+  <main id="conteudo" class="container mt-4 text-center"></main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+  <script src="js/app/helpers.js"></script>
+  <script src="js/app/api.js"></script>
+  <script src="js/ui/components/ui-components.js"></script>
+  <script src="js/app/app.js"></script>
+  <script src="js/app/services.js"></script>
+  <script src="js/app/auth.js"></script>
+  <script src="js/ui/ui.js"></script>
+  <script src="js/ui/ui-locais.js"></script>
+  <script src="js/ui/ui-modals.js"></script>
+  <script src="js/ui/ui-instrumentos.js"></script>
+  <script src="js/ui/ui-admin.js"></script>
+  <script src="js/ui/ui-inscricao.js"></script>
+  <script src="js/ui/ui-inscritos.js"></script>
+</body>
+
 </html>
