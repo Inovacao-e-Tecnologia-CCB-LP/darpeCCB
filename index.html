@@ -241,135 +241,166 @@
     </div>
 
 <div class="modal fade" id="modalLocal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-dark text-white">
-            <h5 class="modal-title" id="modalLocalTitulo">
-              Novo Local
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-            ></button>
-          </div>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="modalLocalTitulo">
+          Novo Local
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
 
-          <div class="modal-body">
-            <input type="hidden" id="localId" />
+      <div class="modal-body">
+        <input type="hidden" id="localId" />
 
-            <div class="mb-3">
-              <label class="form-label">Nome do Local</label>
+        <!-- NOME -->
+        <div class="mb-3">
+          <label class="form-label">Nome do Local</label>
+          <input
+            type="text"
+            class="form-control"
+            id="localNome"
+            placeholder="Ex: Hospital"
+          />
+        </div>
+
+        <!-- ENDEREÇO -->
+        <div class="mb-3">
+          <label class="form-label">Endereço</label>
+
+          <div class="row">
+            <div class="col-md-6 mb-2">
               <input
                 type="text"
                 class="form-control"
-                id="localNome"
-                placeholder="Ex: Hospital"
+                id="localRua"
+                placeholder="Rua"
               />
             </div>
 
-            <!-- TIPO COM RADIO -->
-            <div class="mb-3">
-              <label class="form-label d-block">Permite cordas?</label>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteCordas"
-                  id="permiteCordas"
-                  value="true"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="permiteCordas"
-                >
-                  Sim
-                </label>
-              </div>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteCordas"
-                  id="naoPermiteCordas"
-                  value="false"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="naoPermiteCordas"
-                >
-                  Não
-                </label>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label d-block">Permite sopros?</label>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteSopros"
-                  id="permiteSopros"
-                  value="true"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="permiteSopros"
-                >
-                  Sim
-                </label>
-              </div>
-
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="permiteSopros"
-                  id="naoPermiteSopros"
-                  value="false"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="naoPermiteSopros"
-                >
-                  Não
-                </label>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Limite de pessoas do Local</label>
+            <div class="col-md-3 mb-2">
               <input
-                type="number"
+                type="text"
                 class="form-control"
-                id="localLimite"
+                id="localNumero"
+                placeholder="Número"
+              />
+            </div>
+
+            <div class="col-md-3 mb-2">
+              <input
+                type="text"
+                class="form-control"
+                id="localBairro"
+                placeholder="Bairro"
               />
             </div>
           </div>
 
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancelar
-            </button>
+          <small class="text-muted">
+            Será salvo como: <code>R. Rua, Número, Bairro</code>
+          </small>
+        </div>
 
-            <button
-              type="button"
-              class="btn btn-dark"
-              id="btnSalvarLocal"
-            >
-              Salvar
-            </button>
+        <!-- PERMITE CORDAS -->
+        <div class="mb-3">
+          <label class="form-label d-block">Permite cordas?</label>
+
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="permiteCordas"
+              id="permiteCordas"
+              value="true"
+            />
+            <label class="form-check-label" for="permiteCordas">
+              Sim
+            </label>
+          </div>
+
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="permiteCordas"
+              id="naoPermiteCordas"
+              value="false"
+            />
+            <label class="form-check-label" for="naoPermiteCordas">
+              Não
+            </label>
           </div>
         </div>
+
+        <!-- PERMITE SOPROS -->
+        <div class="mb-3">
+          <label class="form-label d-block">Permite sopros?</label>
+
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="permiteSopros"
+              id="permiteSopros"
+              value="true"
+            />
+            <label class="form-check-label" for="permiteSopros">
+              Sim
+            </label>
+          </div>
+
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="permiteSopros"
+              id="naoPermiteSopros"
+              value="false"
+            />
+            <label class="form-check-label" for="naoPermiteSopros">
+              Não
+            </label>
+          </div>
+        </div>
+
+        <!-- LIMITE -->
+        <div class="mb-3">
+          <label class="form-label">Limite de pessoas do Local</label>
+          <input
+            type="number"
+            class="form-control"
+            id="localLimite"
+            min="0"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-dark"
+          id="btnSalvarLocal"
+        >
+          Salvar
+        </button>
       </div>
     </div>
+  </div>
+</div>
+
 
 
     <main id="conteudo" class="container mt-4 text-center"></main>
