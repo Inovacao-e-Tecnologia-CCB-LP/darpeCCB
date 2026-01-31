@@ -109,7 +109,7 @@ async function excluirInscricao(id, btn) {
     if (!r.success) throw new Error();
 
     removerAutorizacao(id);
-    abrirModalAviso("Sucesso", "Inscrição excluída com sucesso !!");
+    abrirModalAviso("Sucesso", "Inscrição excluída com sucesso!");
     showInscritos();
   } catch (err) {
     abrirModalAviso("Erro", " Não foi possível excluir a inscrição.");
