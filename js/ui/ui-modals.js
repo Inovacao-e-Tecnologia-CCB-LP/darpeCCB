@@ -1,9 +1,14 @@
-function abrirModalAviso(titulo, mensagem) {
-  document.getElementById("modalAvisoTitulo").innerText = titulo;
-  document.getElementById("modalAvisoMensagem").innerText = mensagem;
+async function abrirModalAviso(titulo, mensagem, closeEvent) {
+  return new Promise(resolve => {
+    document.getElementById("modalAvisoTitulo").innerText = titulo;
+    document.getElementById("modalAvisoMensagem").innerText = mensagem;
+    const modalEl = document.getElementById("modalAviso");
 
-  const modal = new bootstrap.Modal(document.getElementById("modalAviso"));
-  modal.show();
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    modalEl.addEventListener('hidden.bs.modal', () => resolve());
+  })
 }
 
 // Modal de confirmação (retorna true/false)

@@ -97,12 +97,28 @@ async function carregarLocais() {
   }
 }
 
+
+function montarEndereco() {
+  const rua = document.getElementById("localRua").value.trim();
+  const numero = document.getElementById("localNumero").value.trim();
+  const bairro = document.getElementById("localBairro").value.trim();
+
+  if (!rua || !numero || !bairro) return "";
+
+  return `R. ${rua}, ${numero}, ${bairro}`;
+}
+
+
+
 function abrirModalNovoLocal() {
-  document.getElementById("modalLocalTitulo").innerText =
-    "Novo Local";
+  document.getElementById("modalLocalTitulo").innerText = "Novo Local";
 
   document.getElementById("localId").value = "";
   document.getElementById("localNome").value = "";
+
+  document.getElementById("localRua").value = "";
+  document.getElementById("localNumero").value = "";
+  document.getElementById("localBairro").value = "";
 
   document
     .querySelectorAll('input[name="permiteCordas"]')
@@ -118,41 +134,54 @@ function abrirModalNovoLocal() {
   new bootstrap.Modal(document.getElementById("modalLocal")).show();
 }
 
+
 async function criarLocal(nome, tipo, permite_cordas, permite_sopros, limite) {
-  const res = post({
-    entity: "locais",
-    action: "create",
-    password: senhaDigitada,
-    nome: nome,
-    tipo: tipo,
-    permite_cordas: permite_cordas,
-    permite_sopros: permite_sopros,
-    limite: limite
-  })
+  const rua = document.getElementById("localRua").value.trim();
+  const numero = document.getElementById("localNumero").value.trim();
+  const bairro = document.getElementById("localBairro").value.trim();
 
-  const data = await res.json();
-
-  if (data.error) {
-    alert(data.error);
+  if (!nome || !limite || !rua || !numero || !bairro) {
+    abrirModalAviso("Aviso", "Preencha todos os campos corretamente");
     return;
   }
 
-  carregarLocais();
-  dataStore = await appScriptApi.bootstrap();
+  const endereco = `R. ${rua}, ${numero}, ${bairro}`;
+
+  const res = await appScriptApi.post({
+    entity: "locais",
+    action: "create",
+    password: senhaDigitada,
+    nome,
+    tipo,
+    permite_cordas,
+    permite_sopros,
+    limite,
+    endereco
+  });
+
+  if (res?.error) {
+    abrirModalAviso("Erro", res.error);
+    return;
+  }
+
+  reloadLocais();
 }
+
 
 async function editarLocal(id, btn) {
   const textoOriginal = btn.innerHTML;
-  let salvou = false; // 🔑 FLAG
+  let salvou = false;
 
   try {
-    // 🔄 spinner no ✏️
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-    const data = await appScriptApi.action({ entity: 'locais', action: 'view' });
+    const data = await appScriptApi.action({
+      entity: "locais",
+      action: "view"
+    });
 
-    const local = (data || []).find(i => i.id === id);
+    const local = (data || []).find(i => Number(i.id) === Number(id));
 
     if (!local) {
       abrirModalAviso("Erro", "Local não encontrado");
@@ -161,25 +190,33 @@ async function editarLocal(id, btn) {
       return;
     }
 
-    document.getElementById("modalLocalTitulo").innerText =
-      "Editar Local";
-
+    document.getElementById("modalLocalTitulo").innerText = "Editar Local";
     document.getElementById("localId").value = local.id;
     document.getElementById("localNome").value = local.nome;
+    document.getElementById("localLimite").value = local.limite;
+
     const radioCordas = document.querySelector(
-      `input[name="permiteCordas"][value="${local.permite_cordas}"]`,
+      `input[name="permiteCordas"][value="${local.permite_cordas}"]`
     );
     if (radioCordas) radioCordas.checked = true;
+
     const radioSopros = document.querySelector(
-      `input[name="permiteSopros"][value="${local.permite_sopros}"]`,
+      `input[name="permiteSopros"][value="${local.permite_sopros}"]`
     );
     if (radioSopros) radioSopros.checked = true;
-    document.getElementById("localLimite").value = local.limite;
+
+    // 👉 PREENCHE ENDEREÇO
+    if (local.endereco) {
+      const partes = local.endereco.replace("R. ", "").split(",");
+
+      document.getElementById("localRua").value = partes[0]?.trim() || "";
+      document.getElementById("localNumero").value = partes[1]?.trim() || "";
+      document.getElementById("localBairro").value = partes[2]?.trim() || "";
+    }
 
     const modalEl = document.getElementById("modalLocal");
     const modal = new bootstrap.Modal(modalEl);
 
-    // ❌ só restaura se NÃO salvou
     modalEl.addEventListener(
       "hidden.bs.modal",
       () => {
@@ -196,22 +233,31 @@ async function editarLocal(id, btn) {
 
     btnSalvar.onclick = async () => {
       const nome = document.getElementById("localNome").value.trim();
-      const permiteCordas = document.querySelector('input[name="permiteCordas"]:checked').value;
-      const permiteSopros = document.querySelector('input[name="permiteSopros"]:checked').value;
       const limite = document.getElementById("localLimite").value;
+      const permiteCordas = document.querySelector('input[name="permiteCordas"]:checked')?.value;
+      const permiteSopros = document.querySelector('input[name="permiteSopros"]:checked')?.value;
 
-      if (!nome || !limite || permiteCordas === undefined || permiteSopros === undefined) {
-        abrirModalAviso(
-          "Aviso",
-          "Preencha corretamente os campos"
+      const rua = document.getElementById("localRua").value.trim();
+      const numero = document.getElementById("localNumero").value.trim();
+      const bairro = document.getElementById("localBairro").value.trim();
+
+      if (!nome || !limite || !rua || !numero || !bairro || permiteCordas === undefined || permiteSopros === undefined) {
+        const modalLocal = bootstrap.Modal.getInstance(
+          document.getElementById("modalLocal")
         );
-        return;
+        modalLocal.hide();
+        await abrirModalAviso(
+          "Aviso",
+          "Preencha corretamente todos os campos"
+        ).then(() => modalLocal.show());
+        return
       }
 
+      const endereco = `R. ${rua}, ${numero}, ${bairro}`;
       const textoSalvar = btnSalvar.innerHTML;
 
       try {
-        salvou = true; // ✅ MARCA QUE SALVOU
+        salvou = true;
 
         btnSalvar.disabled = true;
         btnSalvar.innerHTML = `
@@ -227,16 +273,14 @@ async function editarLocal(id, btn) {
           nome,
           permite_cordas: permiteCordas,
           permite_sopros: permiteSopros,
-          limite
-        })
+          limite,
+          endereco
+        });
 
         modal.hide();
 
-        // ⏳ spinner do ✏️ CONTINUA aqui
-        await carregarLocais();
-        dataStore = await appScriptApi.bootstrap();
+        reloadLocais();
 
-        // ✅ só agora para o spinner
         btn.disabled = false;
         btn.innerHTML = textoOriginal;
 
@@ -259,7 +303,16 @@ async function editarLocal(id, btn) {
   }
 }
 
-function excluirLocal(id, btnTrash) {
+
+
+
+
+
+async function excluirLocal(id, btnTrash) {
+
+  const textoOriginal = btnTrash.innerHTML;
+
+  // 🟡 modal de confirmação
   document.getElementById("confirmTitle").innerText = "Excluir Local";
   document.getElementById("confirmMessage").innerText =
     "Deseja realmente excluir este local?";
@@ -269,7 +322,6 @@ function excluirLocal(id, btnTrash) {
 
   btnOk.onclick = async () => {
     const textoOk = btnOk.innerHTML;
-    const textoTrash = btnTrash.innerHTML;
 
     try {
       // 🔄 spinner no OK
@@ -289,32 +341,28 @@ function excluirLocal(id, btnTrash) {
         entity: "locais",
         action: "delete",
         id,
-        password: senhaDigitada,
+        password: senhaDigitada
       });
 
-      if (data.error) {
-        abrirModalAviso("Erro", data.error);
-        return;
+      // 🚫 BLOQUEADO PELO BACK
+      if (data?.error) {
+        throw new Error(data.error)
       }
 
+      reloadLocais();
+    } catch (err) {
+      console.error(err);
+      abrirModalAviso("Não foi possível excluir", err.message);
+    } finally {
       bootstrap.Modal.getInstance(
         document.getElementById("confirmModal")
       ).hide();
 
-      // ⏳ espera a tabela atualizar
-      await carregarLocais();
-      dataStore = await appScriptApi.bootstrap();
-
-      // 🔙 só agora remove os spinners
       btnOk.disabled = false;
       btnOk.innerHTML = textoOk;
 
       btnTrash.disabled = false;
-      btnTrash.innerHTML = textoTrash;
-
-    } catch (err) {
-      console.error(err);
-      abrirModalAviso("Erro", "Erro de comunicação com o servidor");
+      btnTrash.innerHTML = textoOriginal;
     }
   };
 
@@ -325,20 +373,46 @@ function excluirLocal(id, btnTrash) {
 
 
 
+
 async function salvarLocal() {
   const id = document.getElementById("localId").value;
+
   const nome = document.getElementById("localNome").value.trim();
-  const permiteCordas = document.querySelector('input[name="permiteCordas"]:checked').value;
-  const permiteSopros = document.querySelector('input[name="permiteSopros"]:checked').value;
   const limite = document.getElementById("localLimite").value;
 
-  if (!nome || !limite || permiteCordas === undefined || permiteSopros === undefined) {
-    abrirModalAviso(
-      "Aviso",
-      "Preencha corretamente os campos"
+  const permiteCordas = document.querySelector(
+    'input[name="permiteCordas"]:checked'
+  )?.value;
+
+  const permiteSopros = document.querySelector(
+    'input[name="permiteSopros"]:checked'
+  )?.value;
+
+  const rua = document.getElementById("localRua").value.trim();
+  const numero = document.getElementById("localNumero").value.trim();
+  const bairro = document.getElementById("localBairro").value.trim();
+
+  if (
+    !nome ||
+    !limite ||
+    !rua ||
+    !numero ||
+    !bairro ||
+    permiteCordas === undefined ||
+    permiteSopros === undefined
+  ) {
+    const modalLocal = bootstrap.Modal.getInstance(
+      document.getElementById("modalLocal")
     );
-    return;
+    modalLocal.hide();
+    await abrirModalAviso(
+      "Aviso",
+      "Preencha corretamente todos os campos"
+    ).then(() => modalLocal.show());
+    return
   }
+
+  const endereco = `R. ${rua}, ${numero}, ${bairro}`;
 
   const payload = {
     entity: "locais",
@@ -346,7 +420,8 @@ async function salvarLocal() {
     nome,
     permite_cordas: permiteCordas,
     permite_sopros: permiteSopros,
-    limite
+    limite,
+    endereco
   };
 
   if (id) {
@@ -362,24 +437,24 @@ async function salvarLocal() {
   try {
     btn.disabled = true;
     btn.innerHTML = `
-      <span class="spinner-border spinner-border-sm"></span> Salvando
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      Salvando
     `;
 
     mostrarLoading("listaLocais");
 
     const data = await appScriptApi.post(payload);
 
-    if (data.error) {
+    if (data?.error) {
       abrirModalAviso("Erro", data.error);
       return;
     }
 
     bootstrap.Modal.getInstance(
-      document.getElementById("modalLocal"),
+      document.getElementById("modalLocal")
     ).hide();
 
-    await carregarLocais();
-    dataStore = await appScriptApi.bootstrap();
+    reloadLocais();
 
   } catch (err) {
     console.error(err);
@@ -388,4 +463,9 @@ async function salvarLocal() {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
+}
+
+async function reloadLocais() {
+  carregarLocais();
+  dataStore = await appScriptApi.bootstrap();
 }
