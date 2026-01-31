@@ -258,7 +258,29 @@
     </div>
   </div>
 
-
+    <div
+      class="toast-container position-fixed p-3 top-0 start-50 translate-middle-x top-md-1 start-md-auto end-md-1 translate-middle-x-md-0"
+    >
+      <div
+        id="toastAviso"
+        class="toast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="toast-header">
+          <i id="toastIcon" class="bi me-2"></i>
+          <strong class="me-auto" id="toastTitulo">Aviso</strong>
+          <small>agora</small>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="toast"
+          ></button>
+        </div>
+        <div class="toast-body" id="toastMensagem">Texto do toast</div>
+      </div>
+    </div>
 
   <main id="conteudo" class="container mt-4 text-center"></main>
 

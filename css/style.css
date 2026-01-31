@@ -26,6 +26,24 @@ body {
   box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.link-mapa {
+  margin: 0.5rem 0 0.5rem 1rem;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 1rem;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+}
+
+
 /* ===========================
    INPUTS (GLOBAL)
 =========================== */
