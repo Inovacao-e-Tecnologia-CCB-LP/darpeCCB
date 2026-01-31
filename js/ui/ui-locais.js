@@ -164,8 +164,7 @@ async function criarLocal(nome, tipo, permite_cordas, permite_sopros, limite) {
     return;
   }
 
-  await carregarLocais();
-  dataStore = await appScriptApi.bootstrap();
+  reloadLocais();
 }
 
 
@@ -243,8 +242,15 @@ async function editarLocal(id, btn) {
       const bairro = document.getElementById("localBairro").value.trim();
 
       if (!nome || !limite || !rua || !numero || !bairro || permiteCordas === undefined || permiteSopros === undefined) {
-        abrirModalAviso("Aviso", "Preencha todos os campos corretamente");
-        return;
+        const modalLocal = bootstrap.Modal.getInstance(
+          document.getElementById("modalLocal")
+        );
+        modalLocal.hide();
+        await abrirModalAviso(
+          "Aviso",
+          "Preencha corretamente todos os campos"
+        ).then(() => modalLocal.show());
+        return
       }
 
       const endereco = `R. ${rua}, ${numero}, ${bairro}`;
@@ -273,8 +279,7 @@ async function editarLocal(id, btn) {
 
         modal.hide();
 
-        await carregarLocais();
-        dataStore = await appScriptApi.bootstrap();
+        reloadLocais();
 
         btn.disabled = false;
         btn.innerHTML = textoOriginal;
@@ -341,21 +346,18 @@ async function excluirLocal(id, btnTrash) {
 
       // 🚫 BLOQUEADO PELO BACK
       if (data?.error) {
-        abrirModalAviso("Não é possível excluir", data.error);
-        return;
+        throw new Error(data.error)
       }
 
+      reloadLocais();
+    } catch (err) {
+      console.error(err);
+      abrirModalAviso("Não foi possível excluir", err.message);
+    } finally {
       bootstrap.Modal.getInstance(
         document.getElementById("confirmModal")
       ).hide();
 
-      await carregarLocais();
-      dataStore = await appScriptApi.bootstrap();
-
-    } catch (err) {
-      console.error(err);
-      abrirModalAviso("Erro", "Erro de comunicação com o servidor");
-    } finally {
       btnOk.disabled = false;
       btnOk.innerHTML = textoOk;
 
@@ -399,11 +401,15 @@ async function salvarLocal() {
     permiteCordas === undefined ||
     permiteSopros === undefined
   ) {
-    abrirModalAviso(
+    const modalLocal = bootstrap.Modal.getInstance(
+      document.getElementById("modalLocal")
+    );
+    modalLocal.hide();
+    await abrirModalAviso(
       "Aviso",
       "Preencha corretamente todos os campos"
-    );
-    return;
+    ).then(() => modalLocal.show());
+    return
   }
 
   const endereco = `R. ${rua}, ${numero}, ${bairro}`;
@@ -448,8 +454,7 @@ async function salvarLocal() {
       document.getElementById("modalLocal")
     ).hide();
 
-    await carregarLocais();
-    dataStore = await appScriptApi.bootstrap();
+    reloadLocais();
 
   } catch (err) {
     console.error(err);
@@ -458,4 +463,9 @@ async function salvarLocal() {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
+}
+
+async function reloadLocais() {
+  carregarLocais();
+  dataStore = await appScriptApi.bootstrap();
 }

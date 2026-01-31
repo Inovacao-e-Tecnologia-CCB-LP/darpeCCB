@@ -119,8 +119,7 @@ async function criarInstrumento(nome, tipo) {
         return;
     }
 
-    carregarInstrumentos();
-    dataStore = await appScriptApi.bootstrap();
+    reloadInstrumentos();
 }
 
 async function editarInstrumento(id, btn) {
@@ -173,11 +172,12 @@ async function editarInstrumento(id, btn) {
             const tipo = getTipoRadioSelecionado();
 
             if (!nome || !["corda", "sopro"].includes(tipo)) {
-                abrirModalAviso(
+                modal.hide();
+                await abrirModalAviso(
                     "Aviso",
                     "Preencha corretamente nome e tipo do instrumento"
-                );
-                return;
+                ).then(() => modal.show());
+                return
             }
 
             const textoSalvar = btnSalvar.innerHTML;
@@ -203,8 +203,7 @@ async function editarInstrumento(id, btn) {
                 modal.hide();
 
                 // ⏳ spinner do ✏️ CONTINUA aqui
-                await carregarInstrumentos();
-                dataStore = await appScriptApi.bootstrap();
+                reloadInstrumentos();
 
                 // ✅ só agora para o spinner
                 btn.disabled = false;
@@ -262,29 +261,25 @@ function excluirInstrumento(id, btnTrash) {
                 password: senhaDigitada,
             });
 
-            if (data.error) {
-                abrirModalAviso("Erro", data.error);
-                return;
+            if (data?.error) {
+                throw new Error(data.error)
             }
 
+            reloadInstrumentos();
+
+        } catch (err) {
+            console.error(err);
+            abrirModalAviso("Não foi possível excluir", err.message);
+        } finally {
             bootstrap.Modal.getInstance(
                 document.getElementById("confirmModal")
             ).hide();
 
-            // ⏳ espera a tabela atualizar
-            await carregarInstrumentos();
-            dataStore = await appScriptApi.bootstrap();
-
-            // 🔙 só agora remove os spinners
             btnOk.disabled = false;
             btnOk.innerHTML = textoOk;
 
             btnTrash.disabled = false;
             btnTrash.innerHTML = textoTrash;
-
-        } catch (err) {
-            console.error(err);
-            abrirModalAviso("Erro", "Erro de comunicação com o servidor");
         }
     };
 
@@ -315,8 +310,15 @@ async function salvarInstrumento() {
     const tipo = getTipoRadioSelecionado();
 
     if (!nome || !tipo) {
-        abrirModalAviso("Aviso", "Preencha todos os campos");
-        return;
+        const modal = bootstrap.Modal.getInstance(
+            document.getElementById("modalInstrumento")
+        );
+        modal.hide();
+        await abrirModalAviso(
+            "Aviso",
+            "Preencha corretamente nome e tipo do instrumento"
+        ).then(() => modal.show());
+        return
     }
 
     const payload = {
@@ -355,8 +357,7 @@ async function salvarInstrumento() {
             document.getElementById("modalInstrumento"),
         ).hide();
 
-        await carregarInstrumentos();
-        dataStore = await appScriptApi.bootstrap();
+        reloadInstrumentos();
     } catch (err) {
         console.error(err);
         abrirModalAviso("Erro", "Erro ao salvar instrumento");
@@ -364,4 +365,9 @@ async function salvarInstrumento() {
         btn.disabled = false;
         btn.innerHTML = textoOriginal;
     }
+}
+
+async function reloadInstrumentos() {
+    carregarInstrumentos();
+    dataStore = await appScriptApi.bootstrap();
 }
