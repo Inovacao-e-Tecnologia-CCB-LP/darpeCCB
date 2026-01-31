@@ -73,9 +73,11 @@ async function showInscritos() {
 
             <div id="collapse-${index}" class="accordion-collapse collapse">
 
-            <p class="link-mapa copy-text" onclick="abrirMapa(${p.local_id})" title="Abrir no Google Maps">
-            <i class="bi bi-geo-alt-fill me-1"></i>
-            ${localObj?.endereco ?? "Endereço não informado"}
+            <p class="link-mapa copy-text" 
+            data-localid="${p.local_id}" 
+            title="Copiar endereço e abrir mapa">
+              <i class="bi bi-geo-alt-fill me-1"></i>
+              ${localObj?.endereco ?? "Endereço não informado"}
             </p>
 
             <div class="accordion-body bg-light">`;
@@ -96,12 +98,20 @@ async function showInscritos() {
                     <ul class="list-group list-group-flush">`;
 
         grupos[local][pid].forEach((i) => {
+          const auth = podeDeletar(i.id);
           html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>
                             ${i.nome}
                             <span class="text-muted">(${i.instrumento})</span>
                         </span>
+                        ${
+                          auth
+                            ? `<button class="btn btn-sm btn-outline-danger"
+                            onclick="excluirInscricao(${i.id}, this)">
+                            <i class="bi bi-trash"></i></button>`
+                            : ""
+                        }
                     </li>`;
         });
 

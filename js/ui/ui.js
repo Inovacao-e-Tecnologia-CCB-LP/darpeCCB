@@ -1,44 +1,39 @@
 function setTitle(text) {
-    document.getElementById("titulo").innerText = text;
+  document.getElementById("titulo").innerText = text;
 }
 
 async function showMenuInicial() {
-    mostrarBotaoAdmin()
-    setTitle("Carregando...");
-    conteudo.innerHTML = '<div class="spinner-border"></div>';
-    setTitle('DARPE');
-    conteudo.innerHTML = Ui.Home();
+  mostrarBotaoAdmin();
+  setTitle("Carregando...");
+  conteudo.innerHTML = '<div class="spinner-border"></div>';
+  setTitle("DARPE");
+  conteudo.innerHTML = Ui.Home();
 }
 
-const adminButton = document.getElementById('adminButton');
+const adminButton = document.getElementById("adminButton");
 
 function esconderBotaoAdmin() {
-    adminButton.style.display = 'none';
+  adminButton.style.display = "none";
 }
 
 function mostrarBotaoAdmin() {
-    adminButton.style.display = 'inline-block';
+  adminButton.style.display = "inline-block";
 }
 
 function copiarTexto(container = document) {
   container.querySelectorAll(".copy-text").forEach((el) => {
     el.addEventListener("click", () => {
       const text = el.cloneNode(true);
-
       text.querySelectorAll("i").forEach((i) => i.remove());
-
       const valor = text.textContent.trim();
-
       if (!valor) return;
 
       navigator.clipboard.writeText(valor).then(() => {
-        mostrarToast("Copiado", "Texto copiado com sucesso", "success", 3500);
+        const localId = el.getAttribute("data-localid");
+        abrirModalMapa(localId);
       });
-
     });
-
   });
-
 }
 
 function abrirMapa(localId) {
