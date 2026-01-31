@@ -1,3 +1,5 @@
+let mapaLocalId = null;
+
 async function abrirModalAviso(titulo, mensagem, closeEvent) {
   return new Promise((resolve) => {
     document.getElementById("modalAvisoTitulo").innerText = titulo;
@@ -41,6 +43,16 @@ function abrirModalConfirmacao(mensagem, textoBotao = "Confirmar") {
 
     modal.show();
   });
+}
+
+function abrirModalMapa(localId) {
+  const modalEl = document.getElementById("modalMapa");
+  const btnAbrir = modalEl.querySelector("#btnAbrirMapa");
+
+  btnAbrir.onclick = () => abrirMapa(localId);
+
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
 }
 
 function mostrarToast(titulo, mensagem, tipo = "success", tempo = 2000) {
