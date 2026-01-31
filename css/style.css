@@ -1,29 +1,33 @@
 body {
- 
-    background-color: #f1f1f1;
+  background-color: #f1f1f1;
 }
 
 #titulo {
-    font-weight: 300;
+  font-weight: 300;
 }
 
 .card .card-header {
-    background-color: #e9ecef;
+  background-color: #e9ecef;
 }
 
 .accordion-button.bg-dark::after {
-    filter: invert(1);
+  filter: invert(1);
 }
 
-
 .admin-card {
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
 }
 
 .admin-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 /* ===========================
@@ -63,11 +67,29 @@ body {
 
 @media (max-width: 1000px) {
   #modalAdmin .modal-dialog {
-    margin-top: 18vh; /* sobe o modal */
+    margin-top: 18vh;
+    /* sobe o modal */
     align-items: flex-start;
   }
 }
 
-.logo{
+.logo {
   width: 300px;
+}
+
+/* ===========================
+   MAPA
+=========================== */
+
+.link-mapa {
+  margin: 0.5rem 0 0.5rem 1rem;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 1rem;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
 }
