@@ -33,10 +33,7 @@ async function showInscritos() {
   abortController = new AbortController();
 
   try {
-    inscritos = await appScriptApi.action({
-      action: "view",
-      entity: "inscricoes",
-    });
+    inscritos = await listarInscricoes();
 
     initMaps();
 

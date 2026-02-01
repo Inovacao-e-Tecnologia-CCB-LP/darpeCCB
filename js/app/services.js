@@ -37,105 +37,61 @@ function removerAutorizacao(id) {
 
 /* ================= API CALLS ================= */
 
-async function salvar() {
-  const btn = document.getElementById("btnConfirmar");
-  const nome = document.getElementById("nome").value.trim();
-
-  if (!nome) {
-    abrirModalAviso("Aviso", "Informe o nome");
-    return;
-  }
-
-  const originalHTML = btn.innerHTML;
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-  const payload = {
-    local_id: escolha.local.id,
-    local_nome: escolha.local.nome,
-    programacao_id: escolha.programacao.id,
-    tipo_visita: escolha.programacao.tipo_visita,
-    instrumento: escolha.instrumento,
-    nome,
-  };
-
-  try {
-    const r = await appScriptApi.post(payload);
-
-    if (!r) {
-      throw new Error("Resposta vazia do servidor");
-    }
-
-    if (r.error) {
-      abrirModalAviso("Aviso", r.error);
-      return;
-    }
-
-    // Salvar autorização de delete
-    if (r.id && r.delete_token) {
-      salvarAutorizacao(r.id, r.delete_token);
-    }
-
-    abrirModalAviso("Sucesso", "Inscrição confirmada! Deus abençoe");
-    resetAndGoHome();
-  } catch (e) {
-    console.error("Erro ao salvar inscrição: ", e);
-    abrirModalAviso("Erro", "Ocorreu um erro ao salvar a inscrição.");
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = originalHTML;
-  }
+// INSCRICOES
+async function listarInscricoes() {
+  return await appScriptApi.action({
+    entity: "inscricoes",
+    action: "view",
+  });
 }
 
-async function excluirInscricao(id, btn) {
-  const auth = buscarAutorizacao(id);
+async function criarInscricaoService(payload) {
+  return await appScriptApi.post(payload);
+}
 
-  if (!auth) {
-    abrirModalAviso(
-      "Erro",
-      "❌ Você não tem permissão para excluir esta inscrição.",
-    );
-    return;
-  }
+async function excluirInscricaoService(id, token) {
+  return await appScriptApi.post({
+    entity: "inscricoes",
+    action: "delete",
+    id,
+    delete_token: token,
+  });
+}
 
-  const confirmou = await abrirModalConfirmacao(
-    "Deseja realmente excluir esta inscrição?",
-    "Excluir",
-  );
+// INSTRUMENTOS
+async function listarInstrumentosService() {
+  return await appScriptApi.action({
+    entity: "instrumentos",
+    action: "view",
+  });
+}
 
-  if (!confirmou) return;
+async function criarInstrumentoService(nome, tipo) {
+  return await appScriptApi.post({
+    entity: "instrumentos",
+    action: "create",
+    password: senhaDigitada,
+    nome,
+    tipo,
+  });
+}
 
-  const originalHTML = btn.innerHTML;
-  const originalClass = btn.className;
+async function atualizarInstrumentoService(id, nome, tipo) {
+  return await appScriptApi.post({
+    entity: "instrumentos",
+    action: "update",
+    id,
+    password: senhaDigitada,
+    nome,
+    tipo,
+  });
+}
 
-  btn.disabled = true;
-  btn.className = "btn btn-danger btn-sm";
-  btn.innerHTML = `
-    <span class="spinner-border spinner-border-sm text-light"></span>
-  `;
-
-  try {
-    const r = await appScriptApi.post({
-      entity: "inscricoes",
-      action: "delete",
-      id,
-      delete_token: auth.token,
-    });
-
-    if (!r || r.success !== true) {
-      console.error("Falha ao excluir inscrição:", r);
-      throw r;
-    }
-
-    removerAutorizacao(id);
-    abrirModalAviso("Sucesso", "Inscrição excluída com sucesso!");
-    showInscritos();
-  } catch (err) {
-    console.error("Erro real ao excluir inscrição: ", err);
-    abrirModalAviso("Erro", "Ocorreu um erro ao excluir a inscrição.");
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = originalHTML;
-  }
+async function excluirInstrumentoService(id) {
+  return await appScriptApi.post({
+    entity: "instrumentos",
+    action: "delete",
+    id,
+    password: senhaDigitada,
+  });
 }
