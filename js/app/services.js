@@ -1,24 +1,38 @@
 /* ================= LOCAL STORAGE DELETE CONTROL ================= */
 
 const LS_KEY = "inscricoes_autorizadas";
-const MAX_IDS = 2;
 
-function salvarAutorizacao(id, token) {
-  const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  const novaLista = lista.filter((item) => item.id !== id); // Remove qualquer item antigo com mesmo id (não há risco de segurança)
-  novaLista.push({ id, token }); // Adiciona o token atual
-  localStorage.setItem(LS_KEY, JSON.stringify(novaLista));
+function buscarAutorizacao(id) {
+  try {
+    const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    return lista.find((item) => item.id === id) || null;
+  } catch (e) {
+    console.error("Erro ao ler autorizações do localStorage:", e);
+    return null;
+  }
 }
 
-function podeDeletar(id) {
-  const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  return !!lista.find(item => item.id === id); // true somente se o usuário tiver o token
+function salvarAutorizacao(id, token) {
+  try {
+    const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    const novaLista = lista.filter((item) => item.id !== id);
+
+    novaLista.push({ id, token });
+
+    localStorage.setItem(LS_KEY, JSON.stringify(novaLista));
+  } catch (e) {
+    console.error("Erro ao salvar autorização:", e);
+  }
 }
 
 function removerAutorizacao(id) {
-  let lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  lista = lista.filter((item) => item.id !== id);
-  localStorage.setItem(LS_KEY, JSON.stringify(lista));
+  try {
+    let lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    lista = lista.filter((item) => item.id !== id);
+    localStorage.setItem(LS_KEY, JSON.stringify(lista));
+  } catch (e) {
+    console.error("Erro ao remover autorização:", e);
+  }
 }
 
 /* ================= API CALLS ================= */
@@ -31,6 +45,8 @@ async function salvar() {
     abrirModalAviso("Aviso", "Informe o nome");
     return;
   }
+
+  const originalHTML = btn.innerHTML;
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
@@ -47,29 +63,34 @@ async function salvar() {
   try {
     const r = await appScriptApi.post(payload);
 
+    if (!r) {
+      throw new Error("Resposta vazia do servidor");
+    }
+
     if (r.error) {
       abrirModalAviso("Aviso", r.error);
-      btn.disabled = false;
-      btn.innerHTML = "Confirmar";
       return;
     }
 
-    // salva autorização de delete
+    // Salvar autorização de delete
     if (r.id && r.delete_token) {
       salvarAutorizacao(r.id, r.delete_token);
     }
 
-    abrirModalAviso("Sucesso", "Inscrição confirmada! Deus Abençoe");
+    abrirModalAviso("Sucesso", "Inscrição confirmada! Deus abençoe");
     resetAndGoHome();
   } catch (e) {
-    abrirModalAviso("Erro", "❌ Erro ao salvar");
+    console.error("Erro ao salvar inscrição: ", e);
+    abrirModalAviso("Erro", "Ocorreu um erro ao salvar a inscrição.");
+  } finally {
     btn.disabled = false;
-    btn.innerHTML = "Confirmar";
+    btn.innerHTML = originalHTML;
   }
 }
 
 async function excluirInscricao(id, btn) {
-  const auth = podeDeletar(id);
+  const auth = buscarAutorizacao(id);
+
   if (!auth) {
     abrirModalAviso(
       "Erro",
@@ -85,18 +106,14 @@ async function excluirInscricao(id, btn) {
 
   if (!confirmou) return;
 
-  // guarda estado original do botão
   const originalHTML = btn.innerHTML;
   const originalClass = btn.className;
 
-  // ativa loading
   btn.disabled = true;
   btn.className = "btn btn-danger btn-sm";
   btn.innerHTML = `
-        <span class="spinner-border spinner-border-sm text-light"
-              role="status"
-              aria-hidden="true"></span>
-    `;
+    <span class="spinner-border spinner-border-sm text-light"></span>
+  `;
 
   try {
     const r = await appScriptApi.post({
@@ -106,17 +123,19 @@ async function excluirInscricao(id, btn) {
       delete_token: auth.token,
     });
 
-    if (!r.success) throw new Error();
+    if (!r || r.success !== true) {
+      console.error("Falha ao excluir inscrição:", r);
+      throw r;
+    }
 
     removerAutorizacao(id);
     abrirModalAviso("Sucesso", "Inscrição excluída com sucesso!");
     showInscritos();
   } catch (err) {
-    abrirModalAviso("Erro", " Não foi possível excluir a inscrição.");
-
-    // restaura botão se falhar
+    console.error("Erro real ao excluir inscrição: ", err);
+    abrirModalAviso("Erro", "Ocorreu um erro ao excluir a inscrição.");
+  } finally {
     btn.disabled = false;
-    btn.className = originalClass;
     btn.innerHTML = originalHTML;
   }
 }
