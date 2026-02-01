@@ -52,3 +52,14 @@ function abrirMapa(localId) {
 
   window.open(url, "_blank", "noopener");
 }
+
+function mostrarLoading(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  el.innerHTML = `
+    <div class="text-center my-4">
+      <div class="spinner-border text-dark"></div>
+    </div>
+  `;
+}
