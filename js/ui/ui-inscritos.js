@@ -98,7 +98,7 @@ async function showInscritos() {
                     <ul class="list-group list-group-flush">`;
 
         grupos[local][pid].forEach((i) => {
-          const auth = podeDeletar(i.id);
+          const auth = buscarAutorizacao(i.id);
           html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>
