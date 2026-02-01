@@ -4,20 +4,15 @@ const LS_KEY = "inscricoes_autorizadas";
 const MAX_IDS = 2;
 
 function salvarAutorizacao(id, token) {
-  let lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  lista = lista.filter((item) => item.id !== id);
-  lista.push({ id, token });
-
-  if (lista.length > MAX_IDS) {
-    lista = lista.slice(-MAX_IDS);
-  }
-
-  localStorage.setItem(LS_KEY, JSON.stringify(lista));
+  const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+  const novaLista = lista.filter((item) => item.id !== id); // Remove qualquer item antigo com mesmo id (não há risco de segurança)
+  novaLista.push({ id, token }); // Adiciona o token atual
+  localStorage.setItem(LS_KEY, JSON.stringify(novaLista));
 }
 
 function podeDeletar(id) {
   const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  return lista.find((item) => item.id === id);
+  return !!lista.find(item => item.id === id); // true somente se o usuário tiver o token
 }
 
 function removerAutorizacao(id) {
@@ -41,25 +36,30 @@ async function salvar() {
   btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
   const payload = {
-    local: escolha.local.nome,
+    local_id: escolha.local.id,
+    local_nome: escolha.local.nome,
     programacao_id: escolha.programacao.id,
     tipo_visita: escolha.programacao.tipo_visita,
     instrumento: escolha.instrumento,
     nome,
-    limite: escolha.local.limite,
   };
 
   try {
     const r = await appScriptApi.post(payload);
 
-    if (r.error) throw r.error;
+    if (r.error) {
+      abrirModalAviso("Aviso", r.error);
+      btn.disabled = false;
+      btn.innerHTML = "Confirmar";
+      return;
+    }
 
     // salva autorização de delete
     if (r.id && r.delete_token) {
       salvarAutorizacao(r.id, r.delete_token);
     }
 
-    abrirModalAviso("Sucesso", " Inscrição confirmada! Deus Abençoe");
+    abrirModalAviso("Sucesso", "Inscrição confirmada! Deus Abençoe");
     resetAndGoHome();
   } catch (e) {
     abrirModalAviso("Erro", "❌ Erro ao salvar");
@@ -73,14 +73,14 @@ async function excluirInscricao(id, btn) {
   if (!auth) {
     abrirModalAviso(
       "Erro",
-      "❌ Você não tem permissão para excluir esta inscrição."
+      "❌ Você não tem permissão para excluir esta inscrição.",
     );
     return;
   }
 
   const confirmou = await abrirModalConfirmacao(
     "Deseja realmente excluir esta inscrição?",
-    "Excluir"
+    "Excluir",
   );
 
   if (!confirmou) return;
