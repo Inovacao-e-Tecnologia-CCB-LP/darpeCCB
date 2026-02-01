@@ -152,18 +152,22 @@ function compartilhar(pid) {
 
   const dataFormatada = new Date(p.data).toLocaleDateString("pt-BR");
 
-  let mensagem = `🏠 *${localObj.nome}*\n\n`;
+  let mensagem = `*${localObj.nome}*\n\n`;
   mensagem += `📍 _${localObj.endereco}_\n`;
-  mensagem += `🎵 *${p.tipo_visita}*\n`;
-  mensagem += `📅 ${dataFormatada}\n`;
-  mensagem += `⏰ ${p.horario}\n\n`;
-  mensagem += `👥 Inscritos (${inscritosProg.length}/${localObj.limite}):\n`;
+  mensagem += `🎶 *${p.tipo_visita}*\n`;
+  mensagem += `📆 ${dataFormatada}\n`;
+  mensagem += `🕒 ${p.horario}\n\n`;
+  mensagem += `👥 *Inscritos* (${inscritosProg.length}/${localObj.limite}):\n`;
 
   inscritosProg.forEach((i) => {
-    mensagem += `- ${i.nome} _(${i.instrumento})_\n`;
+    mensagem += `• ${i.nome} _(${i.instrumento})_\n`;
   });
 
   mensagem = encodeURIComponent(mensagem);
 
-  window.location.href = `https://api.whatsapp.com/send?text=${mensagem}`;
+  window.open(
+    `https://api.whatsapp.com/send?text=${mensagem}`,
+    "_blank",
+    "noopener,noreferrer",
+  );
 }
