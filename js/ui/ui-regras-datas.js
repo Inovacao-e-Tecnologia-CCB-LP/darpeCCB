@@ -187,6 +187,8 @@ async function editarRegra(id, btn) {
             salvou = true;
         };
 
+        await appScriptApi.bootstrap();
+
         modal.show();
 
     } catch (err) {
@@ -262,6 +264,8 @@ async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null)
             btnEdit.innerHTML = txtEdit;
         }
 
+        await appScriptApi.bootstrap();
+
     } catch (err) {
         console.error(err);
         abrirModalAviso("Erro", "Erro ao salvar regra");
@@ -304,6 +308,7 @@ async function excluirRegra(id, btnTrash) {
 
             bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
             await carregarRegrasDatas();
+            await appScriptApi.bootstrap();
 
         } catch (err) {
             console.error(err);
