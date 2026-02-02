@@ -1,122 +1,137 @@
-/* ================= LOCAL STORAGE DELETE CONTROL ================= */
+/* ================= 
+LOCAL STORAGE DELETE CONTROL 
+================= */
 
 const LS_KEY = "inscricoes_autorizadas";
-const MAX_IDS = 2;
 
-function salvarAutorizacao(id, token) {
-  let lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  lista = lista.filter((item) => item.id !== id);
-  lista.push({ id, token });
-
-  if (lista.length > MAX_IDS) {
-    lista = lista.slice(-MAX_IDS);
+function buscarAutorizacao(id) {
+  try {
+    const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    return lista.find((item) => item.id === id) || null;
+  } catch (e) {
+    console.error("Erro ao ler autorizações do localStorage:", e);
+    return null;
   }
-
-  localStorage.setItem(LS_KEY, JSON.stringify(lista));
 }
 
-function podeDeletar(id) {
-  const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  return lista.find((item) => item.id === id);
+function salvarAutorizacao(id, token) {
+  try {
+    const lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    const novaLista = lista.filter((item) => item.id !== id);
+
+    novaLista.push({ id, token });
+
+    localStorage.setItem(LS_KEY, JSON.stringify(novaLista));
+  } catch (e) {
+    console.error("Erro ao salvar autorização:", e);
+  }
 }
 
 function removerAutorizacao(id) {
-  let lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  lista = lista.filter((item) => item.id !== id);
-  localStorage.setItem(LS_KEY, JSON.stringify(lista));
-}
-
-/* ================= API CALLS ================= */
-
-async function salvar() {
-  const btn = document.getElementById("btnConfirmar");
-  const nome = document.getElementById("nome").value.trim();
-
-  if (!nome) {
-    abrirModalAviso("Aviso", "Informe o nome");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-  const payload = {
-    local: escolha.local.nome,
-    programacao_id: escolha.programacao.id,
-    tipo_visita: escolha.programacao.tipo_visita,
-    instrumento: escolha.instrumento,
-    nome,
-    limite: escolha.local.limite,
-  };
-
   try {
-    const r = await appScriptApi.post(payload);
-
-    if (r.error) throw r.error;
-
-    // salva autorização de delete
-    if (r.id && r.delete_token) {
-      salvarAutorizacao(r.id, r.delete_token);
-    }
-
-    abrirModalAviso("Sucesso", " Inscrição confirmada! Deus Abençoe");
-    resetAndGoHome();
+    let lista = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+    lista = lista.filter((item) => item.id !== id);
+    localStorage.setItem(LS_KEY, JSON.stringify(lista));
   } catch (e) {
-    abrirModalAviso("Erro", "❌ Erro ao salvar");
-    btn.disabled = false;
-    btn.innerHTML = "Confirmar";
+    console.error("Erro ao remover autorização:", e);
   }
 }
 
-async function excluirInscricao(id, btn) {
-  const auth = podeDeletar(id);
-  if (!auth) {
-    abrirModalAviso(
-      "Erro",
-      "❌ Você não tem permissão para excluir esta inscrição."
-    );
-    return;
-  }
+/* ================= 
+      API CALLS 
+================= */
 
-  const confirmou = await abrirModalConfirmacao(
-    "Deseja realmente excluir esta inscrição?",
-    "Excluir"
-  );
+/* ================= INSCRIÇÕES ================= */
+async function listarInscricoes() {
+  return await appScriptApi.action({
+    entity: "inscricoes",
+    action: "view",
+  });
+}
 
-  if (!confirmou) return;
+async function criarInscricaoService(payload) {
+  return await appScriptApi.post(payload);
+}
 
-  // guarda estado original do botão
-  const originalHTML = btn.innerHTML;
-  const originalClass = btn.className;
+async function excluirInscricaoService(id, token) {
+  return await appScriptApi.post({
+    entity: "inscricoes",
+    action: "delete",
+    id,
+    delete_token: token,
+  });
+}
 
-  // ativa loading
-  btn.disabled = true;
-  btn.className = "btn btn-danger btn-sm";
-  btn.innerHTML = `
-        <span class="spinner-border spinner-border-sm text-light"
-              role="status"
-              aria-hidden="true"></span>
-    `;
+/* ================= INSTRUMENTOS ================= */
+async function listarInstrumentosService() {
+  return await appScriptApi.action({
+    entity: "instrumentos",
+    action: "view",
+  });
+}
 
-  try {
-    const r = await appScriptApi.post({
-      entity: "inscricoes",
-      action: "delete",
-      id,
-      delete_token: auth.token,
-    });
+async function criarInstrumentoService(nome, tipo) {
+  return await appScriptApi.post({
+    entity: "instrumentos",
+    action: "create",
+    password: senhaDigitada,
+    nome,
+    tipo,
+  });
+}
 
-    if (!r.success) throw new Error();
+async function atualizarInstrumentoService(id, nome, tipo) {
+  return await appScriptApi.post({
+    entity: "instrumentos",
+    action: "update",
+    id,
+    password: senhaDigitada,
+    nome,
+    tipo,
+  });
+}
 
-    removerAutorizacao(id);
-    abrirModalAviso("Sucesso", "Inscrição excluída com sucesso!");
-    showInscritos();
-  } catch (err) {
-    abrirModalAviso("Erro", " Não foi possível excluir a inscrição.");
+async function excluirInstrumentoService(id) {
+  return await appScriptApi.post({
+    entity: "instrumentos",
+    action: "delete",
+    id,
+    password: senhaDigitada,
+  });
+}
 
-    // restaura botão se falhar
-    btn.disabled = false;
-    btn.className = originalClass;
-    btn.innerHTML = originalHTML;
-  }
+/* ================= LOCAIS ================= */
+async function listarLocaisService() {
+  return await appScriptApi.action({
+    entity: "locais",
+    action: "view",
+  });
+}
+
+async function criarLocalService(payload) {
+  return await appScriptApi.post({
+    ...payload,
+    entity: "locais",
+    action: "create",
+    password: senhaDigitada,
+  });
+}
+
+async function atualizarLocalService(id, payload) {
+  return await appScriptApi.post({
+    ...payload,
+    entity: "locais",
+    action: "update",
+    id,
+    password: senhaDigitada,
+  });
+}
+
+async function excluirLocalService(id) {
+  return await appScriptApi.post({
+    entity: "locais",
+    action: "delete",
+    id,
+    password: senhaDigitada,
+  });
 }

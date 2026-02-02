@@ -59,7 +59,7 @@ async function carregarRegrasDatas() {
           <td>${nomeLocal}</td>
           <td>${r.tipo_visita}</td>
           <td>${descricaoQuando}</td>
-          <td class="text-center">${r.horario}</td>
+          <td class="text-center">${formatarHorario(r.horario)}</td>
           <td class="text-center">
             ${r.ativo
                     ? '<span class="badge bg-success">Ativo</span>'
@@ -128,7 +128,7 @@ function abrirModalNovaRegra() {
         selectLocal.appendChild(opt);
     });
 
-    document.getElementById("btnSalvarRegra").onclick = salvarRegra;
+    document.getElementById("btnSalvarRegra").onclick = () => salvarRegra();
     new bootstrap.Modal(document.getElementById("modalRegra")).show();
 }
 
@@ -155,7 +155,7 @@ async function editarRegra(id, btn) {
         document.getElementById("regraTipo").value = regra.tipo_visita;
         document.getElementById("regraDiaSemana").value = regra.dia_semana;
         document.getElementById("regraOrdinal").value = regra.ordinal;
-        document.getElementById("regraHorario").value = regra.horario;
+        document.getElementById("regraHorario").value = formatarHorario(regra.horario);
         document.getElementById("regraAtivo").checked = regra.ativo;
 
         // Populate Locais
@@ -198,6 +198,10 @@ async function editarRegra(id, btn) {
 }
 
 async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null) {
+    if (modalInstance && typeof modalInstance.hide !== 'function') {
+        modalInstance = null;
+    }
+
     const id = document.getElementById("regraId").value;
     const localId = document.getElementById("regraLocal").value;
     const tipo = document.getElementById("regraTipo").value.trim();
@@ -218,7 +222,7 @@ async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null)
         tipo_visita: tipo,
         dia_semana: Number(dia),
         ordinal: Number(ordinal),
-        horario: horario,
+        horario: String(horario),
         ativo: ativo
     };
 
