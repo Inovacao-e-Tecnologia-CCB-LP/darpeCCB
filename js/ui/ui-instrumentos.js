@@ -1,27 +1,57 @@
+/* =========================
+   UI • INSTRUMENTOS
+========================= */
+
 function abrirCrudInstrumentos() {
   setTitle("Admin • Instrumentos");
   navigateTo(renderCrudInstrumentos);
 }
 
-function abrirModalNovoInstrumento() {
-  document.getElementById("modalInstrumentoTitulo").innerText =
-    "Novo Instrumento";
+/* =========================
+   LISTAGEM
+========================= */
 
-  document.getElementById("instrumentoId").value = "";
-  document.getElementById("instrumentoNome").value = "";
+async function carregarInstrumentos() {
+  const lista = document.getElementById("listaInstrumentos");
 
-  document
-    .querySelectorAll('input[name="instrumentoTipo"]')
-    .forEach((r) => (r.checked = false));
+  try {
+    let instrumentos = await listarInstrumentosService();
 
-  document.getElementById("btnSalvarInstrumento").onclick = salvarInstrumento;
+    if (instrumentos?.error) {
+      throw new Error(instrumentos.error);
+    }
 
-  new bootstrap.Modal(document.getElementById("modalInstrumento")).show();
-}
+    instrumentos = instrumentos || [];
 
-async function reloadInstrumentos() {
-  carregarInstrumentos();
-  dataStore = await appScriptApi.bootstrap();
+    if (!instrumentos.length) {
+      lista.innerHTML = `
+        <div class="alert alert-secondary text-center">
+          Nenhum instrumento cadastrado
+        </div>
+      `;
+      return;
+    }
+
+    // 🔥 ORDENAÇÃO:
+    // 1️⃣ Corda primeiro
+    // 2️⃣ Sopro depois
+    // 3️⃣ Ordem alfabética
+    instrumentos.sort((a, b) => {
+      if (a.tipo !== b.tipo) {
+        return a.tipo === "corda" ? -1 : 1;
+      }
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
+
+    renderTabelaInstrumentos(instrumentos);
+  } catch (err) {
+    console.error(err);
+    lista.innerHTML = `
+      <div class="alert alert-danger text-center">
+        Erro ao carregar instrumentos
+      </div>
+    `;
+  }
 }
 
 function renderTabelaInstrumentos(instrumentos) {
@@ -85,48 +115,38 @@ async function renderCrudInstrumentos() {
   carregarInstrumentos();
 }
 
-async function carregarInstrumentos() {
-  const lista = document.getElementById("listaInstrumentos");
+/* =========================
+   HELPERS
+========================= */
 
-  try {
-    let instrumentos = await listarInstrumentosService();
-
-    if (instrumentos?.error) {
-      throw new Error(instrumentos.error);
-    }
-
-    instrumentos = instrumentos || [];
-
-    if (!instrumentos.length) {
-      lista.innerHTML = `
-        <div class="alert alert-secondary text-center">
-          Nenhum instrumento cadastrado
-        </div>
-      `;
-      return;
-    }
-
-    // 🔥 ORDENAÇÃO:
-    // 1️⃣ Corda primeiro
-    // 2️⃣ Sopro depois
-    // 3️⃣ Ordem alfabética
-    instrumentos.sort((a, b) => {
-      if (a.tipo !== b.tipo) {
-        return a.tipo === "corda" ? -1 : 1;
-      }
-      return a.nome.localeCompare(b.nome, "pt-BR");
-    });
-
-    renderTabelaInstrumentos(instrumentos);
-  } catch (err) {
-    console.error(err);
-    lista.innerHTML = `
-      <div class="alert alert-danger text-center">
-        Erro ao carregar instrumentos
-      </div>
-    `;
-  }
+async function reloadInstrumentos() {
+  carregarInstrumentos();
+  dataStore = await appScriptApi.bootstrap();
 }
+
+/* =========================
+   MODAL • NOVO / EDITAR
+========================= */
+
+function abrirModalNovoInstrumento() {
+  document.getElementById("modalInstrumentoTitulo").innerText =
+    "Novo Instrumento";
+
+  document.getElementById("instrumentoId").value = "";
+  document.getElementById("instrumentoNome").value = "";
+
+  document
+    .querySelectorAll('input[name="instrumentoTipo"]')
+    .forEach((r) => (r.checked = false));
+
+  document.getElementById("btnSalvarInstrumento").onclick = salvarInstrumento;
+
+  new bootstrap.Modal(document.getElementById("modalInstrumento")).show();
+}
+
+/* =========================
+   SALVAR
+========================= */
 
 async function salvarInstrumento() {
   const id = document.getElementById("instrumentoId").value;
@@ -172,6 +192,7 @@ async function salvarInstrumento() {
     ).hide();
 
     mostrarLoading("listaInstrumentos");
+
     await reloadInstrumentos();
 
     abrirModalAviso("Sucesso", "Instrumento salvo com sucesso!");
@@ -183,6 +204,10 @@ async function salvarInstrumento() {
     btn.innerHTML = textoOriginal;
   }
 }
+
+/* =========================
+   EDITAR
+========================= */
 
 async function editarInstrumento(id, btn) {
   const textoOriginal = btn.innerHTML;
@@ -259,8 +284,11 @@ async function editarInstrumento(id, btn) {
         }
 
         modal.hide();
+
         mostrarLoading("listaInstrumentos");
+
         await reloadInstrumentos();
+
         abrirModalAviso("Sucesso", "Instrumento editado com sucesso!");
 
         btn.disabled = false;
@@ -282,6 +310,10 @@ async function editarInstrumento(id, btn) {
     btn.innerHTML = textoOriginal;
   }
 }
+
+/* =========================
+   EXCLUIR
+========================= */
 
 function excluirInstrumento(id, btnTrash) {
   let sucesso = false;
@@ -317,8 +349,11 @@ function excluirInstrumento(id, btnTrash) {
       }
 
       sucesso = true;
+
       mostrarLoading("listaInstrumentos");
+
       await reloadInstrumentos();
+
       abrirModalAviso("Sucesso", "Instrumento excluído com sucesso!");
     } catch (err) {
       console.error(err);

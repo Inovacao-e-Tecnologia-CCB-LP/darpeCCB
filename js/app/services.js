@@ -1,4 +1,6 @@
-/* ================= LOCAL STORAGE DELETE CONTROL ================= */
+/* ================= 
+LOCAL STORAGE DELETE CONTROL 
+================= */
 
 const LS_KEY = "inscricoes_autorizadas";
 
@@ -35,9 +37,11 @@ function removerAutorizacao(id) {
   }
 }
 
-/* ================= API CALLS ================= */
+/* ================= 
+      API CALLS 
+================= */
 
-// INSCRICOES
+/* ================= INSCRIÇÕES ================= */
 async function listarInscricoes() {
   return await appScriptApi.action({
     entity: "inscricoes",
@@ -58,7 +62,7 @@ async function excluirInscricaoService(id, token) {
   });
 }
 
-// INSTRUMENTOS
+/* ================= INSTRUMENTOS ================= */
 async function listarInstrumentosService() {
   return await appScriptApi.action({
     entity: "instrumentos",
@@ -90,6 +94,42 @@ async function atualizarInstrumentoService(id, nome, tipo) {
 async function excluirInstrumentoService(id) {
   return await appScriptApi.post({
     entity: "instrumentos",
+    action: "delete",
+    id,
+    password: senhaDigitada,
+  });
+}
+
+/* ================= LOCAIS ================= */
+async function listarLocaisService() {
+  return await appScriptApi.action({
+    entity: "locais",
+    action: "view",
+  });
+}
+
+async function criarLocalService(payload) {
+  return await appScriptApi.post({
+    ...payload,
+    entity: "locais",
+    action: "create",
+    password: senhaDigitada,
+  });
+}
+
+async function atualizarLocalService(id, payload) {
+  return await appScriptApi.post({
+    ...payload,
+    entity: "locais",
+    action: "update",
+    id,
+    password: senhaDigitada,
+  });
+}
+
+async function excluirLocalService(id) {
+  return await appScriptApi.post({
+    entity: "locais",
     action: "delete",
     id,
     password: senhaDigitada,

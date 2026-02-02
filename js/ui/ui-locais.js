@@ -1,24 +1,30 @@
+/* =========================
+   UI • LOCAIS
+========================= */
+
 async function abrirCrudLocais() {
   setTitle("Admin • Locais");
   conteudo.innerHTML = Ui.PainelLocais();
   carregarLocais();
 }
 
+/* =========================
+   LISTAGEM
+========================= */
+
 async function carregarLocais() {
   const lista = document.getElementById("listaLocais");
 
   try {
-    lista.innerHTML = `
-      <div class="text-center my-4">
-        <div class="spinner-border text-dark"></div>
-      </div>
-    `;
+    mostrarLoading("listaLocais");
 
-    const data = await appScriptApi.action({ action: 'view', entity: 'locais' });
+    let locais = await listarLocaisService();
 
-    const locais = data || [];
+    if (locais?.error) {
+      throw new Error(locais.error);
+    }
 
-    console.log(locais)
+    locais = locais || [];
 
     if (!locais.length) {
       lista.innerHTML = `
@@ -29,64 +35,11 @@ async function carregarLocais() {
       return;
     }
 
-    let html = `
-      <div class="table-responsive rounded shadow-sm overflow-hidden">
-        <table class="table table-bordered align-middle mb-0">
-          <thead class="table-dark">
-            <tr>
-              <th>Nome</th>
-              <th class="text-center">Cordas</th>
-              <th class="text-center">Sopros</th>
-              <th class="text-center">Limite</th>
-              <th class="text-center" width="120">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    locais.forEach((l) => {
-      html += `
-        <tr>
-          <td>${l.nome}</td>
-
-          <td class="text-center">
-            ${l.permite_cordas
-          ? '<i class="bi bi-check-circle-fill text-success"></i>'
-          : '<i class="bi bi-x-circle-fill text-danger"></i>'
-        }
-          </td>
-
-          <td class="text-center">
-            ${l.permite_sopros
-          ? '<i class="bi bi-check-circle-fill text-success"></i>'
-          : '<i class="bi bi-x-circle-fill text-danger"></i>'
-        }
-          </td>
-
-          <td class="text-center">${l.limite}</td>
-
-          <td class="text-center">
-            <button class="btn btn-sm btn-outline-dark me-1"
-              onclick="editarLocal(${l.id}, this)">
-              <i class="bi bi-pencil"></i>
-            </button>
-
-            <button class="btn btn-sm btn-outline-danger"
-              onclick="excluirLocal(${l.id}, this)">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += `
-          </tbody>
-        </table>
-      </div>
-    `;
-
-    lista.innerHTML = html;
+    if (isMobile()) {
+      renderCardsLocais(locais);
+    } else {
+      renderTabelaLocais(locais);
+    }
   } catch (err) {
     console.error(err);
     lista.innerHTML = `
@@ -97,339 +50,234 @@ async function carregarLocais() {
   }
 }
 
+function renderTabelaLocais(locais) {
+  let html = `
+    <div class="table-responsive rounded shadow-sm overflow-hidden">
+      <table class="table table-bordered align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Nome</th>
+            <th class="text-center">Endereço</th>
+            <th class="text-center">Cordas</th>
+            <th class="text-center">Sopros</th>
+            <th class="text-center">Limite</th>
+            <th class="text-center" width="120">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
 
-function montarEndereco() {
-  const rua = document.getElementById("localRua").value.trim();
-  const numero = document.getElementById("localNumero").value.trim();
-  const bairro = document.getElementById("localBairro").value.trim();
+  locais.forEach((l) => {
+    html += `
+  <tr>
+    <td>${l.nome}</td>
 
-  if (!rua || !numero || !bairro) return "";
+    <td>
+      <span
+        class="d-inline-block text-truncate"
+        style="max-width: 280px"
+        title="${l.endereco || ""}"
+      >
+        ${l.endereco || "-"}
+      </span>
+    </td>
 
-  return `R. ${rua}, ${numero}, ${bairro}`;
-}
+    <td class="text-center">
+      ${
+        l.permite_cordas
+          ? '<i class="bi bi-check-circle-fill text-success"></i>'
+          : '<i class="bi bi-x-circle-fill text-danger"></i>'
+      }
+    </td>
 
+    <td class="text-center">
+      ${
+        l.permite_sopros
+          ? '<i class="bi bi-check-circle-fill text-success"></i>'
+          : '<i class="bi bi-x-circle-fill text-danger"></i>'
+      }
+    </td>
 
+    <td class="text-center">${l.limite}</td>
 
-function abrirModalNovoLocal() {
-  document.getElementById("modalLocalTitulo").innerText = "Novo Local";
-
-  document.getElementById("localId").value = "";
-  document.getElementById("localNome").value = "";
-
-  document.getElementById("localRua").value = "";
-  document.getElementById("localNumero").value = "";
-  document.getElementById("localBairro").value = "";
-
-  document
-    .querySelectorAll('input[name="permiteCordas"]')
-    .forEach((r) => (r.checked = false));
-  document
-    .querySelectorAll('input[name="permiteSopros"]')
-    .forEach((r) => (r.checked = false));
-
-  document.getElementById("localLimite").value = 0;
-
-  document.getElementById("btnSalvarLocal").onclick = salvarLocal;
-
-  new bootstrap.Modal(document.getElementById("modalLocal")).show();
-}
-
-
-async function criarLocal(nome, tipo, permite_cordas, permite_sopros, limite) {
-  const rua = document.getElementById("localRua").value.trim();
-  const numero = document.getElementById("localNumero").value.trim();
-  const bairro = document.getElementById("localBairro").value.trim();
-
-  if (!nome || !limite || !rua || !numero || !bairro) {
-    abrirModalAviso("Aviso", "Preencha todos os campos corretamente");
-    return;
-  }
-
-  const endereco = `R. ${rua}, ${numero}, ${bairro}`;
-
-  const res = await appScriptApi.post({
-    entity: "locais",
-    action: "create",
-    password: senhaDigitada,
-    nome,
-    tipo,
-    permite_cordas,
-    permite_sopros,
-    limite,
-    endereco
+    <td class="text-center">
+      <button class="btn btn-sm btn-outline-dark me-1"
+        onclick="editarLocal(${l.id}, this)">
+        <i class="bi bi-pencil"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger"
+        onclick="excluirLocal(${l.id}, this)">
+        <i class="bi bi-trash"></i>
+      </button>
+    </td>
+  </tr>
+`;
   });
 
-  if (res?.error) {
-    abrirModalAviso("Erro", res.error);
-    return;
-  }
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
 
-  reloadLocais();
+  document.getElementById("listaLocais").innerHTML = html;
 }
 
+function renderCardsLocais(locais) {
+  let html = `<div class="d-grid gap-3">`;
 
-async function editarLocal(id, btn) {
-  const textoOriginal = btn.innerHTML;
-  let salvou = false;
+  locais.forEach((l) => {
+    html += `
+      <div class="card shadow-sm">
+        <div class="modal-header bg-dark text-white rounded-top p-2">
+          <h5 class="card-title mt-0 mb-0">${l.nome}</h5>
+        </div>
+        <div class="card-body">
 
-  try {
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+          <p class="mb-2 text-muted">
+            <i class="bi bi-geo-alt"></i>
+            ${l.endereco || "-"}
+          </p>
 
-    const data = await appScriptApi.action({
-      entity: "locais",
-      action: "view"
-    });
+          <div class="d-flex justify-content-between mb-2">
+            <span>
+              Cordas:
+              ${
+                l.permite_cordas
+                  ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                  : '<i class="bi bi-x-circle-fill text-danger"></i>'
+              }
+            </span>
 
-    const local = (data || []).find(i => Number(i.id) === Number(id));
+            <span>
+              Sopros:
+              ${
+                l.permite_sopros
+                  ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                  : '<i class="bi bi-x-circle-fill text-danger"></i>'
+              }
+            </span>
+          </div>
 
-    if (!local) {
-      abrirModalAviso("Erro", "Local não encontrado");
-      btn.disabled = false;
-      btn.innerHTML = textoOriginal;
-      return;
-    }
+          <p class="mb-3">
+            <strong>Limite:</strong> ${l.limite}
+          </p>
 
-    document.getElementById("modalLocalTitulo").innerText = "Editar Local";
-    document.getElementById("localId").value = local.id;
-    document.getElementById("localNome").value = local.nome;
-    document.getElementById("localLimite").value = local.limite;
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-dark w-50"
+              onclick="editarLocal(${l.id}, this)">
+              <i class="bi bi-pencil"></i> Editar
+            </button>
 
-    const radioCordas = document.querySelector(
-      `input[name="permiteCordas"][value="${local.permite_cordas}"]`
-    );
-    if (radioCordas) radioCordas.checked = true;
+            <button class="btn btn-sm btn-outline-danger w-50"
+              onclick="excluirLocal(${l.id}, this)">
+              <i class="bi bi-trash"></i> Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
 
-    const radioSopros = document.querySelector(
-      `input[name="permiteSopros"][value="${local.permite_sopros}"]`
-    );
-    if (radioSopros) radioSopros.checked = true;
+  html += `</div>`;
 
-    // 👉 PREENCHE ENDEREÇO
-    if (local.endereco) {
-      const partes = local.endereco.replace("R. ", "").split(",");
-
-      document.getElementById("localRua").value = partes[0]?.trim() || "";
-      document.getElementById("localNumero").value = partes[1]?.trim() || "";
-      document.getElementById("localBairro").value = partes[2]?.trim() || "";
-    }
-
-    const modalEl = document.getElementById("modalLocal");
-    const modal = new bootstrap.Modal(modalEl);
-
-    modalEl.addEventListener(
-      "hidden.bs.modal",
-      () => {
-        if (!salvou) {
-          btn.disabled = false;
-          btn.innerHTML = textoOriginal;
-        }
-      },
-      { once: true }
-    );
-
-    const btnSalvar = document.getElementById("btnSalvarLocal");
-    btnSalvar.onclick = null;
-
-    btnSalvar.onclick = async () => {
-      const nome = document.getElementById("localNome").value.trim();
-      const limite = document.getElementById("localLimite").value;
-      const permiteCordas = document.querySelector('input[name="permiteCordas"]:checked')?.value;
-      const permiteSopros = document.querySelector('input[name="permiteSopros"]:checked')?.value;
-
-      const rua = document.getElementById("localRua").value.trim();
-      const numero = document.getElementById("localNumero").value.trim();
-      const bairro = document.getElementById("localBairro").value.trim();
-
-      if (!nome || !limite || !rua || !numero || !bairro || permiteCordas === undefined || permiteSopros === undefined) {
-        const modalLocal = bootstrap.Modal.getInstance(
-          document.getElementById("modalLocal")
-        );
-        modalLocal.hide();
-        await abrirModalAviso(
-          "Aviso",
-          "Preencha corretamente todos os campos"
-        ).then(() => modalLocal.show());
-        return
-      }
-
-      const endereco = `R. ${rua}, ${numero}, ${bairro}`;
-      const textoSalvar = btnSalvar.innerHTML;
-
-      try {
-        salvou = true;
-
-        btnSalvar.disabled = true;
-        btnSalvar.innerHTML = `
-          <span class="spinner-border spinner-border-sm me-2"></span>
-          Salvando
-        `;
-
-        await appScriptApi.post({
-          entity: "locais",
-          action: "update",
-          id,
-          password: senhaDigitada,
-          nome,
-          permite_cordas: permiteCordas,
-          permite_sopros: permiteSopros,
-          limite,
-          endereco
-        });
-
-        modal.hide();
-
-        reloadLocais();
-
-        btn.disabled = false;
-        btn.innerHTML = textoOriginal;
-
-      } catch (err) {
-        console.error(err);
-        abrirModalAviso("Erro", "Erro ao editar local");
-      } finally {
-        btnSalvar.disabled = false;
-        btnSalvar.innerHTML = textoSalvar;
-      }
-    };
-
-    modal.show();
-
-  } catch (err) {
-    console.error(err);
-    abrirModalAviso("Erro", "Erro ao carregar local");
-    btn.disabled = false;
-    btn.innerHTML = textoOriginal;
-  }
+  document.getElementById("listaLocais").innerHTML = html;
 }
 
+/* =========================
+   HELPERS
+========================= */
 
-
-
-
-
-async function excluirLocal(id, btnTrash) {
-
-  const textoOriginal = btnTrash.innerHTML;
-
-  // 🟡 modal de confirmação
-  document.getElementById("confirmTitle").innerText = "Excluir Local";
-  document.getElementById("confirmMessage").innerText =
-    "Deseja realmente excluir este local?";
-
-  const btnOk = document.getElementById("confirmOk");
-  btnOk.onclick = null;
-
-  btnOk.onclick = async () => {
-    const textoOk = btnOk.innerHTML;
-
-    try {
-      // 🔄 spinner no OK
-      btnOk.disabled = true;
-      btnOk.innerHTML = `
-        <span class="spinner-border spinner-border-sm me-2"></span>
-        Excluindo
-      `;
-
-      // 🔄 spinner no 🗑
-      btnTrash.disabled = true;
-      btnTrash.innerHTML = `
-        <span class="spinner-border spinner-border-sm"></span>
-      `;
-
-      const data = await appScriptApi.post({
-        entity: "locais",
-        action: "delete",
-        id,
-        password: senhaDigitada
-      });
-
-      // 🚫 BLOQUEADO PELO BACK
-      if (data?.error) {
-        throw new Error(data.error)
-      }
-
-      reloadLocais();
-    } catch (err) {
-      console.error(err);
-      abrirModalAviso("Não foi possível excluir", err.message);
-    } finally {
-      bootstrap.Modal.getInstance(
-        document.getElementById("confirmModal")
-      ).hide();
-
-      btnOk.disabled = false;
-      btnOk.innerHTML = textoOk;
-
-      btnTrash.disabled = false;
-      btnTrash.innerHTML = textoOriginal;
-    }
-  };
-
-  new bootstrap.Modal(
-    document.getElementById("confirmModal")
-  ).show();
-}
-
-
-
-
-async function salvarLocal() {
+function montarPayloadLocal() {
   const id = document.getElementById("localId").value;
-
   const nome = document.getElementById("localNome").value.trim();
   const limite = document.getElementById("localLimite").value;
+  const endereco = document.getElementById("localEndereco").value.trim();
 
   const permiteCordas = document.querySelector(
-    'input[name="permiteCordas"]:checked'
+    'input[name="permiteCordas"]:checked',
   )?.value;
 
   const permiteSopros = document.querySelector(
-    'input[name="permiteSopros"]:checked'
+    'input[name="permiteSopros"]:checked',
   )?.value;
-
-  const rua = document.getElementById("localRua").value.trim();
-  const numero = document.getElementById("localNumero").value.trim();
-  const bairro = document.getElementById("localBairro").value.trim();
 
   if (
     !nome ||
     !limite ||
-    !rua ||
-    !numero ||
-    !bairro ||
+    !endereco ||
     permiteCordas === undefined ||
     permiteSopros === undefined
   ) {
-    const modalLocal = bootstrap.Modal.getInstance(
-      document.getElementById("modalLocal")
-    );
-    modalLocal.hide();
-    await abrirModalAviso(
-      "Aviso",
-      "Preencha corretamente todos os campos"
-    ).then(() => modalLocal.show());
-    return
+    abrirModalAviso("Aviso", "Preencha corretamente todos os campos");
+    return null;
   }
 
-  const endereco = `R. ${rua}, ${numero}, ${bairro}`;
-
-  const payload = {
-    entity: "locais",
-    password: senhaDigitada,
+  return {
+    id: id ? Number(id) : null,
     nome,
+    limite,
+    endereco,
     permite_cordas: permiteCordas,
     permite_sopros: permiteSopros,
-    limite,
-    endereco
   };
+}
 
-  if (id) {
-    payload.action = "update";
-    payload.id = Number(id);
-  } else {
-    payload.action = "create";
-  }
+function preencherFormularioLocal(local) {
+  document.getElementById("localId").value = local.id;
+  document.getElementById("localNome").value = local.nome;
+  document.getElementById("localLimite").value = local.limite;
+  document.getElementById("localEndereco").value = local.endereco || "";
+
+  document.querySelector(
+    `input[name="permiteCordas"][value="${local.permite_cordas}"]`,
+  ).checked = true;
+
+  document.querySelector(
+    `input[name="permiteSopros"][value="${local.permite_sopros}"]`,
+  ).checked = true;
+}
+
+async function reloadLocais() {
+  mostrarLoading("listaLocais");
+  await carregarLocais();
+}
+
+function isMobile() {
+  return window.innerWidth < 768;
+}
+
+/* =========================
+   MODAL • NOVO / EDITAR
+========================= */
+
+function abrirModalNovoLocal() {
+  document.getElementById("modalLocalTitulo").innerText = "Novo Local";
+  limparFormularioLocal();
+  document.getElementById("btnSalvarLocal").onclick = salvarLocal;
+  new bootstrap.Modal(document.getElementById("modalLocal")).show();
+}
+
+function limparFormularioLocal() {
+  document.getElementById("localId").value = "";
+  document.getElementById("localNome").value = "";
+  document.getElementById("localLimite").value = "";
+  document.getElementById("localEndereco").value = "";
+
+  document
+    .querySelectorAll(
+      'input[name="permiteCordas"], input[name="permiteSopros"]',
+    )
+    .forEach((r) => (r.checked = false));
+}
+
+/* =========================
+   SALVAR
+========================= */
+
+async function salvarLocal() {
+  const payload = montarPayloadLocal();
+  if (!payload) return;
 
   const btn = document.getElementById("btnSalvarLocal");
   const textoOriginal = btn.innerHTML;
@@ -437,25 +285,33 @@ async function salvarLocal() {
   try {
     btn.disabled = true;
     btn.innerHTML = `
-      <span class="spinner-border spinner-border-sm me-2"></span>
-      Salvando
+      <span class="spinner-border spinner-border-sm"></span> Salvando
     `;
 
-    mostrarLoading("listaLocais");
+    let r;
 
-    const data = await appScriptApi.post(payload);
+    if (payload.id) {
+      r = await atualizarLocalService(payload.id, payload);
+    } else {
+      r = await criarLocalService(payload);
+    }
 
-    if (data?.error) {
-      abrirModalAviso("Erro", data.error);
+    if (r?.error) {
+      abrirModalAviso("Aviso", r.error);
       return;
     }
 
-    bootstrap.Modal.getInstance(
-      document.getElementById("modalLocal")
-    ).hide();
+    bootstrap.Modal.getInstance(document.getElementById("modalLocal")).hide();
 
-    reloadLocais();
+    mostrarLoading("listaLocais");
 
+    await reloadLocais();
+
+    const mensagemSucesso = payload.id
+      ? "Local editado com sucesso!"
+      : "Local criado com sucesso!";
+
+    abrirModalAviso("Sucesso", mensagemSucesso);
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar local");
@@ -465,7 +321,91 @@ async function salvarLocal() {
   }
 }
 
-async function reloadLocais() {
-  carregarLocais();
-  dataStore = await appScriptApi.bootstrap();
+/* =========================
+   EDITAR
+========================= */
+
+async function editarLocal(id, btn) {
+  const textoOriginal = btn.innerHTML;
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = `
+      <span class="spinner-border spinner-border-sm"></span>
+    `;
+
+    const locais = await listarLocaisService();
+    const local = (locais || []).find((l) => Number(l.id) === Number(id));
+
+    if (!local) {
+      abrirModalAviso("Erro", "Local não encontrado");
+      return;
+    }
+
+    preencherFormularioLocal(local);
+
+    document.getElementById("modalLocalTitulo").innerText = "Editar Local";
+    document.getElementById("btnSalvarLocal").onclick = salvarLocal;
+
+    new bootstrap.Modal(document.getElementById("modalLocal")).show();
+  } catch (err) {
+    console.error(err);
+    abrirModalAviso("Erro", "Erro ao carregar local");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+  }
+}
+
+/* =========================
+   EXCLUIR
+========================= */
+
+function excluirLocal(id, btnTrash) {
+  document.getElementById("confirmTitle").innerText = "Excluir Local";
+  document.getElementById("confirmMessage").innerText =
+    "Deseja realmente excluir este local?";
+
+  const btnOk = document.getElementById("confirmOk");
+
+  btnOk.onclick = async () => {
+    const textoOk = btnOk.innerHTML;
+    const textoTrash = btnTrash.innerHTML;
+
+    try {
+      btnOk.disabled = true;
+      btnTrash.disabled = true;
+      btnOk.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Excluindo
+      `;
+
+      const r = await excluirLocalService(id);
+
+      if (r?.error) {
+        abrirModalAviso("Aviso", r.error);
+        return;
+      }
+
+      mostrarLoading("listaLocais");
+
+      await reloadLocais();
+
+      abrirModalAviso("Sucesso", "Local excluído com sucesso!");
+    } catch (err) {
+      console.error(err);
+      abrirModalAviso("Erro", "Erro ao excluir local");
+    } finally {
+      btnOk.disabled = false;
+      btnTrash.disabled = false;
+      btnOk.innerHTML = textoOk;
+      btnTrash.innerHTML = textoTrash;
+
+      bootstrap.Modal.getInstance(
+        document.getElementById("confirmModal"),
+      ).hide();
+    }
+  };
+
+  new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
