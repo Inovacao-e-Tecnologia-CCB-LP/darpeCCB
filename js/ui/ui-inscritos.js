@@ -86,7 +86,7 @@ async function showInscritos() {
         html += `
                 <div class="card mb-3 border-dark">
                     <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                        <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})</b>
+                        <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${formatarHorario(p.horario)})</b>
                         <button class="btn btn-dark"
                             onclick="compartilhar(${pid})">
                             <i class="bi bi-whatsapp"></i>
@@ -153,7 +153,7 @@ function compartilhar(pid) {
   mensagem += `📍 _${localObj.endereco}_\n`;
   mensagem += `🎶 *${p.tipo_visita}*\n`;
   mensagem += `📆 ${dataFormatada}\n`;
-  mensagem += `🕒 ${p.horario}\n\n`;
+  mensagem += `🕒 ${formatarHorario(p.horario)}\n\n`;
   mensagem += `👥 *Inscritos* (${inscritosProg.length}/${localObj.limite}):\n`;
 
   inscritosProg.forEach((i) => {

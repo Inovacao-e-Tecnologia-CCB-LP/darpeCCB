@@ -7,6 +7,7 @@ class UiComponents {
         await fetch(`js/ui/components/painel-admin.html`).then(response => response.text()).then(text => { this.painelAdmin = text });
         await fetch(`js/ui/components/painel-instrumentos.html`).then(response => response.text()).then(text => { this.painelInstrumentos = text });
         await fetch(`js/ui/components/painel-locais.html`).then(response => response.text()).then(text => { this.painelLocais = text });
+        await fetch(`js/ui/components/painel-regras-datas.html`).then(response => response.text()).then(text => { this.painelRegrasDatas = text });
         await fetch(`js/ui/components/trajes.html`).then(response => response.text()).then(text => { this.trajes = text });
         await fetch(`js/ui/components/confirmar-presenca.html`).then(response => response.text()).then(text => { this.confirmarPresenca = text });
         await fetch(`js/ui/components/home.html`).then(response => response.text()).then(text => { this.home = text });
@@ -34,5 +35,9 @@ class UiComponents {
 
     PainelLocais() {
         return this.painelLocais
+    }
+
+    PainelRegrasDatas() {
+        return this.painelRegrasDatas
     }
 }

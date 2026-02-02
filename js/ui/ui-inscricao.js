@@ -26,7 +26,7 @@ function showEscolherData() {
     .forEach((p) => {
       const btn = document.createElement("button");
       btn.className = "btn btn-outline-dark btn-lg";
-      btn.innerHTML = `${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${p.horario})`;
+      btn.innerHTML = `${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${formatarHorario(p.horario)})`;
       btn.onclick = () => selecionarData(p);
       g.appendChild(btn);
     });
