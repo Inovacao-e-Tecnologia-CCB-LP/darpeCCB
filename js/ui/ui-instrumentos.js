@@ -15,7 +15,7 @@ async function carregarInstrumentos() {
   const lista = document.getElementById("listaInstrumentos");
 
   try {
-    let instrumentos = await listarInstrumentosService();
+    let instrumentos = await instrumentosService.listar();
 
     if (instrumentos?.error) {
       throw new Error(instrumentos.error);
@@ -177,9 +177,9 @@ async function salvarInstrumento() {
     let r;
 
     if (id) {
-      r = await atualizarInstrumentoService(Number(id), nome, tipo);
+      r = await instrumentosService.atualizar(Number(id), nome, tipo);
     } else {
-      r = await criarInstrumentoService(nome, tipo);
+      r = await instrumentosService.criar(nome, tipo);
     }
 
     if (r?.error) {
@@ -217,7 +217,7 @@ async function editarInstrumento(id, btn) {
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-    const instrumentos = await listarInstrumentosService();
+    const instrumentos = await instrumentosService.listar();
     const instrumento = (instrumentos || []).find((i) => i.id === id);
 
     if (!instrumento) {
@@ -275,7 +275,7 @@ async function editarInstrumento(id, btn) {
           Salvando
         `;
 
-        const r = await atualizarInstrumentoService(id, nome, tipo);
+        const r = await instrumentosService.atualizar(id, nome, tipo);
 
         if (r?.error) {
           salvou = false;
@@ -341,7 +341,7 @@ function excluirInstrumento(id, btnTrash) {
         <span class="spinner-border spinner-border-sm"></span>
       `;
 
-      const r = await excluirInstrumentoService(id);
+      const r = await instrumentosService.excluir(id);
 
       if (r?.error) {
         abrirModalAviso("Aviso", r.error);

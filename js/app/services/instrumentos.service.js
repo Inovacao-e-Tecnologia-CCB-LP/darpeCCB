@@ -1,4 +1,4 @@
-class instrumentosService {
+class InstrumentosService {
     async listar() {
         return await appScriptApi.action({
             entity: "instrumentos",
