@@ -2,6 +2,8 @@ async function mostrarAdmin() {
   setTitle("Área Administrativa");
   backButton.style.display = "block";
   conteudo.innerHTML = Ui.PainelAdmin();
+  // Ativa a flag para indicar que o usuário entrou na área admin.
+  window.adminSessaoAtiva = true;
 }
 
 function irParaCrudLocais() {
