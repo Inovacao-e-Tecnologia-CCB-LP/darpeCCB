@@ -90,7 +90,7 @@ async function salvarInscricao() {
   };
 
   try {
-    const r = await criarInscricaoService(payload);
+    const r = await inscricoesService.criar(payload);
 
     if (r?.error) {
       abrirModalAviso("Aviso", r.error);
@@ -98,7 +98,7 @@ async function salvarInscricao() {
     }
 
     if (r?.id && r?.delete_token) {
-      salvarAutorizacao(r.id, r.delete_token);
+      localStorageService.salvarAutorizacao(r.id, r.delete_token);
     }
 
     abrirModalAviso("Sucesso", "Inscrição confirmada! Deus abençoe");
@@ -113,7 +113,7 @@ async function salvarInscricao() {
 }
 
 async function excluirInscricao(id, btn) {
-  const auth = buscarAutorizacao(id);
+  const auth = localStorageService.buscarAutorizacao(id);
 
   if (!auth) {
     abrirModalAviso(
@@ -138,11 +138,11 @@ async function excluirInscricao(id, btn) {
     '<span class="spinner-border spinner-border-sm text-light"></span>';
 
   try {
-    const r = await excluirInscricaoService(id, auth.token);
+    const r = await inscricoesService.excluir(id, auth.token);
 
     if (!r?.success) throw r;
 
-    removerAutorizacao(id);
+    localStorageService.removerAutorizacao(id);
     abrirModalAviso("Sucesso", "Inscrição excluída com sucesso!");
     showInscritos();
   } catch (e) {

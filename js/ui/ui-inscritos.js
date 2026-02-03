@@ -33,7 +33,7 @@ async function showInscritos() {
   abortController = new AbortController();
 
   try {
-    inscritos = await listarInscricoes();
+    inscritos = await inscricoesService.listar();
 
     initMaps();
 
@@ -95,7 +95,7 @@ async function showInscritos() {
                     <ul class="list-group list-group-flush">`;
 
         grupos[local][pid].forEach((i) => {
-          const auth = buscarAutorizacao(i.id);
+          const auth = localStorageService.buscarAutorizacao(i.id);
           html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>
