@@ -53,7 +53,7 @@ function showEscolherInstrumento() {
       const btn = document.createElement("button");
       btn.className = "btn btn-outline-dark btn-lg";
       btn.textContent = i.nome;
-      btn.onclick = () => selecionarInstrumento(i.nome);
+      btn.onclick = () => selecionarInstrumento(i);
       g.appendChild(btn);
     }
   });
@@ -81,11 +81,12 @@ async function salvarInscricao() {
   btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
   const payload = {
+    local: escolha.local.id,
     local_id: escolha.local.id,
-    local_nome: escolha.local.nome,
     programacao_id: escolha.programacao.id,
     tipo_visita: escolha.programacao.tipo_visita,
-    instrumento: escolha.instrumento,
+    instrumento: escolha.instrumento.id,
+    instrumento_id: escolha.instrumento.id,
     nome,
   };
 
