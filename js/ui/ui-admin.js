@@ -18,6 +18,11 @@ function irParaCrudRegrasDatas() {
   navigateTo(abrirCrudRegrasDatas);
 }
 
+function irParaRelatorios(){
+  navigateTo(abrirRelatorios)
+}
+
+
 function mostrarLoading(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;

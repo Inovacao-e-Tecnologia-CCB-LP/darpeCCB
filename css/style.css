@@ -1,3 +1,28 @@
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Fundo da scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Barra em si */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(33, 37, 41, 0.35); /* bg-dark suave */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Hover da barra */
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(33, 37, 41, 0.6);
+}
+
+
 body {
  
     background-color: #f1f1f1;
@@ -88,4 +113,99 @@ body {
 
 .logo{
   width: 300px;
+}
+
+.logo{
+  width: 300px;
+}
+
+/* item base */
+.local-item {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* hover simples, sem transform */
+.local-item:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* selecionado */
+.active-local {
+  background-color: #212529 !important;
+  color: #fff !important;
+}
+
+
+/* item selecionado */
+.active-local {
+  background-color: #212529 !important; /* bg-dark */
+  color: #fff !important;
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ícone */
+.transition-icon {
+  transition: 
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* animação suave da lista de locais */
+/* container animado */
+#collapseLocais {
+  overflow: hidden;
+  max-height: 500px; /* suficiente pra lista */
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 1;
+}
+
+/* estado fechado */
+#collapseLocais.fechado {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* item selecionado */
+.local-item {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.local-item i {
+  transition: opacity 0.2s ease;
+}
+
+/* animação do card de colaboradores */
+#listaColaboradores {
+  transition:
+    max-height 0.35s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+  overflow: hidden;
+}
+
+#listaColaboradores.modo-edicao {
+  background-color: var(--bs-body-bg);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: scale(1.01);
+}
+
+#listaColaboradores {
+  transition: all 0.35s ease;
+  overflow: hidden;
+}
+
+#listaColaboradores.modo-edicao {
+  background-color: #fff;
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+#listaColaboradores ul {
+  transition: max-height 0.35s ease, opacity 0.3s ease;
 }

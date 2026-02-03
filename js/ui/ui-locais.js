@@ -18,7 +18,7 @@ async function carregarLocais() {
   try {
     mostrarLoading("listaLocais");
 
-    let locais = await listarLocaisService();
+    let locais = await locaisService.listar();
 
     if (locais?.error) {
       throw new Error(locais.error);
@@ -291,9 +291,9 @@ async function salvarLocal() {
     let r;
 
     if (payload.id) {
-      r = await atualizarLocalService(payload.id, payload);
+      r = await locaisService.atualizar(payload, senhaDigitada);
     } else {
-      r = await criarLocalService(payload);
+      r = await locaisService.criar(payload, senhaDigitada);
     }
 
     if (r?.error) {
@@ -334,7 +334,7 @@ async function editarLocal(id, btn) {
       <span class="spinner-border spinner-border-sm"></span>
     `;
 
-    const locais = await listarLocaisService();
+    const locais = await locaisService.listar();
     const local = (locais || []).find((l) => Number(l.id) === Number(id));
 
     if (!local) {
@@ -380,7 +380,7 @@ function excluirLocal(id, btnTrash) {
         Excluindo
       `;
 
-      const r = await excluirLocalService(id);
+      const r = await locaisService.excluir(id, senhaDigitada);
 
       if (r?.error) {
         abrirModalAviso("Aviso", r.error);
