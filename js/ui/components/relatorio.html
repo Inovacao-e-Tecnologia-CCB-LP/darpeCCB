@@ -144,10 +144,24 @@
           <div
             id="listaColaboradores"
             class="border rounded p-3 bg-body-secondary small"
+            style="cursor: pointer"
           >
-            <span class="text-muted">
-              Selecione uma programação para visualizar os colaboradores.
+            <span class="text-muted fst-italic">
+              Toque para editar os colaboradores
             </span>
+          </div>
+
+          <!-- 🔙 DESFAZER -->
+          <div class="d-flex justify-content-end mt-2">
+            <button
+              id="btnDesfazer"
+              type="button"
+              class="btn btn-sm btn-outline-secondary d-none m-1"
+              onclick="desfazerUltimaRemocao()"
+            >
+              <i class="bi bi-arrow-counterclockwise"></i>
+              Desfazer
+            </button>
           </div>
         </div>
 

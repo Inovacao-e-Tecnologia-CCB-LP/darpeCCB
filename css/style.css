@@ -178,3 +178,34 @@ body {
 .local-item i {
   transition: opacity 0.2s ease;
 }
+
+/* animação do card de colaboradores */
+#listaColaboradores {
+  transition:
+    max-height 0.35s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+  overflow: hidden;
+}
+
+#listaColaboradores.modo-edicao {
+  background-color: var(--bs-body-bg);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: scale(1.01);
+}
+
+#listaColaboradores {
+  transition: all 0.35s ease;
+  overflow: hidden;
+}
+
+#listaColaboradores.modo-edicao {
+  background-color: #fff;
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+#listaColaboradores ul {
+  transition: max-height 0.35s ease, opacity 0.3s ease;
+}

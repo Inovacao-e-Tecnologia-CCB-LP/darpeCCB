@@ -199,43 +199,211 @@ function abrirModalAviso(mensagem, titulo = "Aviso") {
   modal.show();
 }
 
+let historicoRemocoes = [];
+
 function carregarColaboradoresRelatorio(programacaoId) {
   const container = document.getElementById("listaColaboradores");
-
   if (!container) return;
 
   container.innerHTML = "";
 
   const inscritosProg = inscritosPorProgramacao[programacaoId] || [];
 
-  if (inscritosProg.length === 0) {
+  if (!inscritosProg.length) {
     container.innerHTML = `
-      <span class="text-muted">
+      <div class="text-muted fst-italic text-center">
         Nenhum colaborador inscrito nesta programação.
-      </span>
+      </div>
     `;
+    container.dataset.qtdColaboradores = 0;
     return;
   }
 
+  let modoEdicao = false;
+
+  /* ===== HEADER ===== */
+  const header = document.createElement("div");
+  header.className =
+    "d-flex justify-content-between align-items-center mb-2";
+
+  const info = document.createElement("span");
+  info.className = "text-primary small fst-italic";
+  info.textContent = "Toque para editar";
+
+  header.innerHTML = `
+    <span class="fw-semibold">
+      <i class="bi bi-people-fill"></i> Colaboradores DARPE
+    </span>
+  `;
+  header.appendChild(info);
+
+  /* ===== LISTA ===== */
   const ul = document.createElement("ul");
   ul.className = "list-unstyled mb-0";
 
-  inscritosProg.forEach((i) => {
+  inscritosProg.forEach((i, index) => {
     const li = document.createElement("li");
-    li.className = "mb-1";
+    li.className =
+      "d-flex justify-content-between align-items-center mb-1";
 
-    // Evangelização pode não ter instrumento
     const instrumento = i.instrumento ? ` (${i.instrumento})` : "";
 
-    li.textContent = `${i.nome}${instrumento}`;
+    li.innerHTML = `
+      <span>${i.nome}${instrumento}</span>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger d-none"
+        title="Excluir colaborador"
+        data-index="${index}"
+      >
+        <i class="bi bi-trash"></i>
+      </button>
+    `;
+
     ul.appendChild(li);
   });
 
+  container.appendChild(header);
   container.appendChild(ul);
 
-  // salva quantidade para o PDF (não exibe no form)
   container.dataset.qtdColaboradores = inscritosProg.length;
+
+  /* ===== TOQUE PARA EDITAR ===== */
+  container.onclick = (e) => {
+    if (e.target.closest("button")) return;
+
+    modoEdicao = !modoEdicao;
+
+    info.textContent = modoEdicao
+      ? "Modo edição ativo"
+      : "Toque para editar";
+
+    ul.querySelectorAll("button").forEach((btn) => {
+      btn.classList.toggle("d-none", !modoEdicao);
+    });
+
+    container.classList.toggle("modo-edicao", modoEdicao);
+  };
+
+  /* ===== EXCLUIR ===== */
+  ul.querySelectorAll("button").forEach((btn) => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const index = Number(btn.dataset.index);
+      const colaborador = inscritosProg[index];
+      const nome = colaborador?.nome || "este colaborador";
+
+      abrirConfirmacao(
+        "Confirmar exclusão",
+        `Deseja realmente remover <strong>${nome}</strong> do relatório?`,
+        () => {
+          historicoRemocoes.push({
+            programacaoId,
+            colaborador,
+            index
+          });
+
+          inscritosProg.splice(index, 1);
+          carregarColaboradoresRelatorio(programacaoId);
+          mostrarBotaoDesfazer();
+
+          // 🧠 espera o modal fechar antes de abrir o aviso
+          if (inscritosProg.length === 0) {
+            setTimeout(() => {
+              abrirAvisoSemColaboradores();
+            }, 300);
+          }
+        }
+      );
+    };
+  });}
+
+
+/* ===== MODAL AVISO ===== */
+function abrirAvisoSemColaboradores() {
+  const modalEl = document.getElementById("confirmModal");
+  const titleEl = document.getElementById("confirmTitle");
+  const msgEl = document.getElementById("confirmMessage");
+  const btnOk = document.getElementById("confirmOk");
+
+  btnOk.onclick = null;
+  btnOk.className = "btn btn-warning";
+  btnOk.textContent = "Entendi";
+
+  titleEl.textContent = "Atenção";
+  msgEl.innerHTML = `
+    <div class="text-center">
+      <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
+      <p class="mt-3 mb-0">
+        Este relatório está sem colaboradores.
+      </p>
+    </div>
+  `;
+
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+    backdrop: "static",
+    keyboard: false
+  });
+
+  btnOk.onclick = () => modal.hide();
+
+  modal.show();
 }
+
+
+/* ===== MODAL CONFIRMAÇÃO ===== */
+function abrirConfirmacao(titulo, mensagem, onConfirm) {
+  const modalEl = document.getElementById("confirmModal");
+  const titleEl = document.getElementById("confirmTitle");
+  const msgEl = document.getElementById("confirmMessage");
+  const btnOk = document.getElementById("confirmOk");
+
+  // 🔥 RESET COMPLETO
+  btnOk.onclick = null;
+  btnOk.className = "btn btn-danger";
+  btnOk.textContent = "Excluir";
+
+  titleEl.textContent = titulo;
+  msgEl.innerHTML = mensagem;
+
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+  btnOk.onclick = () => {
+    modal.hide();
+    onConfirm();
+  };
+
+  modal.show();
+}
+
+
+/* ===== DESFAZER (CTRL+Z) ===== */
+function desfazerUltimaRemocao() {
+  const ultima = historicoRemocoes.pop();
+  if (!ultima) return;
+
+  const { programacaoId, colaborador, index } = ultima;
+
+  if (!inscritosPorProgramacao[programacaoId]) return;
+
+  inscritosPorProgramacao[programacaoId].splice(index, 0, colaborador);
+  carregarColaboradoresRelatorio(programacaoId);
+
+  if (!historicoRemocoes.length) {
+    ocultarBotaoDesfazer();
+  }
+}
+
+function mostrarBotaoDesfazer() {
+  document.getElementById("btnDesfazer")?.classList.remove("d-none");
+}
+
+function ocultarBotaoDesfazer() {
+  document.getElementById("btnDesfazer")?.classList.add("d-none");
+}
+
 
 function montarDadosRelatorio() {
   const localId = document.getElementById("localSelecionado")?.value;
