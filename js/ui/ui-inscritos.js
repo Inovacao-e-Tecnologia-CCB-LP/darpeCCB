@@ -1,5 +1,6 @@
 let locaisMap = {};
 let programacaoMap = {};
+let instrumentosMap = {};
 let inscritosPorProgramacao = {};
 
 function initMaps() {
@@ -12,6 +13,13 @@ function initMaps() {
   dataStore.programacao.forEach((p) => {
     programacaoMap[p.id] = p;
   });
+
+  instrumentosMap = {};
+  if (dataStore.instrumentos) {
+    dataStore.instrumentos.forEach((i) => {
+      instrumentosMap[i.id] = i;
+    });
+  }
 
   inscritosPorProgramacao = {};
   inscritos.forEach((i) => {
@@ -40,11 +48,19 @@ async function showInscritos() {
     const grupos = {};
 
     inscritos.forEach((i) => {
-      if (!i.local) return;
-      if (!grupos[i.local]) grupos[i.local] = {};
-      if (!grupos[i.local][i.programacao_id])
-        grupos[i.local][i.programacao_id] = [];
-      grupos[i.local][i.programacao_id].push(i);
+      let localNome = i.local;
+      if (i.local_id && locaisMap[i.local_id]) {
+        localNome = locaisMap[i.local_id].nome;
+      } else if (locaisMap[i.local]) {
+        // Se o campo 'local' for o próprio ID
+        localNome = locaisMap[i.local].nome;
+      }
+
+      if (!localNome) return;
+      if (!grupos[localNome]) grupos[localNome] = {};
+      if (!grupos[localNome][i.programacao_id])
+        grupos[localNome][i.programacao_id] = [];
+      grupos[localNome][i.programacao_id].push(i);
     });
 
     let html = '<div class="accordion" id="accordionInscritos">';
@@ -96,11 +112,19 @@ async function showInscritos() {
 
         grupos[local][pid].forEach((i) => {
           const auth = localStorageService.buscarAutorizacao(i.id);
+
+          let instNome = i.instrumento;
+          if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
+            instNome = instrumentosMap[i.instrumento_id].nome;
+          } else if (instrumentosMap[i.instrumento]) {
+            instNome = instrumentosMap[i.instrumento].nome;
+          }
+
           html += `
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>
                             ${i.nome}
-                            <span class="text-muted">(${i.instrumento})</span>
+                            <span class="text-muted">(${instNome})</span>
                         </span>
                         ${
                           auth
@@ -157,7 +181,13 @@ function compartilhar(pid) {
   mensagem += `👥 *Inscritos* (${inscritosProg.length}/${localObj.limite}):\n`;
 
   inscritosProg.forEach((i) => {
-    mensagem += `• ${i.nome} _(${i.instrumento})_\n`;
+    let instNome = i.instrumento;
+    if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
+      instNome = instrumentosMap[i.instrumento_id].nome;
+    } else if (instrumentosMap[i.instrumento]) {
+      instNome = instrumentosMap[i.instrumento].nome;
+    }
+    mensagem += `• ${i.nome} _(${instNome})_\n`;
   });
 
   mensagem = encodeURIComponent(mensagem);

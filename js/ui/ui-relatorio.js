@@ -246,7 +246,13 @@ function carregarColaboradoresRelatorio(programacaoId) {
     li.className =
       "d-flex justify-content-between align-items-center mb-1";
 
-    const instrumento = i.instrumento ? ` (${i.instrumento})` : "";
+    let instNome = i.instrumento;
+    if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
+      instNome = instrumentosMap[i.instrumento_id].nome;
+    } else if (instrumentosMap[i.instrumento]) {
+      instNome = instrumentosMap[i.instrumento].nome;
+    }
+    const instrumento = instNome ? ` (${instNome})` : "";
 
     li.innerHTML = `
       <span>${i.nome}${instrumento}</span>
@@ -464,10 +470,15 @@ if (!localId || !programacaoId) {
       horario: programacao.horario,
       descricao: programacao.descricao,
     },
-    colaboradores: colaboradores.map((i) => ({
-      nome: i.nome,
-      instrumento: i.instrumento || null,
-    })),
+    colaboradores: colaboradores.map((i) => {
+      let instNome = i.instrumento;
+      if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
+        instNome = instrumentosMap[i.instrumento_id].nome;
+      } else if (instrumentosMap[i.instrumento]) {
+        instNome = instrumentosMap[i.instrumento].nome;
+      }
+      return { nome: i.nome, instrumento: instNome || null };
+    }),
     qtdColaboradores: colaboradores.length,
     qtdInternos: Number(document.getElementById("qtdInternos")?.value || 0),
 
