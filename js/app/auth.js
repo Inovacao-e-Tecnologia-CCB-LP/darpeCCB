@@ -25,12 +25,8 @@ async function validarSenhaAdmin() {
   spinner.classList.remove("d-none");
 
   try {
-    const data = await appScriptApi.post({
-      action: "auth",
-      password: senhaDigitada,
-    })
-
-    if (data.success === true) {
+    const success = await authService.auth(senhaDigitada)
+    if (success === true) {
       isAdmin = true;
 
       const modalEl = document.getElementById("modalAdmin");
