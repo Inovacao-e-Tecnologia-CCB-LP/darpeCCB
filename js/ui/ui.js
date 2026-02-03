@@ -3,6 +3,13 @@ function setTitle(text) {
 }
 
 async function showMenuInicial() {
+
+  if (window.adminSessaoAtiva) {
+    window.adminSessaoAtiva = false;
+    location.reload();
+    return;
+  }
+
   mostrarBotaoAdmin();
   setTitle("Carregando...");
   conteudo.innerHTML = '<div class="spinner-border"></div>';

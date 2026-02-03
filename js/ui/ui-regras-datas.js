@@ -99,7 +99,7 @@ async function carregarRegrasDatas() {
 }
 
 function formatarQuando(dia, ordinal) {
-    const dias = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+    const dias = ['', 'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const nomeDia = dias[dia] || 'Dia?';
 
     if (Number(ordinal) === 0) return `Todas: ${nomeDia}`;
