@@ -25,7 +25,7 @@ class AppScriptApi {
     }
 
     async deleteWithPassword(entity, id, password) {
-        return await fetch(t`${this.url}?action=delete&entity=${entity}`, {
+        return await fetch(`${this.url}?action=delete&entity=${entity}`, {
             method: "POST",
             body: JSON.stringify({id, password})
         }).then((r) => r.json());

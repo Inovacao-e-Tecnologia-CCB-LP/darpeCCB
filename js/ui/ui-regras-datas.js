@@ -14,7 +14,7 @@ async function carregarRegrasDatas() {
       </div>
     `;
 
-        const data = await appScriptApi.action({ action: 'view', entity: 'regras-datas' });
+        const data = await regrasDatasService.listar();
         const regras = data || [];
 
         if (!regras.length) {
@@ -140,7 +140,7 @@ async function editarRegra(id, btn) {
         btn.disabled = true;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-        const data = await appScriptApi.action({ action: 'view', entity: 'regras-datas' });
+        const data = await regrasDatasService.listar();
         const regra = (data || []).find(r => Number(r.id) === Number(id));
 
         if (!regra) {
@@ -244,7 +244,9 @@ async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null)
 
         if (!modalInstance) mostrarLoading("listaRegrasDatas");
 
-        const data = await appScriptApi.post(payload);
+        const data = payload.action === "create" ? 
+        await regrasDatasService.criar(payload, senhaDigitada) :
+        await regrasDatasService.atualizar(payload, senhaDigitada);
 
         if (data?.error) {
             abrirModalAviso("Erro", data.error);
@@ -294,12 +296,7 @@ async function excluirRegra(id, btnTrash) {
             btnTrash.disabled = true;
             btnTrash.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-            const data = await appScriptApi.post({
-                entity: "regras-datas",
-                action: "delete",
-                id: Number(id),
-                password: senhaDigitada
-            });
+            const data = await regrasDatasService.excluir(id, senhaDigitada)
 
             if (data?.error) {
                 abrirModalAviso("Erro", data.error);
