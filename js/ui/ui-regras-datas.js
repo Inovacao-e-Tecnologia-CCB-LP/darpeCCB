@@ -183,7 +183,7 @@ async function editarRegra(id, btn) {
         btnSalvar.onclick = null;
 
         btnSalvar.onclick = async () => {
-            await salvarRegra(modal, btn, textoOriginal);
+            await salvarRegra(modal, btn, textoOriginal, action='update');
             salvou = true;
         };
 
@@ -199,7 +199,7 @@ async function editarRegra(id, btn) {
     }
 }
 
-async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null) {
+async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null, action='create') {
     if (modalInstance && typeof modalInstance.hide !== 'function') {
         modalInstance = null;
     }
@@ -228,13 +228,6 @@ async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null)
         ativo: ativo
     };
 
-    if (id) {
-        payload.action = "update";
-        payload.id = Number(id);
-    } else {
-        payload.action = "create";
-    }
-
     const btn = document.getElementById("btnSalvarRegra");
     const textoOriginal = btn.innerHTML;
 
@@ -244,9 +237,9 @@ async function salvarRegra(modalInstance = null, btnEdit = null, txtEdit = null)
 
         if (!modalInstance) mostrarLoading("listaRegrasDatas");
 
-        const data = payload.action === "create" ? 
+        const data = action === "create" ? 
         await regrasDatasService.criar(payload, senhaDigitada) :
-        await regrasDatasService.atualizar(payload, senhaDigitada);
+        await regrasDatasService.atualizar({id, ...payload}, senhaDigitada);
 
         if (data?.error) {
             abrirModalAviso("Erro", data.error);
