@@ -1,18 +1,47 @@
 class AppScriptApi {
-    url = "https://script.google.com/macros/s/AKfycbxlsD_KuoR2yYv3GeF_WhkaInSnCm_ft032qBZjQqd6u3QEztucWbtsisLAgTvqMUff/exec";
-
-    async post(body) {
-        return await fetch(this.url, {
-            method: "POST",
-            body: JSON.stringify(body),
-        }).then((r) => r.json());
-    }
+    url = "https://script.google.com/macros/s/AKfycbyF9EvnsumAkbY9cjj-2JCvwG3PqPFUouCR0V9QKg1zpCUVtrfm0iiP7JkjQzpn1fjs/exec";
 
     async bootstrap() {
         return await fetch(`${this.url}?action=bootstrap`).then((r) => r.json());
     }
 
-    async action({action, entity}, signal) {
-        return await fetch(`${this.url}?action=${action}&entity=${entity}`, { signal }).then(r => r.json());
+    async auth(password) {
+        return await fetch(`${this.url}?action=auth`, {
+            method: "POST",
+            body: JSON.stringify({password}),
+        });
+    }
+
+    async view(entity) {
+        return await fetch(`${this.url}?action=view&entity=${entity}`).then(r => r.json());
+    }
+
+    async deleteWithToken(entity, id, delete_token) {
+        console.log({entity, id, delete_token})
+        return await fetch(`${this.url}?action=delete&entity=${entity}`, {
+            method: "POST",
+            body: JSON.stringify({id, delete_token})
+        }).then((r) => r.json());
+    }
+
+    async deleteWithPassword(entity, id, password) {
+        return await fetch(t`${this.url}?action=delete&entity=${entity}`, {
+            method: "POST",
+            body: JSON.stringify({id, password})
+        }).then((r) => r.json());
+    }
+
+    async create(entity, payload, password=null) {
+        return await fetch(`${this.url}?action=create&entity=${entity}`, {
+            method: "POST",
+            body: JSON.stringify({...payload, password}),
+        }).then((r) => r.json());
+    }
+
+    async update(entity, updatedData, password) {
+        return await fetch(`${this.url}?action=update&entity=${entity}`, {
+            method: "POST",
+            body: JSON.stringify({...updatedData, password})
+        }).then((r) => r.json());
     }
 }
