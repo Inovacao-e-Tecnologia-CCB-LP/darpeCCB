@@ -1,36 +1,19 @@
 class LocaisService {
+    entity = 'locais';
+
     async listar() {
-        return await appScriptApi.action({
-            entity: "locais",
-            action: "view",
-        });
+        return await appScriptApi.view(this.entity);
     }
 
-    async criar(payload) {
-        return await appScriptApi.post({
-            ...payload,
-            entity: "locais",
-            action: "create",
-            password: senhaDigitada,
-        });
+    async criar(payload, password) {
+        return await appScriptApi.create(this.entity, payload, password)
     }
 
-    async atualizar(id, payload) {
-        return await appScriptApi.post({
-            ...payload,
-            entity: "locais",
-            action: "update",
-            id,
-            password: senhaDigitada,
-        });
+    async atualizar(payload, password) {
+        return await appScriptApi.update(this.entity, payload, password);
     }
 
-    async excluir(id) {
-        return await appScriptApi.post({
-            entity: "locais",
-            action: "delete",
-            id,
-            password: senhaDigitada,
-        });
+    async excluir(id, password) {
+        return await appScriptApi.deleteWithPassword(this.entity, id, password)
     }
 }

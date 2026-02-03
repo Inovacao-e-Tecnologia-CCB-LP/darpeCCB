@@ -177,9 +177,9 @@ async function salvarInstrumento() {
     let r;
 
     if (id) {
-      r = await instrumentosService.atualizar(Number(id), nome, tipo);
+      r = await instrumentosService.atualizar({id, nome, tipo}, senhaDigitada);
     } else {
-      r = await instrumentosService.criar(nome, tipo);
+      r = await instrumentosService.criar({nome, tipo}, senhaDigitada);
     }
 
     if (r?.error) {
@@ -275,7 +275,7 @@ async function editarInstrumento(id, btn) {
           Salvando
         `;
 
-        const r = await instrumentosService.atualizar(id, nome, tipo);
+        const r = await instrumentosService.atualizar({id, nome, tipo}, senhaDigitada);
 
         if (r?.error) {
           salvou = false;
@@ -341,7 +341,7 @@ function excluirInstrumento(id, btnTrash) {
         <span class="spinner-border spinner-border-sm"></span>
       `;
 
-      const r = await instrumentosService.excluir(id);
+      const r = await instrumentosService.excluir(id, senhaDigitada);
 
       if (r?.error) {
         abrirModalAviso("Aviso", r.error);

@@ -1,38 +1,19 @@
 class InstrumentosService {
+    entity = 'instrumentos';
+
     async listar() {
-        return await appScriptApi.action({
-            entity: "instrumentos",
-            action: "view",
-        });
+        return await appScriptApi.view(this.entity);
     }
 
-    async criar(nome, tipo) {
-        return await appScriptApi.post({
-            entity: "instrumentos",
-            action: "create",
-            password: senhaDigitada,
-            nome,
-            tipo,
-        });
+    async criar(payload, password) {
+        return await appScriptApi.create(this.entity, payload, password)
     }
 
-    async atualizar(id, nome, tipo) {
-        return await appScriptApi.post({
-            entity: "instrumentos",
-            action: "update",
-            id,
-            password: senhaDigitada,
-            nome,
-            tipo,
-        });
+    async atualizar(payload, password) {
+        return await appScriptApi.update(this.entity, payload, password);
     }
 
-    async excluir(id) {
-        return await appScriptApi.post({
-            entity: "instrumentos",
-            action: "delete",
-            id,
-            password: senhaDigitada,
-        });
+    async excluir(id, password) {
+        return await appScriptApi.deleteWithPassword(this.entity, id, password)
     }
 }

@@ -291,9 +291,9 @@ async function salvarLocal() {
     let r;
 
     if (payload.id) {
-      r = await locaisService.atualizar(payload.id, payload);
+      r = await locaisService.atualizar(payload, senhaDigitada);
     } else {
-      r = await locaisService.criar(payload);
+      r = await locaisService.criar(payload, senhaDigitada);
     }
 
     if (r?.error) {
@@ -380,7 +380,7 @@ function excluirLocal(id, btnTrash) {
         Excluindo
       `;
 
-      const r = await locaisService.excluir(id);
+      const r = await locaisService.excluir(id, senhaDigitada);
 
       if (r?.error) {
         abrirModalAviso("Aviso", r.error);
