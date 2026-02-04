@@ -202,18 +202,18 @@ function carregarProgramacoesRelatorio(localId) {
           document.getElementById("qtdInternos").value = "";
         }
 
-        carregarColaboradoresRelatorio(p.id);
+        carregarVoluntariosRelatorio(p.id);
       }),
     );
   });
 }
 
 /* =========================
-   COLABORADORES (INALTERADO)
+   VOLUNTÁRIOS
 ========================= */
 
-function carregarColaboradoresRelatorio(programacaoId) {
-  const container = document.getElementById("listaColaboradores");
+function carregarVoluntariosRelatorio(programacaoId) {
+  const container = document.getElementById("listaVoluntarios");
   if (!container) return;
 
   container.innerHTML = "";
@@ -222,7 +222,7 @@ function carregarColaboradoresRelatorio(programacaoId) {
   if (!inscritosProg.length) {
     container.innerHTML = `
       <div class="text-muted fst-italic text-center">
-        Nenhum colaborador inscrito nesta programação.
+        Nenhum voluntário inscrito nesta programação.
       </div>
     `;
     return;
@@ -265,19 +265,19 @@ function carregarColaboradoresRelatorio(programacaoId) {
     btn.onclick = (e) => {
       e.stopPropagation();
       const index = Number(btn.dataset.index);
-      const colaborador = inscritosProg[index];
+      const voluntario = inscritosProg[index];
 
       abrirConfirmacao(
         "Confirmar exclusão",
-        `Deseja remover <strong>${colaborador.nome}</strong>?`,
+        `Deseja remover <strong>${voluntario.nome}</strong>?`,
         () => {
           RelatorioState.historicoRemocoes.push({
             programacaoId,
-            colaborador,
+            voluntario,
             index,
           });
           inscritosProg.splice(index, 1);
-          carregarColaboradoresRelatorio(programacaoId);
+          carregarVoluntariosRelatorio(programacaoId);
           mostrarBotaoDesfazer();
         },
       );
@@ -304,10 +304,9 @@ function montarDadosRelatorio() {
   const local = dataStore.locais.find((l) => l.id == localId);
   const programacao = dataStore.programacao.find((p) => p.id == programacaoId);
 
-  const colaboradoresRaw = inscritosPorProgramacao[programacaoId] || [];
+  const voluntariosRaw = inscritosPorProgramacao[programacaoId] || [];
 
-  // 🔥 padroniza colaboradores (PDF e WhatsApp usam igual)
-  const colaboradores = colaboradoresRaw.map((c) => ({
+  const voluntarios = voluntariosRaw.map((c) => ({
     ...c,
     instrumentoNome:
       c.instrumento_id && instrumentosMap[c.instrumento_id]
@@ -319,8 +318,8 @@ function montarDadosRelatorio() {
     responsavel: form.responsavel,
     local,
     programacao,
-    colaboradores,
-    qtdColaboradores: colaboradores.length,
+    voluntarios,
+    qtdVoluntarios: voluntarios.length,
     qtdInternos: form.qtdInternos,
     observacoes: form.observacoes,
     evangelizacao:
@@ -401,7 +400,7 @@ async function gerarPDF() {
   linha("Nome do Responsável:", dados.responsavel);
   linha("Nome do Local:", dados.local.nome);
   linha(
-    "Programação:",
+    "Tipo de Visita:",
     `${dados.programacao.tipo_visita} – ${dados.programacao.descricao}`,
   );
 
@@ -415,7 +414,7 @@ async function gerarPDF() {
     linha("Qtde. Internos:", String(dados.qtdInternos));
   }
 
-  linha("Qtde. Músicos:", String(dados.qtdColaboradores));
+  linha("Qtde. Músicos:", String(dados.qtdVoluntarios));
 
   /* ================= EVANGELIZAÇÃO ================= */
   if (dados.evangelizacao) {
@@ -446,7 +445,7 @@ async function gerarPDF() {
     }
   }
 
-  /* ================= COLABORADORES ================= */
+  /* ================= VOLUNTÁRIOS ================= */
   y += 4;
   doc.line(MARGEM_ESQ, y, MARGEM_DIR, y);
   y += 7;
@@ -459,10 +458,10 @@ async function gerarPDF() {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(FONT_TEXTO);
 
-  if (!dados.colaboradores.length) {
-    doc.text("Nenhum colaborador inscrito.", MARGEM_ESQ, y);
+  if (!dados.voluntarios.length) {
+    doc.text("Nenhum voluntário inscrito.", MARGEM_ESQ, y);
   } else {
-    dados.colaboradores.forEach((c) => {
+    dados.voluntarios.forEach((c) => {
       let instNome = c.instrumento;
 
       if (c.instrumento_id && instrumentosMap[c.instrumento_id]) {
@@ -502,52 +501,41 @@ function gerarMensagemWhatsAppRelatorio(dados) {
   linhas.push("*DARPE*");
   linhas.push("_Relatório de Atendimento_");
   linhas.push("");
-  linhas.push(`▫️ *Nome do Responsável:* _${dados.responsavel}_`);
-  linhas.push("_________________________________");
+  linhas.push("*📋 Dados Gerais*");
   linhas.push("");
-
-  // 📍 DADOS GERAIS
-  linhas.push("*📍 DADOS DO ATENDIMENTO*");
-  linhas.push(`▫️ *Nome do Local:* _${dados.local?.nome || "-"}_`);
-  linhas.push("");
-  linhas.push(`▫️ *Data:* _${formatarData(dados.programacao?.data)}_`);
-  linhas.push("");
+  linhas.push(`👤 *Nome do Responsável:* _${dados.responsavel}_`);
+  linhas.push(`📍 *Nome do Local:* _${dados.local?.nome || "-"}_`);
+  linhas.push(`📆 *Data:* _${formatarData(dados.programacao?.data)}_`);
   linhas.push(
-    `▫️ *Horário:* _${dados.programacao?.horario?.replace(/'/g, "") || "-"}_`,
+    `🕒 *Horário:* _${dados.programacao?.horario?.replace(/'/g, "") || "-"}_`,
   );
-  linhas.push("");
   linhas.push(
-    `▫️ *Programação:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
+    `🎼 *Tipo de Visita:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
   );
-  linhas.push("");
   if (dados.qtdInternos > 0) {
-    linhas.push(`▫️ *Qtde. Internos:* _${dados.qtdInternos}_`);
+    linhas.push(`💠 *Qtde. Internos:* _${dados.qtdInternos}_`);
   }
-  linhas.push("");
-  linhas.push(`▫️ *Qtde. Músicos:* _${dados.qtdColaboradores}_`);
-  linhas.push("");
+  linhas.push(`🎶 *Qtde. Músicos:* _${dados.qtdVoluntarios}_`);
   if (dados.evangelizacao?.palavra) {
-    linhas.push(`▫️ *Palavra:* _${dados.evangelizacao.palavra}_`);
+    linhas.push(`📖 *Palavra:* _${dados.evangelizacao.palavra}_`);
   }
 
   linhas.push("");
 
   // 📝 OBSERVAÇÕES
   if (dados.observacoes?.trim()) {
-    linhas.push("");
-    linhas.push("_________________________________");
-    linhas.push("*📝 OBSERVAÇÕES*");
+    linhas.push("*📝 Observações*");
     linhas.push("");
     linhas.push(`${dados.observacoes}`);
   }
 
-  // 👥 COLABORADORES
-  if (dados.colaboradores?.length) {
     linhas.push("");
-    linhas.push("_________________________________");
-    linhas.push("*👥 Nome/Instrumento dos Voluntários*");
 
-    dados.colaboradores.forEach((c) => {
+  // 👥 voluntarios
+  if (dados.voluntarios?.length) {
+    linhas.push("*👥 Nome/Instrumento dos Voluntários*");
+      linhas.push("");
+    dados.voluntarios.forEach((c) => {
       linhas.push(
         `• _${c.nome}${c.instrumentoNome ? " (" + c.instrumentoNome + ")" : ""}_`,
       );

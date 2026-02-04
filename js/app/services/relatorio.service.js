@@ -16,7 +16,7 @@ class RelatoriosService {
     });
   }
 
-  obterColaboradores(programacaoId, inscritosPorProgramacao) {
+  obterVoluntarios(programacaoId, inscritosPorProgramacao) {
     return inscritosPorProgramacao[programacaoId] || [];
   }
 }
