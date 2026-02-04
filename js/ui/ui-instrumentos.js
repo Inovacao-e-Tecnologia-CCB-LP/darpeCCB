@@ -2,9 +2,10 @@
    UI • INSTRUMENTOS
 ========================= */
 
-function abrirCrudInstrumentos() {
+function abrirTelaInstrumentos() {
   setTitle("Admin • Instrumentos");
-  navigateTo(renderCrudInstrumentos);
+  conteudo.innerHTML = Ui.PainelInstrumentos();
+  carregarInstrumentos();
 }
 
 /* =========================
@@ -177,9 +178,12 @@ async function salvarInstrumento() {
     let r;
 
     if (id) {
-      r = await instrumentosService.atualizar({id, nome, tipo}, senhaDigitada);
+      r = await instrumentosService.atualizar(
+        { id, nome, tipo },
+        senhaDigitada,
+      );
     } else {
-      r = await instrumentosService.criar({nome, tipo}, senhaDigitada);
+      r = await instrumentosService.criar({ nome, tipo }, senhaDigitada);
     }
 
     if (r?.error) {
@@ -275,7 +279,10 @@ async function editarInstrumento(id, btn) {
           Salvando
         `;
 
-        const r = await instrumentosService.atualizar({id, nome, tipo}, senhaDigitada);
+        const r = await instrumentosService.atualizar(
+          { id, nome, tipo },
+          senhaDigitada,
+        );
 
         if (r?.error) {
           salvou = false;

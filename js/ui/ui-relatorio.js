@@ -1,4 +1,4 @@
-async function abrirRelatorios() {
+async function abrirTelaRelatorios() {
   setTitle("Admin • Relatórios");
 
   conteudo.innerHTML = `
@@ -185,20 +185,6 @@ function carregarProgramacoesRelatorio(localId) {
   });
 }
 
-function abrirModalAviso(mensagem, titulo = "Aviso") {
-  const modalEl = document.getElementById("modalAviso");
-  const tituloEl = document.getElementById("modalAvisoTitulo");
-  const msgEl = document.getElementById("modalAvisoMensagem");
-
-  if (!modalEl || !tituloEl || !msgEl) return;
-
-  tituloEl.textContent = titulo;
-  msgEl.innerHTML = mensagem; // permite <br>, <strong>, etc
-
-  const modal = new bootstrap.Modal(modalEl);
-  modal.show();
-}
-
 let historicoRemocoes = [];
 
 function carregarColaboradoresRelatorio(programacaoId) {
@@ -223,8 +209,7 @@ function carregarColaboradoresRelatorio(programacaoId) {
 
   /* ===== HEADER ===== */
   const header = document.createElement("div");
-  header.className =
-    "d-flex justify-content-between align-items-center mb-2";
+  header.className = "d-flex justify-content-between align-items-center mb-2";
 
   const info = document.createElement("span");
   info.className = "text-primary small fst-italic";
@@ -243,10 +228,9 @@ function carregarColaboradoresRelatorio(programacaoId) {
 
   inscritosProg.forEach((i, index) => {
     const li = document.createElement("li");
-    li.className =
-      "d-flex justify-content-between align-items-center mb-1";
+    li.className = "d-flex justify-content-between align-items-center mb-1";
 
-    let instNome = i.instrumento;
+        let instNome = i.instrumento;
     if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
       instNome = instrumentosMap[i.instrumento_id].nome;
     } else if (instrumentosMap[i.instrumento]) {
@@ -280,9 +264,7 @@ function carregarColaboradoresRelatorio(programacaoId) {
 
     modoEdicao = !modoEdicao;
 
-    info.textContent = modoEdicao
-      ? "Modo edição ativo"
-      : "Toque para editar";
+    info.textContent = modoEdicao ? "Modo edição ativo" : "Toque para editar";
 
     ul.querySelectorAll("button").forEach((btn) => {
       btn.classList.toggle("d-none", !modoEdicao);
@@ -308,7 +290,7 @@ function carregarColaboradoresRelatorio(programacaoId) {
           historicoRemocoes.push({
             programacaoId,
             colaborador,
-            index
+            index,
           });
 
           inscritosProg.splice(index, 1);
@@ -321,11 +303,11 @@ function carregarColaboradoresRelatorio(programacaoId) {
               abrirAvisoSemColaboradores();
             }, 300);
           }
-        }
+        },
       );
     };
-  });}
-
+  });
+}
 
 /* ===== MODAL AVISO ===== */
 function abrirAvisoSemColaboradores() {
@@ -350,14 +332,13 @@ function abrirAvisoSemColaboradores() {
 
   const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
     backdrop: "static",
-    keyboard: false
+    keyboard: false,
   });
 
   btnOk.onclick = () => modal.hide();
 
   modal.show();
 }
-
 
 /* ===== MODAL CONFIRMAÇÃO ===== */
 function abrirConfirmacao(titulo, mensagem, onConfirm) {
@@ -384,7 +365,6 @@ function abrirConfirmacao(titulo, mensagem, onConfirm) {
   modal.show();
 }
 
-
 /* ===== DESFAZER (CTRL+Z) ===== */
 function desfazerUltimaRemocao() {
   const ultima = historicoRemocoes.pop();
@@ -410,7 +390,6 @@ function ocultarBotaoDesfazer() {
   document.getElementById("btnDesfazer")?.classList.add("d-none");
 }
 
-
 function montarDadosRelatorio() {
   const localId = document.getElementById("localSelecionado")?.value;
   const programacaoId = document.getElementById(
@@ -419,27 +398,26 @@ function montarDadosRelatorio() {
 
   const responsavelInput = document.getElementById("responsavel");
   const responsavel = responsavelInput?.value?.trim();
-if (!localId || !programacaoId) {
+  if (!localId || !programacaoId) {
     abrirModalAviso(
-      '<i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>' + 'Selecione o <strong>Local</strong> e a <strong>Programação</strong> antes de gerar o relatório.',
+      '<i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>' +
+        "Selecione o <strong>Local</strong> e a <strong>Programação</strong> antes de gerar o relatório.",
       "Dados obrigatórios",
     );
     return null;
   }
-  
+
   if (!responsavel) {
-  abrirModalAviso(
-    '<i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>' +
-    'Informe o <strong>DARPE Responsável</strong> antes de gerar o relatório.' +
-    '<br><br><small>(É o responsável pela emissão do documento)</small>',
-    "Campo obrigatório"
-  );
+    abrirModalAviso(
+      '<i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>' +
+        "Informe o <strong>DARPE Responsável</strong> antes de gerar o relatório." +
+        "<br><br><small>(É o responsável pela emissão do documento)</small>",
+      "Campo obrigatório",
+    );
 
     responsavelInput?.focus();
     return null;
   }
-
-  
 
   const local = dataStore.locais.find((l) => l.id == localId);
   const programacao = dataStore.programacao.find((p) => p.id == programacaoId);

@@ -2,7 +2,7 @@
    UI • LOCAIS
 ========================= */
 
-async function abrirCrudLocais() {
+async function abrirTelaLocais() {
   setTitle("Admin • Locais");
   conteudo.innerHTML = Ui.PainelLocais();
   carregarLocais();
@@ -241,10 +241,6 @@ function preencherFormularioLocal(local) {
 async function reloadLocais() {
   mostrarLoading("listaLocais");
   await carregarLocais();
-}
-
-function isMobile() {
-  return window.innerWidth < 768;
 }
 
 /* =========================

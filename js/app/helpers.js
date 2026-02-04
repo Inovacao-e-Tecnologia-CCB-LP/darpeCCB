@@ -3,8 +3,12 @@ function formatarData(d) {
 }
 
 function formatarHorario(horario) {
-  if (horario && typeof horario === 'string' && horario.startsWith("'")) {
+  if (horario && typeof horario === "string" && horario.startsWith("'")) {
     return horario.slice(1);
   }
   return horario;
+}
+
+function isMobile() {
+  return window.innerWidth < 768;
 }

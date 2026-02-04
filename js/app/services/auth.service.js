@@ -1,5 +1,6 @@
 class AuthService {
-    async auth(password) {
-        return await appScriptApi.auth(password).then(r => r.status === 200);
-    }
+  async auth(password) {
+    const r = await appScriptApi.auth(password);
+    return r;
+  }
 }
