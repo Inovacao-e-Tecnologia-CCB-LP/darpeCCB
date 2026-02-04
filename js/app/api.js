@@ -26,7 +26,6 @@ class AppScriptApi {
   }
 
   async deleteWithToken(entity, id, delete_token) {
-    console.log({ entity, id, delete_token });
     return await fetch(`${this.url}?action=delete&entity=${entity}`, {
       method: "POST",
       body: JSON.stringify({ id, delete_token }),

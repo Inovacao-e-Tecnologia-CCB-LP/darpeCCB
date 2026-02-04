@@ -1,49 +1,43 @@
-async function abrirTelaRelatorios() {
-  setTitle("Admin • Relatórios");
+/* =========================
+   STATE
+========================= */
 
-  conteudo.innerHTML = `
-    <div class="spinner-border text-dark" role="status">
-      <span class="visually-hidden">Carregando...</span>
-    </div>
-  `;
+const RelatorioState = {
+  localId: null,
+  programacaoId: null,
+  modoEdicao: false,
+  historicoRemocoes: [],
 
-  try {
-    // 🔥 busca inscritos
-    inscritos = await inscricoesService.listar();
+  reset() {
+    this.localId = null;
+    this.programacaoId = null;
+    this.modoEdicao = false;
+    this.historicoRemocoes = [];
+  },
+};
 
-    // 🔥 monta os mapas
-    initMaps();
+/* =========================
+   RENDER (UI HELPERS)
+========================= */
 
-    // agora sim monta a UI
-    conteudo.innerHTML = Ui.PainelRelatorio();
-    carregarLocaisRelatorio();
-  } catch (err) {
-    console.error(err);
-    conteudo.innerHTML = `
-      <div class="alert alert-danger text-center">
-        ❌ Erro ao carregar dados dos relatórios
+const UiRelatorios = {
+  loading() {
+    return `
+      <div class="text-center my-4">
+        <div class="spinner-border text-dark"></div>
       </div>
     `;
-  }
-}
+  },
 
-function carregarLocaisRelatorio() {
-  const listaLocais = document.getElementById("listaLocais");
-  const inputLocal = document.getElementById("localSelecionado");
-  const header = document.getElementById("localSelecionadoHeader");
-  const headerNome = document.getElementById("localSelecionadoNome");
-  const collapseEl = document.getElementById("collapseLocais");
-  const btnToggle = document.getElementById("btnToggleLocais");
+  alerta(tipo, texto) {
+    return `
+      <div class="alert alert-${tipo} text-center py-2">
+        ${texto}
+      </div>
+    `;
+  },
 
-  if (!listaLocais || !inputLocal || !collapseEl || !btnToggle) return;
-
-  // reset
-  listaLocais.innerHTML = "";
-  inputLocal.value = "";
-  header.classList.add("d-none");
-  collapseEl.classList.remove("fechado");
-
-  dataStore.locais.forEach((local) => {
+  cardLocal(local, onClick) {
     const item = document.createElement("div");
     item.className =
       "list-group-item d-flex justify-content-between align-items-center local-item";
@@ -54,145 +48,175 @@ function carregarLocaisRelatorio() {
       <i class="bi bi-check-circle-fill opacity-0"></i>
     `;
 
-    const icon = item.querySelector("i");
+    item.onclick = () => onClick(item);
+    return item;
+  },
 
-    item.addEventListener("click", () => {
-      // limpa seleção
-      listaLocais.querySelectorAll(".local-item").forEach((el) => {
-        el.classList.remove("bg-dark", "text-white");
-        el.querySelector("i")?.classList.add("opacity-0");
-      });
-
-      // seleciona
-      item.classList.add("bg-dark", "text-white");
-      icon.classList.remove("opacity-0");
-
-      // salva
-      inputLocal.value = local.id;
-      headerNome.textContent = local.nome;
-
-      // mostra header
-      header.classList.remove("d-none");
-
-      // anima fechamento
-      collapseEl.classList.add("fechado");
-
-      console.log("Local selecionado:", local.nome);
-
-      carregarProgramacoesRelatorio(local.id);
-    });
-
-    listaLocais.appendChild(item);
-  });
-
-  // reabrir lista
-  btnToggle.addEventListener("click", () => {
-    collapseEl.classList.toggle("fechado");
-  });
-}
-
-function carregarProgramacoesRelatorio(localId) {
-  const lista = document.getElementById("listaProgramacoes");
-  const inputProg = document.getElementById("programacaoSelecionada");
-  const camposEv = document.getElementById("camposEvangelizacao");
-  const inputPalavra = document.getElementById("palavra");
-  const inputQtd = document.getElementById("qtdInternos");
-
-  if (!lista || !inputProg) return;
-
-  lista.innerHTML = "";
-  inputProg.value = "";
-
-  // esconde evangelização ao trocar de local
-  camposEv.classList.add("d-none");
-  inputPalavra.value = "";
-  inputQtd.value = "";
-
-  /* ✅ FILTRA: local + tem inscritos */
-  const programacoes = dataStore.programacao.filter((p) => {
-    if (p.local_id != localId) return false;
-
-    const inscritos = inscritosPorProgramacao[p.id] || [];
-    return inscritos.length > 0; // 👈 REGRA PRINCIPAL
-  });
-
-  if (programacoes.length === 0) {
-    lista.innerHTML = `
-      <div class="col-12">
-        <div class="alert alert-warning py-2 mb-0 small">
-          Nenhuma programação com inscritos para este local.
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  programacoes.forEach((p) => {
-    const col = document.createElement("div");
-    col.className = "col-12";
-
+  cardProgramacao(p, onClick) {
     const card = document.createElement("div");
     card.className =
       "border rounded-3 p-3 d-flex justify-content-between align-items-start programacao-item";
     card.style.cursor = "pointer";
 
     card.innerHTML = `
-      <div class="text-start">
+      <div>
         <div class="fw-semibold mb-1">
           ${p.tipo_visita} – ${formatarData(p.data)}
         </div>
         <div class="small text-muted lh-sm">
-         ${p.descricao} (${p.horario?.replace(/'/g, "")})
+          ${p.descricao} (${p.horario?.replace(/'/g, "")})
         </div>
       </div>
       <i class="bi bi-check-circle-fill fs-5 opacity-0"></i>
     `;
 
-    const icon = card.querySelector("i");
+    card.onclick = () => onClick(card);
+    return card;
+  },
+};
 
-    card.addEventListener("click", () => {
-      // limpa seleção anterior
-      lista.querySelectorAll(".programacao-item").forEach((el) => {
-        el.classList.remove("bg-dark", "text-white");
-        el.querySelector("i")?.classList.add("opacity-0");
-      });
+function obterValoresFormularioRelatorio() {
+  return {
+    responsavel: document.getElementById("responsavel")?.value?.trim() || "",
+    qtdInternos: Number(document.getElementById("qtdInternos")?.value || 0),
+    palavra: document.getElementById("palavra")?.value || "",
+    observacoes: document.getElementById("observacoes")?.value || "",
+  };
+}
 
-      // seleciona atual
-      card.classList.add("bg-dark", "text-white");
-      icon.classList.remove("opacity-0");
+/* =========================
+   CONTROLLER (ENTRADA)
+========================= */
 
-      inputProg.value = p.id;
+async function abrirTelaRelatorios() {
+  setTitle("Admin • Relatórios");
+  conteudo.innerHTML = UiRelatorios.loading();
 
-      // preenche data
-      document.getElementById("dataRelatorio").value = p.data;
+  try {
+    inscritos = await inscricoesService.listar();
+    initMaps();
 
-      // 👉 REGRA DA EVANGELIZAÇÃO (mantida)
-      if (p.tipo_visita === "Evangelização") {
-        camposEv.classList.remove("d-none");
-      } else {
-        camposEv.classList.add("d-none");
-        inputPalavra.value = "";
-        inputQtd.value = "";
-      }
+    conteudo.innerHTML = Ui.PainelRelatorio();
+    RelatorioState.reset();
 
-      carregarColaboradoresRelatorio(p.id);
+    carregarLocaisRelatorio();
+  } catch (err) {
+    console.error(err);
+    conteudo.innerHTML = UiRelatorios.alerta(
+      "danger",
+      "❌ Erro ao carregar dados dos relatórios",
+    );
+  }
+}
 
-      console.log("Programação selecionada:", p);
-    });
+/* =========================
+   LOCAIS
+========================= */
 
-    col.appendChild(card);
-    lista.appendChild(col);
+function carregarLocaisRelatorio() {
+  const lista = document.getElementById("listaLocais");
+  const collapseEl = document.getElementById("collapseLocais");
+  const header = document.getElementById("localSelecionadoHeader");
+  const headerNome = document.getElementById("localSelecionadoNome");
+  const btnToggle = document.getElementById("btnToggleLocais");
+
+  if (!lista) return;
+
+  lista.innerHTML = "";
+  header?.classList.add("d-none");
+  collapseEl?.classList.remove("fechado");
+
+  dataStore.locais.forEach((local) => {
+    lista.appendChild(
+      UiRelatorios.cardLocal(local, (item) => {
+        lista.querySelectorAll(".local-item").forEach((el) => {
+          el.classList.remove("bg-dark", "text-white");
+          el.querySelector("i")?.classList.add("opacity-0");
+        });
+
+        item.classList.add("bg-dark", "text-white");
+        item.querySelector("i").classList.remove("opacity-0");
+
+        RelatorioState.localId = local.id;
+        RelatorioState.programacaoId = null;
+
+        headerNome.textContent = local.nome;
+        header.classList.remove("d-none");
+        collapseEl.classList.add("fechado");
+
+        carregarProgramacoesRelatorio(local.id);
+      }),
+    );
+  });
+
+  btnToggle?.addEventListener("click", () => {
+    collapseEl.classList.toggle("fechado");
   });
 }
 
-let historicoRemocoes = [];
+/* =========================
+   PROGRAMAÇÕES
+========================= */
+
+function carregarProgramacoesRelatorio(localId) {
+  const lista = document.getElementById("listaProgramacoes");
+  const camposEv = document.getElementById("camposEvangelizacao");
+
+  if (!lista) return;
+
+  lista.innerHTML = "";
+  camposEv?.classList.add("d-none");
+
+  const programacoes = relatoriosService.filtrarProgramacoesComInscritos(
+    localId,
+    inscritosPorProgramacao,
+  );
+
+  if (!programacoes.length) {
+    lista.innerHTML = UiRelatorios.alerta(
+      "warning",
+      "Nenhuma programação com inscritos para este local.",
+    );
+    return;
+  }
+
+  programacoes.forEach((p) => {
+    lista.appendChild(
+      UiRelatorios.cardProgramacao(p, (card) => {
+        lista.querySelectorAll(".programacao-item").forEach((el) => {
+          el.classList.remove("bg-dark", "text-white");
+          el.querySelector("i")?.classList.add("opacity-0");
+        });
+
+        card.classList.add("bg-dark", "text-white");
+        card.querySelector("i").classList.remove("opacity-0");
+
+        RelatorioState.programacaoId = p.id;
+        document.getElementById("dataRelatorio").value = p.data;
+
+        if (p.tipo_visita === "Evangelização") {
+          camposEv?.classList.remove("d-none");
+        } else {
+          camposEv?.classList.add("d-none");
+          document.getElementById("palavra").value = "";
+          document.getElementById("qtdInternos").value = "";
+        }
+
+        carregarColaboradoresRelatorio(p.id);
+      }),
+    );
+  });
+}
+
+/* =========================
+   COLABORADORES (INALTERADO)
+========================= */
 
 function carregarColaboradoresRelatorio(programacaoId) {
   const container = document.getElementById("listaColaboradores");
   if (!container) return;
 
   container.innerHTML = "";
-
   const inscritosProg = inscritosPorProgramacao[programacaoId] || [];
 
   if (!inscritosProg.length) {
@@ -201,294 +225,109 @@ function carregarColaboradoresRelatorio(programacaoId) {
         Nenhum colaborador inscrito nesta programação.
       </div>
     `;
-    container.dataset.qtdColaboradores = 0;
     return;
   }
 
   let modoEdicao = false;
 
-  /* ===== HEADER ===== */
   const header = document.createElement("div");
   header.className = "d-flex justify-content-between align-items-center mb-2";
-
-  const info = document.createElement("span");
-  info.className = "text-primary small fst-italic";
-  info.textContent = "Toque para editar";
-
   header.innerHTML = `
-    <span class="fw-semibold">
-      <i class="bi bi-people-fill"></i> Colaboradores DARPE
-    </span>
   `;
-  header.appendChild(info);
 
-  /* ===== LISTA ===== */
   const ul = document.createElement("ul");
   ul.className = "list-unstyled mb-0";
 
   inscritosProg.forEach((i, index) => {
-    const li = document.createElement("li");
-    li.className = "d-flex justify-content-between align-items-center mb-1";
-
-        let instNome = i.instrumento;
+    let instNome = i.instrumento;
     if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
       instNome = instrumentosMap[i.instrumento_id].nome;
-    } else if (instrumentosMap[i.instrumento]) {
-      instNome = instrumentosMap[i.instrumento].nome;
     }
-    const instrumento = instNome ? ` (${instNome})` : "";
 
+    const li = document.createElement("li");
+    li.className = "d-flex justify-content-between align-items-center mb-1";
     li.innerHTML = `
-      <span>${i.nome}${instrumento}</span>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger d-none"
-        title="Excluir colaborador"
-        data-index="${index}"
-      >
-        <i class="bi bi-trash"></i>
-      </button>
+      <span>${i.nome}${instNome ? ` (${instNome})` : ""}</span>
     `;
-
     ul.appendChild(li);
   });
 
-  container.appendChild(header);
-  container.appendChild(ul);
+  container.append(header, ul);
 
-  container.dataset.qtdColaboradores = inscritosProg.length;
-
-  /* ===== TOQUE PARA EDITAR ===== */
-  container.onclick = (e) => {
-    if (e.target.closest("button")) return;
-
+  container.onclick = () => {
     modoEdicao = !modoEdicao;
-
-    info.textContent = modoEdicao ? "Modo edição ativo" : "Toque para editar";
-
-    ul.querySelectorAll("button").forEach((btn) => {
-      btn.classList.toggle("d-none", !modoEdicao);
-    });
-
-    container.classList.toggle("modo-edicao", modoEdicao);
+    ul.querySelectorAll("button").forEach((b) =>
+      b.classList.toggle("d-none", !modoEdicao),
+    );
   };
 
-  /* ===== EXCLUIR ===== */
   ul.querySelectorAll("button").forEach((btn) => {
     btn.onclick = (e) => {
-      e.preventDefault();
       e.stopPropagation();
-
       const index = Number(btn.dataset.index);
       const colaborador = inscritosProg[index];
-      const nome = colaborador?.nome || "este colaborador";
 
       abrirConfirmacao(
         "Confirmar exclusão",
-        `Deseja realmente remover <strong>${nome}</strong> do relatório?`,
+        `Deseja remover <strong>${colaborador.nome}</strong>?`,
         () => {
-          historicoRemocoes.push({
+          RelatorioState.historicoRemocoes.push({
             programacaoId,
             colaborador,
             index,
           });
-
           inscritosProg.splice(index, 1);
           carregarColaboradoresRelatorio(programacaoId);
           mostrarBotaoDesfazer();
-
-          // 🧠 espera o modal fechar antes de abrir o aviso
-          if (inscritosProg.length === 0) {
-            setTimeout(() => {
-              abrirAvisoSemColaboradores();
-            }, 300);
-          }
         },
       );
     };
   });
 }
 
-/* ===== MODAL AVISO ===== */
-function abrirAvisoSemColaboradores() {
-  const modalEl = document.getElementById("confirmModal");
-  const titleEl = document.getElementById("confirmTitle");
-  const msgEl = document.getElementById("confirmMessage");
-  const btnOk = document.getElementById("confirmOk");
-
-  btnOk.onclick = null;
-  btnOk.className = "btn btn-warning";
-  btnOk.textContent = "Entendi";
-
-  titleEl.textContent = "Atenção";
-  msgEl.innerHTML = `
-    <div class="text-center">
-      <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
-      <p class="mt-3 mb-0">
-        Este relatório está sem colaboradores.
-      </p>
-    </div>
-  `;
-
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
-    backdrop: "static",
-    keyboard: false,
-  });
-
-  btnOk.onclick = () => modal.hide();
-
-  modal.show();
-}
-
-/* ===== MODAL CONFIRMAÇÃO ===== */
-function abrirConfirmacao(titulo, mensagem, onConfirm) {
-  const modalEl = document.getElementById("confirmModal");
-  const titleEl = document.getElementById("confirmTitle");
-  const msgEl = document.getElementById("confirmMessage");
-  const btnOk = document.getElementById("confirmOk");
-
-  // 🔥 RESET COMPLETO
-  btnOk.onclick = null;
-  btnOk.className = "btn btn-danger";
-  btnOk.textContent = "Excluir";
-
-  titleEl.textContent = titulo;
-  msgEl.innerHTML = mensagem;
-
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-  btnOk.onclick = () => {
-    modal.hide();
-    onConfirm();
-  };
-
-  modal.show();
-}
-
-/* ===== DESFAZER (CTRL+Z) ===== */
-function desfazerUltimaRemocao() {
-  const ultima = historicoRemocoes.pop();
-  if (!ultima) return;
-
-  const { programacaoId, colaborador, index } = ultima;
-
-  if (!inscritosPorProgramacao[programacaoId]) return;
-
-  inscritosPorProgramacao[programacaoId].splice(index, 0, colaborador);
-  carregarColaboradoresRelatorio(programacaoId);
-
-  if (!historicoRemocoes.length) {
-    ocultarBotaoDesfazer();
-  }
-}
-
-function mostrarBotaoDesfazer() {
-  document.getElementById("btnDesfazer")?.classList.remove("d-none");
-}
-
-function ocultarBotaoDesfazer() {
-  document.getElementById("btnDesfazer")?.classList.add("d-none");
-}
+/* =========================
+   DADOS + PDF + WHATSAPP
+========================= */
 
 function montarDadosRelatorio() {
-  const localId = document.getElementById("localSelecionado")?.value;
-  const programacaoId = document.getElementById(
-    "programacaoSelecionada",
-  )?.value;
+  const { localId, programacaoId } = RelatorioState;
+  const form = obterValoresFormularioRelatorio();
 
-  const responsavelInput = document.getElementById("responsavel");
-  const responsavel = responsavelInput?.value?.trim();
-  if (!localId || !programacaoId) {
+  if (!localId || !programacaoId || !form.responsavel) {
     abrirModalAviso(
-      '<i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>' +
-        "Selecione o <strong>Local</strong> e a <strong>Programação</strong> antes de gerar o relatório.",
       "Dados obrigatórios",
+      "Selecione o local, programação e informe o responsável.",
     );
-    return null;
-  }
-
-  if (!responsavel) {
-    abrirModalAviso(
-      '<i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-2"></i>' +
-        "Informe o <strong>DARPE Responsável</strong> antes de gerar o relatório." +
-        "<br><br><small>(É o responsável pela emissão do documento)</small>",
-      "Campo obrigatório",
-    );
-
-    responsavelInput?.focus();
     return null;
   }
 
   const local = dataStore.locais.find((l) => l.id == localId);
   const programacao = dataStore.programacao.find((p) => p.id == programacaoId);
 
-  if (!local || !programacao) {
-    if (!local || !programacao) {
-      abrirModalAviso(
-        "❌ Não foi possível localizar os dados do relatório.<br>Tente selecionar novamente.",
-        "Erro",
-      );
-      return null;
-    }
+  const colaboradoresRaw = inscritosPorProgramacao[programacaoId] || [];
 
-    return null;
-  }
+  // 🔥 padroniza colaboradores (PDF e WhatsApp usam igual)
+  const colaboradores = colaboradoresRaw.map((c) => ({
+    ...c,
+    instrumentoNome:
+      c.instrumento_id && instrumentosMap[c.instrumento_id]
+        ? instrumentosMap[c.instrumento_id].nome
+        : c.instrumento || "",
+  }));
 
-  const colaboradores = inscritosPorProgramacao?.[programacaoId] || [];
-
-  const dados = {
-    responsavel: responsavel,
-    local: {
-      nome: local.nome,
-      endereco: local.endereco,
-    },
-    programacao: {
-      tipo: programacao.tipo_visita,
-      data: programacao.data,
-      horario: programacao.horario,
-      descricao: programacao.descricao,
-    },
-    colaboradores: colaboradores.map((i) => {
-      let instNome = i.instrumento;
-      if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
-        instNome = instrumentosMap[i.instrumento_id].nome;
-      } else if (instrumentosMap[i.instrumento]) {
-        instNome = instrumentosMap[i.instrumento].nome;
-      }
-      return { nome: i.nome, instrumento: instNome || null };
-    }),
+  return {
+    responsavel: form.responsavel,
+    local,
+    programacao,
+    colaboradores,
     qtdColaboradores: colaboradores.length,
-    qtdInternos: Number(document.getElementById("qtdInternos")?.value || 0),
-
-    // ✅ NOVO
-    observacoes: document.getElementById("observacoes")?.value || "",
+    qtdInternos: form.qtdInternos,
+    observacoes: form.observacoes,
+    evangelizacao:
+      programacao.tipo_visita === "Evangelização"
+        ? { palavra: form.palavra || "-" }
+        : null,
   };
-
-  // 👉 somente se for Evangelização
-  if (programacao.tipo_visita === "Evangelização") {
-    dados.evangelizacao = {
-      palavra: document.getElementById("palavra")?.value || "-",
-    };
-  }
-
-  return dados;
-}
-
-function carregarImagemBase64(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL("image/png"));
-    };
-    img.onerror = reject;
-    img.src = url;
-  });
 }
 
 async function gerarPDF() {
@@ -511,17 +350,16 @@ async function gerarPDF() {
   let y = 20;
 
   /* ================= LOGO ================= */
-  const logoUrl = "Img/logo-ccb.png"; // ajuste se necessário
+  const logoUrl = "Img/logo-ccb.png";
   const logoImg = await carregarImagemBase64(logoUrl);
-
   doc.addImage(logoImg, "PNG", 80, y, 50, 22);
-  y += 35;
+  y += 30; // ⬅ antes era 35
 
   /* ================= CABEÇALHO ================= */
   doc.setFont("helvetica", "bold");
   doc.setFontSize(FONT_TITULO);
   doc.text("DARPE", 105, y, { align: "center" });
-  y += 8;
+  y += 7;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(FONT_TEXTO);
@@ -529,17 +367,17 @@ async function gerarPDF() {
     align: "center",
   });
 
-  y += 10;
+  y += 8;
   doc.line(MARGEM_ESQ, y, MARGEM_DIR, y);
-  y += 12;
+  y += 9;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(FONT_SUBTITULO);
-  doc.text("Relatório Atendimento DARPE", 105, y, { align: "center" });
+  doc.text("Relatório de Atendimento", 105, y, { align: "center" });
 
-  y += 10;
+  y += 8;
   doc.line(MARGEM_ESQ, y, MARGEM_DIR, y);
-  y += 14;
+  y += 10;
 
   /* ================= FUNÇÃO LINHA ================= */
   function linha(label, valor) {
@@ -551,7 +389,7 @@ async function gerarPDF() {
     doc.setFontSize(FONT_TEXTO);
     doc.text(valor || "-", MARGEM_ESQ + 55, y);
 
-    y += 9;
+    y += 7; // ⬅ antes era 9
 
     if (y > 270) {
       doc.addPage();
@@ -560,22 +398,24 @@ async function gerarPDF() {
   }
 
   /* ================= DADOS PRINCIPAIS ================= */
-  linha("DARPE Responsável:", dados.responsavel);
-  linha("Local:", dados.local.nome);
+  linha("Nome do Responsável:", dados.responsavel);
+  linha("Nome do Local:", dados.local.nome);
   linha(
     "Programação:",
-    `${dados.programacao.tipo} – ${dados.programacao.descricao}`,
+    `${dados.programacao.tipo_visita} – ${dados.programacao.descricao}`,
   );
+
   const horarioLimpo = dados.programacao.horario.replace(/'/g, "");
   linha(
     "Data e Hora:",
     `${formatarData(dados.programacao.data)} – ${horarioLimpo}`,
   );
+
   if (dados.qtdInternos > 0) {
-    linha("Qtd Internos:", String(dados.qtdInternos));
+    linha("Qtde. Internos:", String(dados.qtdInternos));
   }
 
-  linha("Qtd Músicos:", String(dados.qtdColaboradores));
+  linha("Qtde. Músicos:", String(dados.qtdColaboradores));
 
   /* ================= EVANGELIZAÇÃO ================= */
   if (dados.evangelizacao) {
@@ -584,21 +424,21 @@ async function gerarPDF() {
 
   /* ================= OBSERVAÇÕES ================= */
   if (dados.observacoes?.trim()) {
-    y += 4;
+    y += 3;
     doc.line(MARGEM_ESQ, y, MARGEM_DIR, y);
-    y += 10;
+    y += 7;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(FONT_SUBTITULO);
     doc.text("Observações:", MARGEM_ESQ, y);
-    y += 7;
+    y += 6;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(FONT_TEXTO);
 
     const textoObs = doc.splitTextToSize(dados.observacoes, LARGURA_TEXTO);
     doc.text(textoObs, MARGEM_ESQ, y);
-    y += textoObs.length * 6;
+    y += textoObs.length * 5; // ⬅ antes era 6
 
     if (y > 270) {
       doc.addPage();
@@ -607,14 +447,14 @@ async function gerarPDF() {
   }
 
   /* ================= COLABORADORES ================= */
-  y += 6;
+  y += 4;
   doc.line(MARGEM_ESQ, y, MARGEM_DIR, y);
-  y += 10;
+  y += 7;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(FONT_SUBTITULO);
-  doc.text("Colaboradores DARPE", MARGEM_ESQ, y);
-  y += 8;
+  doc.text("Nome/Instrumento dos Voluntários", MARGEM_ESQ, y);
+  y += 6;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(FONT_TEXTO);
@@ -623,10 +463,16 @@ async function gerarPDF() {
     doc.text("Nenhum colaborador inscrito.", MARGEM_ESQ, y);
   } else {
     dados.colaboradores.forEach((c) => {
-      const texto = c.instrumento ? `${c.nome} (${c.instrumento})` : c.nome;
+      let instNome = c.instrumento;
+
+      if (c.instrumento_id && instrumentosMap[c.instrumento_id]) {
+        instNome = instrumentosMap[c.instrumento_id].nome;
+      }
+
+      const texto = instNome ? `${c.nome} (${instNome})` : c.nome;
 
       doc.text("• " + texto, MARGEM_ESQ + 2, y);
-      y += 6;
+      y += 5; // ⬅ antes era 6
 
       if (y > 270) {
         doc.addPage();
@@ -653,16 +499,16 @@ function gerarNomeRelatorioPDF(dados) {
 function gerarMensagemWhatsAppRelatorio(dados) {
   const linhas = [];
 
-  linhas.push("*RELATÓRIO DARPE*");
-  linhas.push("_Atendimento de Evangelização_");
+  linhas.push("*DARPE*");
+  linhas.push("_Relatório de Atendimento_");
   linhas.push("");
-  linhas.push(`▫️ *DARPE Responsável:* _${dados.responsavel}_`);
+  linhas.push(`▫️ *Nome do Responsável:* _${dados.responsavel}_`);
   linhas.push("_________________________________");
   linhas.push("");
 
   // 📍 DADOS GERAIS
   linhas.push("*📍 DADOS DO ATENDIMENTO*");
-  linhas.push(`▫️ *Local:* _${dados.local?.nome || "-"}_`);
+  linhas.push(`▫️ *Nome do Local:* _${dados.local?.nome || "-"}_`);
   linhas.push("");
   linhas.push(`▫️ *Data:* _${formatarData(dados.programacao?.data)}_`);
   linhas.push("");
@@ -671,31 +517,20 @@ function gerarMensagemWhatsAppRelatorio(dados) {
   );
   linhas.push("");
   linhas.push(
-    `▫️ *Programação:* _${dados.programacao?.tipo} – ${dados.programacao?.descricao}_`,
+    `▫️ *Programação:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
   );
   linhas.push("");
   if (dados.qtdInternos > 0) {
-    linhas.push(`▫️ *Qtd. Internos:* _${dados.qtdInternos}_`);
+    linhas.push(`▫️ *Qtde. Internos:* _${dados.qtdInternos}_`);
   }
   linhas.push("");
-  linhas.push(`▫️ *Qtd. Músicos:* _${dados.qtdColaboradores}_`);
+  linhas.push(`▫️ *Qtde. Músicos:* _${dados.qtdColaboradores}_`);
   linhas.push("");
   if (dados.evangelizacao?.palavra) {
-    linhas.push(`▫️ *Evangelização:* _${dados.evangelizacao.palavra}_`);
+    linhas.push(`▫️ *Palavra:* _${dados.evangelizacao.palavra}_`);
   }
 
-  // 👥 COLABORADORES
-  if (dados.colaboradores?.length) {
-    linhas.push("");
-    linhas.push("_________________________________");
-    linhas.push("*👥 VONLUNTÁRIOS DARPE*");
-
-    dados.colaboradores.forEach((c) => {
-      linhas.push(
-        `• _${c.nome}${c.instrumento ? " (" + c.instrumento + ")" : ""}_`,
-      );
-    });
-  }
+  linhas.push("");
 
   // 📝 OBSERVAÇÕES
   if (dados.observacoes?.trim()) {
@@ -706,16 +541,19 @@ function gerarMensagemWhatsAppRelatorio(dados) {
     linhas.push(`${dados.observacoes}`);
   }
 
+  // 👥 COLABORADORES
+  if (dados.colaboradores?.length) {
+    linhas.push("");
+    linhas.push("_________________________________");
+    linhas.push("*👥 Nome/Instrumento dos Voluntários*");
+
+    dados.colaboradores.forEach((c) => {
+      linhas.push(
+        `• _${c.nome}${c.instrumentoNome ? " (" + c.instrumentoNome + ")" : ""}_`,
+      );
+    });
+  }
   linhas.push("");
-  linhas.push("_________________________________");
-  linhas.push("_Relatório gerado automaticamente pelo sistema DARPE_");
-  linhas.push("");
-  linhas.push("Deus Abençoe a Todos");
-  linhas.push("");
-  linhas.push("");
-  linhas.push("*Marcos 16:15  E disse-lhes:*");
-  linhas.push("");
-  linhas.push(" _Ide por todo o mundo e pregai o evangelho a toda criatura_");
   return encodeURIComponent(linhas.join("\n"));
 }
 
@@ -725,6 +563,9 @@ function enviarWhatsAppRelatorio() {
 
   const mensagem = gerarMensagemWhatsAppRelatorio(dados);
 
-  const url = `https://api.whatsapp.com/send?text=${mensagem}`;
-  window.open(url, "_blank");
+  window.open(
+    `https://api.whatsapp.com/send?text=${mensagem}`,
+    "_blank",
+    "noopener,noreferrer",
+  );
 }
