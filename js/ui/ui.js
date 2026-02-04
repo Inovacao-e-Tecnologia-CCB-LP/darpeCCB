@@ -3,16 +3,12 @@ function setTitle(text) {
 }
 
 async function showMenuInicial() {
-
-  if (window.adminSessaoAtiva) {
-    window.adminSessaoAtiva = false;
-    location.reload();
-    return;
-  }
+  window.adminAuth = {
+    authenticated: false,
+    token: null,
+  };
 
   mostrarBotaoAdmin();
-  setTitle("Carregando...");
-  conteudo.innerHTML = '<div class="spinner-border"></div>';
   setTitle("DARPE");
   conteudo.innerHTML = Ui.Home();
 }
@@ -69,4 +65,16 @@ function mostrarLoading(containerId) {
       <div class="spinner-border text-dark"></div>
     </div>
   `;
+}
+
+function getTipoRadioSelecionado() {
+  const radio = document.querySelector('input[name="instrumentoTipo"]:checked');
+  return radio ? radio.value : "";
+}
+
+function marcarTipoRadio(tipo) {
+  const radio = document.querySelector(
+    `input[name="instrumentoTipo"][value="${tipo}"]`,
+  );
+  if (radio) radio.checked = true;
 }

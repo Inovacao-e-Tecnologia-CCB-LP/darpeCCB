@@ -1,5 +1,19 @@
 let senhaDigitada = "";
-let isAdmin = false;
+
+window.adminAuth = {
+  authenticated: false,
+  token: null,
+};
+
+function guardAdmin(next) {
+  if (window.adminAuth?.authenticated) {
+    next();
+    return;
+  }
+
+  abrirModalAviso("Acesso negado", "Faça login como administrador");
+  showMenuInicial();
+}
 
 function abrirModalAdmin() {
   document.getElementById("senhaAdmin").value = "";
@@ -19,31 +33,35 @@ async function validarSenhaAdmin() {
 
   erro.classList.add("d-none");
 
-  // loading
   btn.disabled = true;
   textoBtn.classList.add("d-none");
   spinner.classList.remove("d-none");
 
   try {
-    const success = await authService.auth(senhaDigitada)
-    if (success === true) {
-      isAdmin = true;
+    const r = await authService.auth(senhaDigitada);
 
-      const modalEl = document.getElementById("modalAdmin");
-      bootstrap.Modal.getInstance(modalEl).hide();
-
-      navigateTo(mostrarAdmin);
-    } else {
-      erro.classList.remove("d-none");
+    if (!r?.success) {
+      mostrarErroSenha(r?.error || "Senha inválida");
+      return;
     }
+
+    window.adminAuth.authenticated = true;
+    window.adminAuth.token = r.token;
+
+    bootstrap.Modal.getInstance(document.getElementById("modalAdmin")).hide();
+    navigateTo(() => guardAdmin(mostrarAdmin));
   } catch (err) {
     console.error(err);
-    erro.innerText = "Erro ao validar senha";
-    erro.classList.remove("d-none");
+    mostrarErroSenha("Erro ao validar senha");
   } finally {
-    // stop loading
     btn.disabled = false;
     textoBtn.classList.remove("d-none");
     spinner.classList.add("d-none");
   }
+}
+
+function mostrarErroSenha(msg) {
+  const erro = document.getElementById("erroSenha");
+  erro.innerText = msg;
+  erro.classList.remove("d-none");
 }
