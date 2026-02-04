@@ -7,173 +7,187 @@
 
     <div class="card-body">
       <label class="form-label fw-semibold">
-        <i class="bi bi-geo-alt"></i> Local
+        <i class="bi bi-geo-alt me-1"></i> Local
       </label>
-      <form id="formRelatorio" class="row g-4">
-        <!-- LOCAL SELECIONADO (RESUMO) -->
-        <div id="localSelecionadoHeader" class="d-none mb-2">
-          <button
-            id="btnToggleLocais"
-            class="btn btn-dark w-100 d-flex justify-content-between align-items-center"
-            type="button"
-          >
-            <span id="localSelecionadoNome"></span>
-            <i class="bi bi-chevron-down"></i>
-          </button>
-        </div>
 
-        <!-- LISTA DE LOCAIS -->
-        <div id="collapseLocais">
-          <div
-            id="listaLocais"
-            class="list-group border rounded overflow-hidden"
-          >
-            <!-- Gerado via JS -->
+      <form id="formRelatorio" class="row g-2 justify-content-center">
+        <!-- WRAPPER DE LARGURA -->
+        <div class="col-12 col-xl-10">
+          <!-- LOCAL SELECIONADO (RESUMO) -->
+          <div id="localSelecionadoHeader" class="d-none mb-1">
+            <button
+              id="btnToggleLocais"
+              class="btn btn-dark w-100 d-flex justify-content-between align-items-center"
+              type="button"
+            >
+              <span id="localSelecionadoNome"></span>
+              <i class="bi bi-chevron-down"></i>
+            </button>
           </div>
-        </div>
 
-        <input type="hidden" id="localSelecionado" required />
+          <!-- LISTA DE LOCAIS -->
+          <div id="collapseLocais" class="mb-1">
+            <div
+              id="listaLocais"
+              class="list-group border rounded overflow-hidden"
+            >
+              <!-- Gerado via JS -->
+            </div>
+          </div>
 
-        <!-- PROGRAMAÇÃO -->
-        <div class="col-12">
-          <label class="form-label fw-semibold">
-            <i class="bi bi-calendar-event"></i> Programação
-          </label>
+          <input type="hidden" id="localSelecionado" required />
 
-          <div id="listaProgramacoes" class="row g-2">
-            <div class="col-12">
-              <div class="alert alert-secondary py-2 mb-0 small">
-                Selecione um local para carregar as programações.
+          <!-- PROGRAMAÇÃO -->
+          <div class="col-12">
+            <label class="form-label fw-semibold mb-1">
+              <i class="bi bi-calendar-event me-1"></i> Programação
+            </label>
+
+            <div id="listaProgramacoes" class="row g-2">
+              <div class="col-12">
+                <div class="alert alert-secondary py-1 mb-0 small">
+                  Selecione um local para carregar as programações.
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" id="programacaoSelecionada" required />
+          </div>
+
+          <!-- DATA / RESPONSÁVEL -->
+          <div class="row g-2 mt-1">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">
+                <i class="bi bi-calendar-date me-1"></i> Data
+              </label>
+              <input
+                type="date"
+                id="dataRelatorio"
+                class="form-control"
+                readonly
+              />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">
+                <i class="bi bi-person-badge me-1"></i> Responsável
+              </label>
+              <input
+                type="text"
+                id="responsavel"
+                class="form-control"
+                placeholder="Nome do responsável"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- OBSERVAÇÕES -->
+          <div class="col-12 mt-1">
+            <label class="form-label fw-semibold small">
+              <i class="bi bi-chat-text me-1"></i> Observações
+            </label>
+            <textarea
+              id="observacoes"
+              rows="4"
+              class="form-control"
+              placeholder="Observações adicionais"
+            ></textarea>
+          </div>
+
+          <!-- QTD INTERNOS (CENTRALIZADO) -->
+          <div class="row justify-content-center mt-4">
+            <div class="col-12 col-md-6 col-lg-4 text-center">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-person-fill me-1"></i> Qtd. Internos
+              </label>
+              <input
+                type="number"
+                id="qtdInternos"
+                class="form-control text-center"
+                min="0"
+                placeholder="Ex: 15"
+              />
+              <div class="form-text">
+                Quantidade de participantes que
+                <b>não são músicos</b>.
               </div>
             </div>
           </div>
 
-          <input type="hidden" id="programacaoSelecionada" required />
-        </div>
+          <!-- CAMPOS EVANGELIZAÇÃO -->
+          <div
+            class="row d-none justify-content-center mt-4"
+            id="camposEvangelizacao"
+          >
+            <div class="col-12 col-md-8 col-lg-6">
+              <div class="card border-warning shadow-sm">
+                <div
+                  class="card-header bg-warning-subtle fw-semibold text-center"
+                >
+                  <i class="bi bi-megaphone me-1"></i>
+                  Informações da Evangelização
+                </div>
 
-        <!-- DATA -->
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">
-            <i class="bi bi-calendar-date"></i> Data
-          </label>
-          <input type="date" id="dataRelatorio" class="form-control" readonly />
-        </div>
+                <div class="card-body">
+                  <p class="text-muted small mb-3 text-center">
+                    Preencha apenas as informações referentes à evangelização.
+                    Esses dados serão utilizados exclusivamente no documento
+                    final.
+                  </p>
 
-        <!-- RESPONSÁVEL -->
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">
-            <i class="bi bi-person-badge"></i> Responsável
-          </label>
-          <input
-            type="text"
-            id="responsavel"
-            class="form-control"
-            placeholder="Nome do responsável"
-            required
-          />
-        </div>
-
-        <!-- OBSERVAÇÕES -->
-        <div class="col-12">
-          <label class="form-label fw-semibold">
-            <i class="bi bi-chat-text"></i> Observações
-          </label>
-          <textarea
-            id="observacoes"
-            rows="4"
-            class="form-control"
-            placeholder="Observações adicionais"
-          ></textarea>
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Qtd. Internos</label>
-          <input
-            type="number"
-            id="qtdInternos"
-            class="form-control"
-            min="0"
-            placeholder="Ex: 12"
-          />
-          <div class="form-text">
-            Quantidade de irmãos participantes que
-            <b>não são músicos</b>.
-          </div>
-        </div>
-
-        <!-- CAMPOS EVANGELIZAÇÃO -->
-        <div class="col-12 d-none" id="camposEvangelizacao">
-          <div class="card border-warning">
-            <div class="card-header bg-warning-subtle fw-semibold">
-              <i class="bi bi-megaphone"></i> Informações da Evangelização
-            </div>
-
-            <div class="card-body">
-              <!-- descrição geral -->
-              <p class="text-muted small mb-3">
-                Preencha apenas as informações referentes à evangelização. Esses
-                dados serão utilizados exclusivamente no documento final.
-              </p>
-
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Palavra</label>
-                  <input
-                    type="text"
-                    id="palavra"
-                    class="form-control"
-                    placeholder="Ex: João 3:16–21"
-                  />
-                  <div class="form-text">
-                    Informe o livro, capítulo e versículos revelados na
-                    evangelização. <br />
-                    Se caso não ouve palavra escreva "Não ouve Palavra"
+                  <div class="row g-3 justify-content-center">
+                    <div class="col-12">
+                      <label class="form-label">Palavra</label>
+                      <input
+                        type="text"
+                        id="palavra"
+                        class="form-control text-center"
+                        placeholder="Ex: João 3:16–21"
+                      />
+                      <div class="form-text text-center">
+                        Informe o livro, capítulo e versículos revelados na
+                        evangelização.
+                        <br />
+                        Se não houve palavra, deixe em branco.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- COLABORADORES -->
-        <div class="col-12">
-          <label class="form-label fw-semibold">
-            <i class="bi bi-people"></i> Colaboradores DARPE
-          </label>
+          <!-- COLABORADORES -->
+          <div class="col-12 mt-3">
+            <label class="form-label fw-semibold">
+              <i class="bi bi-people me-1"></i> Nome/Instrumentos dos
+              Voluntários
+            </label>
 
-          <div
-            id="listaColaboradores"
-            class="border rounded p-3 bg-body-secondary small"
-            style="cursor: pointer"
-          >
-            <span class="text-muted fst-italic">
-              Toque para editar os colaboradores
-            </span>
+            <div
+              id="listaColaboradores"
+              class="border rounded p-3 bg-body-secondary small hover-shadow"
+              style="cursor: pointer"
+            ></div>
           </div>
 
-          <!-- 🔙 DESFAZER -->
-          <div class="d-flex justify-content-end mt-2">
+          <!-- AÇÕES -->
+          <div
+            class="col-12 d-flex flex-wrap gap-2 justify-content-center justify-content-md-end mt-3"
+          >
+            <button type="button" class="btn btn-primary" onclick="gerarPDF()">
+              <i class="bi bi-file-earmark-pdf"></i> Gerar PDF
+            </button>
+
             <button
-              id="btnDesfazer"
               type="button"
-              class="btn btn-sm btn-outline-secondary d-none m-1"
-              onclick="desfazerUltimaRemocao()"
+              class="btn btn-success"
+              onclick="enviarWhatsAppRelatorio()"
             >
-              <i class="bi bi-arrow-counterclockwise"></i>
-              Desfazer
+              <i class="bi bi-whatsapp"></i> Enviar no WhatsApp
             </button>
           </div>
-        </div>
-
-        <!-- AÇÕES -->
-        <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
-          <button type="button" class="btn btn-primary" onclick="gerarPDF()">
-            <i class="bi bi-file-earmark-pdf"></i> Gerar PDF
-          </button>
-
-          <button onclick="enviarWhatsAppRelatorio()" class="btn btn-success">
-            <i class="bi bi-whatsapp"></i> Enviar no WhatsApp
-          </button>
         </div>
       </form>
     </div>
