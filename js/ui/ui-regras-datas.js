@@ -301,7 +301,7 @@ async function salvarRegra(
 
   // validação (mantida)
   if (!localId || !tipo || !horario) {
-    abrirModalAvisoRegras(
+    abrirModalAviso(
       "Aviso",
       "Preencha todos os campos obrigatórios",
       "aviso",
