@@ -299,8 +299,13 @@ async function salvarRegra(
   const horario = document.getElementById("regraHorario").value;
   const ativo = document.getElementById("regraAtivo").checked;
 
+  // validação (mantida)
   if (!localId || !tipo || !horario) {
-    abrirModalAviso("Aviso", "Preencha todos os campos obrigatórios");
+    abrirModalAvisoRegras(
+      "Aviso",
+      "Preencha todos os campos obrigatórios",
+      "aviso",
+    );
     return;
   }
 
@@ -321,9 +326,14 @@ async function salvarRegra(
   try {
     desabilitarBotaoRegra();
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Salvando`;
+    btn.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2"></span>
+      Salvando
+    `;
 
-    if (!modalInstance) mostrarLoading("listaRegrasDatas");
+    if (!modalInstance) {
+      mostrarLoading("listaRegrasDatas");
+    }
 
     const data =
       action === "create"
@@ -331,33 +341,47 @@ async function salvarRegra(
         : await regrasDatasService.atualizar({ id, ...payload }, senhaDigitada);
 
     if (data?.error) {
-      abrirModalAviso("Erro", data.error);
+      abrirModalAviso("Erro", data.error, "erro");
       return;
     }
 
+    // fecha modal
     if (modalInstance) {
       modalInstance.hide();
     } else {
-      bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
+      bootstrap.Modal.getInstance(
+        document.getElementById("modalRegra"),
+      )?.hide();
     }
 
     await carregarRegrasDatas();
+
+    // feedback de sucesso (nova funcionalidade)
+    abrirModalAviso(
+      "Sucesso",
+      action === "create"
+        ? "Regra criada com sucesso."
+        : "Regra atualizada com sucesso.",
+      "sucesso",
+    );
 
     if (btnEdit) {
       btnEdit.disabled = false;
       btnEdit.innerHTML = txtEdit;
     }
+
     habilitarBotaoRegra();
-    appScriptApi.bootstrap();
+    await appScriptApi.bootstrap();
   } catch (err) {
     habilitarBotaoRegra();
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar regra");
+    abrirModalAviso("Erro", "Erro ao salvar regra", "erro");
   } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
 }
+
 
 async function excluirRegra(id, btnTrash) {
   const textoOriginal = btnTrash.innerHTML;
@@ -438,3 +462,4 @@ function habilitarBotaoRegra() {
     btn.removeAttribute('disabled');
   });
 }
+
