@@ -166,6 +166,8 @@ async function salvarInstrumento() {
     return;
   }
 
+  if (nome.trim() !== '' && !isNaN(nome)) return abrirModalAviso("Erro", "Nome do instrumento não pode ser vazio ou um número");
+  
   const btn = document.getElementById("btnSalvarInstrumento");
   const textoOriginal = btn.innerHTML;
 
@@ -262,6 +264,7 @@ async function editarInstrumento(id, btn) {
     btnSalvar.onclick = async () => {
       const nome = document.getElementById("instrumentoNome").value.trim();
       const tipo = getTipoRadioSelecionado();
+      if (nome.trim() !== '' && !isNaN(nome)) return abrirModalAviso("Erro", "Nome do instrumento não pode ser vazio ou um número");
 
       if (!nome || !["corda", "sopro"].includes(tipo)) {
         modal.hide();
