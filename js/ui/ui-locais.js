@@ -101,11 +101,11 @@ function renderTabelaLocais(locais) {
     <td class="text-center">${l.limite}</td>
 
     <td class="text-center">
-      <button class="btn btn-sm btn-outline-dark me-1"
+      <button class="btn btn-sm btn-outline-dark me-1 editar-btn"
         onclick="editarLocal(${l.id}, this)">
         <i class="bi bi-pencil"></i>
       </button>
-      <button class="btn btn-sm btn-outline-danger"
+      <button class="btn btn-sm btn-outline-danger excluir-btn"
         onclick="excluirLocal(${l.id}, this)">
         <i class="bi bi-trash"></i>
       </button>
@@ -279,6 +279,7 @@ async function salvarLocal() {
   const textoOriginal = btn.innerHTML;
 
   try {
+    desabilitarBotaoLocal();
     btn.disabled = true;
     btn.innerHTML = `
       <span class="spinner-border spinner-border-sm"></span> Salvando
@@ -300,7 +301,6 @@ async function salvarLocal() {
     bootstrap.Modal.getInstance(document.getElementById("modalLocal")).hide();
 
     mostrarLoading("listaLocais");
-
     await reloadLocais();
 
     const mensagemSucesso = payload.id
@@ -312,6 +312,7 @@ async function salvarLocal() {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar local");
   } finally {
+    habilitarBotaoLocal();
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
@@ -322,9 +323,11 @@ async function salvarLocal() {
 ========================= */
 
 async function editarLocal(id, btn) {
+  let salvou = false;
   const textoOriginal = btn.innerHTML;
 
   try {
+    desabilitarBotaoLocal();
     btn.disabled = true;
     btn.innerHTML = `
       <span class="spinner-border spinner-border-sm"></span>
@@ -341,10 +344,28 @@ async function editarLocal(id, btn) {
     preencherFormularioLocal(local);
 
     document.getElementById("modalLocalTitulo").innerText = "Editar Local";
-    document.getElementById("btnSalvarLocal").onclick = salvarLocal;
+    document.getElementById("btnSalvarLocal").onclick = async () => {
+      salvou = true
+      await salvarLocal();
+    };
 
-    new bootstrap.Modal(document.getElementById("modalLocal")).show();
+    const modalEl = document.getElementById("modalLocal");
+    const modal = new bootstrap.Modal(modalEl);
+
+    modalEl.addEventListener(
+      "hidden.bs.modal",
+      () => {
+        if (!salvou) {
+          btn.disabled = false;
+          btn.innerHTML = textoOriginal;
+          habilitarBotaoLocal();
+        }
+      },
+      { once: true },
+    );
+    modal.show();
   } catch (err) {
+    habilitarBotaoLocal();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao carregar local");
   } finally {
@@ -369,6 +390,7 @@ function excluirLocal(id, btnTrash) {
     const textoTrash = btnTrash.innerHTML;
 
     try {
+      desabilitarBotaoLocal();
       btnOk.disabled = true;
       btnTrash.disabled = true;
       btnOk.innerHTML = `
@@ -392,6 +414,7 @@ function excluirLocal(id, btnTrash) {
       console.error(err);
       abrirModalAviso("Erro", "Erro ao excluir local");
     } finally {
+      habilitarBotaoLocal();
       btnOk.disabled = false;
       btnTrash.disabled = false;
       btnOk.innerHTML = textoOk;
@@ -404,4 +427,36 @@ function excluirLocal(id, btnTrash) {
   };
 
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
+}
+
+function desabilitarBotaoLocal() {
+  const btn = document.getElementById("novoLocalBtn");
+  if (!btn.hasAttribute('disabled')) btn.setAttribute('disabled', '');
+
+  const editBtns = document.querySelectorAll('.editar-btn');
+  const deleteBtns = document.querySelectorAll('.excluir-btn');
+
+  editBtns.forEach(btn => {
+    btn.setAttribute('disabled', '');
+  });
+
+  deleteBtns.forEach(btn => {
+    btn.setAttribute('disabled', '');
+  });
+}
+
+function habilitarBotaoLocal() {
+  const btn = document.getElementById("novoLocalBtn");
+  if (btn.hasAttribute('disabled')) btn.removeAttribute('disabled');
+
+  const editBtns = document.querySelectorAll('.editar-btn');
+  const deleteBtns = document.querySelectorAll('.excluir-btn');
+
+  editBtns.forEach(btn => {
+    btn.removeAttribute('disabled');
+  });
+
+  deleteBtns.forEach(btn => {
+    btn.removeAttribute('disabled');
+  });
 }
