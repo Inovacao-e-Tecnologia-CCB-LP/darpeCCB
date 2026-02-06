@@ -3,6 +3,16 @@ function setTitle(text) {
 }
 
 async function showMenuInicial() {
+
+  // E ISSO TAMBEM
+  // NÃO MEXAM
+  if (window.adminSessaoAtiva) {
+    window.adminSessaoAtiva = false;
+    location.reload();
+    return;
+  }
+  // DEUS BENÇOE
+
   window.adminAuth = {
     authenticated: false,
     token: null,
