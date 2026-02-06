@@ -275,6 +275,8 @@ async function salvarLocal() {
   const payload = montarPayloadLocal();
   if (!payload) return;
 
+  if (payload.nome.trim() !== '' && !isNaN(payload.nome)) return abrirModalAviso("Erro", "Nome do local não pode ser um número");
+
   const btn = document.getElementById("btnSalvarLocal");
   const textoOriginal = btn.innerHTML;
 
