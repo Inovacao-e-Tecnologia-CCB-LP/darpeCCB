@@ -42,11 +42,11 @@ function renderTabelaRegrasDatas(regras) {
               }
             </td>
             <td class="text-center">
-              <button class="btn btn-sm btn-outline-dark me-1"
+              <button class="btn btn-sm btn-outline-dark me-1 editar-btn"
                 onclick="editarRegra(${r.id}, this)">
                 <i class="bi bi-pencil"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger"
+              <button class="btn btn-sm btn-outline-danger excluir-btn"
                 onclick="excluirRegra(${r.id}, this)">
                 <i class="bi bi-trash"></i>
               </button>
@@ -210,6 +210,7 @@ async function editarRegra(id, btn) {
   let salvou = false;
 
   try {
+    desabilitarBotaoRegra();
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
@@ -253,6 +254,7 @@ async function editarRegra(id, btn) {
         if (!salvou) {
           btn.disabled = false;
           btn.innerHTML = textoOriginal;
+          habilitarBotaoRegra();
         }
       },
       { once: true },
@@ -262,11 +264,13 @@ async function editarRegra(id, btn) {
     btnSalvar.onclick = null;
 
     btnSalvar.onclick = async () => {
-      await salvarRegra(modal, btn, textoOriginal, (action = "update"));
       salvou = true;
+      await salvarRegra(modal, btn, textoOriginal, (action = "update"));
+      habilitarBotaoRegra();
     };
-
+    
     await appScriptApi.bootstrap();
+    
 
     modal.show();
   } catch (err) {
@@ -315,6 +319,7 @@ async function salvarRegra(
   const textoOriginal = btn.innerHTML;
 
   try {
+    desabilitarBotaoRegra();
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Salvando`;
 
@@ -342,9 +347,10 @@ async function salvarRegra(
       btnEdit.disabled = false;
       btnEdit.innerHTML = txtEdit;
     }
-
-    await appScriptApi.bootstrap();
+    habilitarBotaoRegra();
+    appScriptApi.bootstrap();
   } catch (err) {
+    habilitarBotaoRegra();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
   } finally {
@@ -367,6 +373,7 @@ async function excluirRegra(id, btnTrash) {
     const textoOk = btnOk.innerHTML;
 
     try {
+      desabilitarBotaoRegra();
       btnOk.disabled = true;
       btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Excluindo`;
 
@@ -389,6 +396,7 @@ async function excluirRegra(id, btnTrash) {
       console.error(err);
       abrirModalAviso("Erro", "Erro de comunicação com o servidor");
     } finally {
+      habilitarBotaoRegra();
       btnOk.disabled = false;
       btnOk.innerHTML = textoOk;
       btnTrash.disabled = false;
@@ -397,4 +405,36 @@ async function excluirRegra(id, btnTrash) {
   };
 
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
+}
+
+function desabilitarBotaoRegra() {
+  const btn = document.getElementById("novaRegraBtn");
+  if (!btn.hasAttribute('disabled')) btn.setAttribute('disabled', '');
+
+  const editBtns = document.querySelectorAll('.editar-btn');
+  const deleteBtns = document.querySelectorAll('.excluir-btn');
+
+  editBtns.forEach(btn => {
+    btn.setAttribute('disabled', '');
+  });
+
+  deleteBtns.forEach(btn => {
+    btn.setAttribute('disabled', '');
+  });
+}
+
+function habilitarBotaoRegra() {
+  const btn = document.getElementById("novaRegraBtn");
+  if (btn.hasAttribute('disabled')) btn.removeAttribute('disabled');
+
+  const editBtns = document.querySelectorAll('.editar-btn');
+  const deleteBtns = document.querySelectorAll('.excluir-btn');
+
+  editBtns.forEach(btn => {
+    btn.removeAttribute('disabled');
+  });
+
+  deleteBtns.forEach(btn => {
+    btn.removeAttribute('disabled');
+  });
 }

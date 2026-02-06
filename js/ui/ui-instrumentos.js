@@ -87,13 +87,13 @@ function renderTabelaInstrumentos(instrumentos) {
         </td>
         <td class="text-center">
           <button
-            class="btn btn-sm btn-outline-dark me-1"
+            class="btn btn-sm btn-outline-dark me-1 editar-btn"
             onclick="editarInstrumento(${i.id}, this)">
             <i class="bi bi-pencil"></i>
           </button>
 
           <button
-            class="btn btn-sm btn-outline-danger"
+            class="btn btn-sm btn-outline-danger excluir-btn"
             onclick="excluirInstrumento(${i.id}, this)">
             <i class="bi bi-trash"></i>
           </button>
@@ -170,6 +170,7 @@ async function salvarInstrumento() {
   const textoOriginal = btn.innerHTML;
 
   try {
+    desabilitarBotaoInstrumentos();
     btn.disabled = true;
     btn.innerHTML = `
       <span class="spinner-border spinner-border-sm"></span> Salvando
@@ -204,6 +205,7 @@ async function salvarInstrumento() {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar instrumento");
   } finally {
+    habilitarBotaoInstrumentos();
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
@@ -218,6 +220,7 @@ async function editarInstrumento(id, btn) {
   let salvou = false;
 
   try {
+    desabilitarBotaoInstrumentos();
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
@@ -247,6 +250,7 @@ async function editarInstrumento(id, btn) {
         if (!salvou) {
           btn.disabled = false;
           btn.innerHTML = textoOriginal;
+          habilitarBotaoInstrumentos();
         }
       },
       { once: true },
@@ -272,6 +276,7 @@ async function editarInstrumento(id, btn) {
 
       try {
         salvou = true;
+        desabilitarBotaoInstrumentos();
 
         btnSalvar.disabled = true;
         btnSalvar.innerHTML = `
@@ -304,6 +309,7 @@ async function editarInstrumento(id, btn) {
         console.error(err);
         abrirModalAviso("Erro", "Erro ao editar instrumento");
       } finally {
+        habilitarBotaoInstrumentos();
         btnSalvar.disabled = false;
         btnSalvar.innerHTML = textoSalvar;
       }
@@ -311,6 +317,7 @@ async function editarInstrumento(id, btn) {
 
     modal.show();
   } catch (err) {
+    habilitarBotaoInstrumentos();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao carregar instrumento");
     btn.disabled = false;
@@ -337,6 +344,7 @@ function excluirInstrumento(id, btnTrash) {
     const textoTrash = btnTrash.innerHTML;
 
     try {
+      desabilitarBotaoInstrumentos();
       btnOk.disabled = true;
       btnOk.innerHTML = `
         <span class="spinner-border spinner-border-sm me-2"></span>
@@ -374,11 +382,43 @@ function excluirInstrumento(id, btnTrash) {
 
       btnOk.disabled = false;
       btnOk.innerHTML = textoOk;
-
+      habilitarBotaoInstrumentos();
       btnTrash.disabled = false;
       btnTrash.innerHTML = textoTrash;
     }
   };
 
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
+}
+
+function desabilitarBotaoInstrumentos() {
+  const btn = document.getElementById("novoInstrumentoBtn");
+  if (!btn.hasAttribute('disabled')) btn.setAttribute('disabled', '');
+
+  const editBtns = document.querySelectorAll('.editar-btn');
+  const deleteBtns = document.querySelectorAll('.excluir-btn');
+
+  editBtns.forEach(btn => {
+    btn.setAttribute('disabled', '');
+  });
+
+  deleteBtns.forEach(btn => {
+    btn.setAttribute('disabled', '');
+  });
+}
+
+function habilitarBotaoInstrumentos() {
+  const btn = document.getElementById("novoInstrumentoBtn");
+  if (btn.hasAttribute('disabled')) btn.removeAttribute('disabled');
+
+  const editBtns = document.querySelectorAll('.editar-btn');
+  const deleteBtns = document.querySelectorAll('.excluir-btn');
+
+  editBtns.forEach(btn => {
+    btn.removeAttribute('disabled');
+  });
+
+  deleteBtns.forEach(btn => {
+    btn.removeAttribute('disabled');
+  });
 }
