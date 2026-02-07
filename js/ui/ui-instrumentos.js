@@ -204,9 +204,8 @@ async function salvarInstrumento() {
 
     mostrarLoading("listaInstrumentos");
 
-    await reloadInstrumentos();
-
     abrirModalAviso("Sucesso", "Instrumento salvo com sucesso!");
+    await reloadInstrumentos();
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar instrumento");
@@ -310,9 +309,8 @@ async function editarInstrumento(id, btn) {
 
         mostrarLoading("listaInstrumentos");
 
-        await reloadInstrumentos();
-
         abrirModalAviso("Sucesso", "Instrumento editado com sucesso!");
+        await reloadInstrumentos();
 
         btn.disabled = false;
         btn.innerHTML = textoOriginal;
@@ -374,9 +372,9 @@ function excluirInstrumento(id, btnTrash) {
 
       mostrarLoading("listaInstrumentos");
 
+      abrirModalAviso("Sucesso", "Instrumento excluído com sucesso!");
       await reloadInstrumentos();
 
-      abrirModalAviso("Sucesso", "Instrumento excluído com sucesso!");
     } catch (err) {
       console.error(err);
       abrirModalAviso("Não foi possível excluir", err.message);

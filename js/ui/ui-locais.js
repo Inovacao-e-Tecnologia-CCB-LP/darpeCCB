@@ -304,13 +304,13 @@ async function salvarLocal() {
     bootstrap.Modal.getInstance(document.getElementById("modalLocal")).hide();
 
     mostrarLoading("listaLocais");
-    await reloadLocais();
 
     const mensagemSucesso = payload.id
       ? "Local editado com sucesso!"
       : "Local criado com sucesso!";
 
     abrirModalAviso("Sucesso", mensagemSucesso);
+    await reloadLocais();
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar local");
@@ -409,10 +409,9 @@ function excluirLocal(id, btnTrash) {
       }
 
       mostrarLoading("listaLocais");
-
+      abrirModalAviso("Sucesso", "Local excluído com sucesso!");
       await reloadLocais();
 
-      abrirModalAviso("Sucesso", "Local excluído com sucesso!");
     } catch (err) {
       console.error(err);
       abrirModalAviso("Erro", "Erro ao excluir local");

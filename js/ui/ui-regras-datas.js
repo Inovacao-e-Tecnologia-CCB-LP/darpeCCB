@@ -84,11 +84,10 @@ function renderTabelaRegrasDatas(regras) {
         <td>${formatarQuando(r.dia_semana, r.ordinal)}</td>
         <td class="text-center">${formatarHorario(r.horario)}</td>
         <td class="text-center">
-          ${
-            r.ativo
-              ? '<span class="badge bg-success">Ativo</span>'
-              : '<span class="badge bg-secondary">Inativo</span>'
-          }
+          ${r.ativo
+        ? '<span class="badge bg-success">Ativo</span>'
+        : '<span class="badge bg-secondary">Inativo</span>'
+      }
         </td>
         <td class="text-center">
           <button class="btn btn-sm btn-outline-dark me-1 editar-btn" onclick="editarRegra(${r.id}, this)">
@@ -211,6 +210,7 @@ function formatarQuando(dia, ordinal) {
 
 async function reloadRegras() {
   mostrarLoading("listaRegrasDatas");
+  await carregarProgramacao();
   await carregarRegrasDatas();
 }
 
@@ -274,14 +274,11 @@ async function salvarRegra() {
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
-    await reloadRegras();
-    await carregarProgramacao();
-
     abrirModalAviso(
       "Sucesso",
       payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!",
     );
-
+    await reloadRegras();
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
@@ -375,10 +372,8 @@ function excluirRegra(id, btnTrash) {
         return;
       }
 
-      await reloadRegras();
-      await carregarProgramacao();
-
       abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
+      await reloadRegras();
 
     } catch (err) {
       console.error(err);
