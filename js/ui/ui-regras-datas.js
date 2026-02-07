@@ -5,21 +5,22 @@
 async function abrirTelaRegrasDatas() {
   setTitle("Admin • Regras de Datas");
   conteudo.innerHTML = Ui.PainelRegrasDatas();
-  carregarRegrasDatas();
+  carregarRegrasDatas(firstTime=true);
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarRegrasDatas() {
+async function carregarRegrasDatas(firstTime=false) {
   const lista = document.getElementById("listaRegrasDatas");
 
   try {
     mostrarLoading("listaRegrasDatas");
 
-    const data = await regrasDatasService.listar();
+    const data = firstTime ? dataStore.regrasData : await regrasDatasService.listar();
     let regras = data || [];
+    dataStore.regrasData = regras;
 
     if (!regras.length) {
       lista.innerHTML = `
@@ -278,12 +279,13 @@ async function salvarRegra() {
       "Sucesso",
       payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!",
     );
+    habilitarBotaoRegra();
     await reloadRegras();
   } catch (err) {
+    habilitarBotaoRegra();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
   } finally {
-    habilitarBotaoRegra();
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
@@ -400,6 +402,7 @@ function excluirRegra(id, btnTrash) {
 function desabilitarBotaoRegra() {
   const btn = document.getElementById("novaRegraBtn");
   if (btn) btn.setAttribute("disabled", "");
+  backButton.setAttribute("disabled", "");
   document
     .querySelectorAll(".editar-btn, .excluir-btn")
     .forEach((b) => b.setAttribute("disabled", ""));
@@ -408,6 +411,8 @@ function desabilitarBotaoRegra() {
 function habilitarBotaoRegra() {
   const btn = document.getElementById("novaRegraBtn");
   if (btn) btn.removeAttribute("disabled");
+  backButton.removeAttribute("disabled");
+
   document
     .querySelectorAll(".editar-btn, .excluir-btn")
     .forEach((b) => b.removeAttribute("disabled"));

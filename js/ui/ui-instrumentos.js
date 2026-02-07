@@ -5,18 +5,18 @@
 function abrirTelaInstrumentos() {
   setTitle("Admin • Instrumentos");
   conteudo.innerHTML = Ui.PainelInstrumentos();
-  carregarInstrumentos();
+  carregarInstrumentos(firstTime=true);
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarInstrumentos() {
+async function carregarInstrumentos(firstTime=false) {
   const lista = document.getElementById("listaInstrumentos");
 
   try {
-    let instrumentos = await instrumentosService.listar();
+    let instrumentos = firstTime ? dataStore.instrumentos : await instrumentosService.listar();
 
     if (instrumentos?.error) {
       throw new Error(instrumentos.error);
@@ -397,6 +397,7 @@ function excluirInstrumento(id, btnTrash) {
 function desabilitarBotaoInstrumentos() {
   const btn = document.getElementById("novoInstrumentoBtn");
   if (!btn.hasAttribute("disabled")) btn.setAttribute("disabled", "");
+  backButton.setAttribute("disabled", "");
 
   const editBtns = document.querySelectorAll(".editar-btn");
   const deleteBtns = document.querySelectorAll(".excluir-btn");
@@ -413,6 +414,7 @@ function desabilitarBotaoInstrumentos() {
 function habilitarBotaoInstrumentos() {
   const btn = document.getElementById("novoInstrumentoBtn");
   if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
+  backButton.removeAttribute("disabled");
 
   const editBtns = document.querySelectorAll(".editar-btn");
   const deleteBtns = document.querySelectorAll(".excluir-btn");
