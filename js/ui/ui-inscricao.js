@@ -1,5 +1,15 @@
 function showEscolherLocal() {
   setTitle(" Escolha o local");
+
+  if (!dataStore.locais || dataStore.locais.length === 0) {
+    conteudo.innerHTML = `
+        <div class="alert alert-secondary text-center">
+          Nenhum local encontrado.
+        </div>
+      `;
+    return;
+  }
+
   const g = document.createElement("div");
   g.className = "d-grid gap-2 col-md-6 mx-auto";
 
@@ -18,18 +28,29 @@ function showEscolherLocal() {
 function showEscolherData() {
   setTitle(" Escolha a data");
 
+  const programacoesFiltradas = dataStore.programacao.filter(
+    (p) => p.local_id == escolha.local.id,
+  );
+
+  if (programacoesFiltradas.length === 0) {
+    conteudo.innerHTML = `
+        <div class="alert alert-secondary text-center">
+          Nenhuma data disponível para este local.
+        </div>
+      `;
+    return;
+  }
+
   const g = document.createElement("div");
   g.className = "d-grid gap-2 col-md-8 mx-auto mb-4";
 
-  dataStore.programacao
-    .filter((p) => p.local_id == escolha.local.id)
-    .forEach((p) => {
-      const btn = document.createElement("button");
-      btn.className = "btn btn-outline-dark btn-lg";
-      btn.innerHTML = `${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${formatarHorario(p.horario)})`;
-      btn.onclick = () => selecionarData(p);
-      g.appendChild(btn);
-    });
+  programacoesFiltradas.forEach((p) => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-dark btn-lg";
+    btn.innerHTML = `${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${formatarHorario(p.horario)})`;
+    btn.onclick = () => selecionarData(p);
+    g.appendChild(btn);
+  });
 
   const obs = document.createElement("div");
   obs.className = "col-md-8 mx-auto";
@@ -42,20 +63,33 @@ function showEscolherData() {
 
 function showEscolherInstrumento() {
   setTitle(" Escolha o instrumento");
+
+  // Filtramos primeiro para saber se haverá opções
+  const instrumentosDisponiveis = dataStore.instrumentos.filter((i) => {
+    return (
+      (i.tipo === "corda" && escolha.local.permite_cordas) ||
+      (i.tipo === "sopro" && escolha.local.permite_sopros)
+    );
+  });
+
+  if (instrumentosDisponiveis.length === 0) {
+    conteudo.innerHTML = `
+        <div class="alert alert-secondary text-center">
+          Não há instrumentos compatíveis com as regras deste local.
+        </div>
+      `;
+    return;
+  }
+
   const g = document.createElement("div");
   g.className = "d-grid gap-2 col-md-6 mx-auto";
 
-  dataStore.instrumentos.forEach((i) => {
-    if (
-      (i.tipo === "corda" && escolha.local.permite_cordas) ||
-      (i.tipo === "sopro" && escolha.local.permite_sopros)
-    ) {
-      const btn = document.createElement("button");
-      btn.className = "btn btn-outline-dark btn-lg";
-      btn.textContent = i.nome;
-      btn.onclick = () => selecionarInstrumento(i);
-      g.appendChild(btn);
-    }
+  instrumentosDisponiveis.forEach((i) => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-dark btn-lg";
+    btn.textContent = i.nome;
+    btn.onclick = () => selecionarInstrumento(i);
+    g.appendChild(btn);
   });
 
   conteudo.innerHTML = "";

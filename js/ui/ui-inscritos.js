@@ -43,6 +43,17 @@ async function showInscritos() {
   try {
     inscritos = await inscricoesService.listar();
 
+    inscritos = inscritos || [];
+
+    if (inscritos.length === 0) {
+      conteudo.innerHTML = `
+        <div class="alert alert-secondary text-center">
+          Nenhuma inscrição encontrada
+        </div>
+      `;
+      return; 
+    }
+
     initMaps();
 
     const grupos = {};
