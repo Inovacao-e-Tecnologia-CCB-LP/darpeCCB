@@ -25,6 +25,7 @@ async function carregarLocais() {
     }
 
     locais = locais || [];
+    dataStore.locais = locais;
 
     if (!locais.length) {
       lista.innerHTML = `

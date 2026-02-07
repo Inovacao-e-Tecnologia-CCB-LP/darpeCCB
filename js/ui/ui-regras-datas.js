@@ -275,13 +275,13 @@ async function salvarRegra() {
 
     bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
     await reloadRegras();
+    await carregarProgramacao();
 
     abrirModalAviso(
       "Sucesso",
       payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!",
     );
 
-    await appScriptApi.bootstrap();
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
@@ -336,8 +336,6 @@ async function editarRegra(id, btn) {
       { once: true },
     );
 
-    await appScriptApi.bootstrap();
-
     modal.show();
   } catch (err) {
     habilitarBotaoRegra();
@@ -378,10 +376,10 @@ function excluirRegra(id, btnTrash) {
       }
 
       await reloadRegras();
+      await carregarProgramacao();
 
       abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
 
-      await appScriptApi.bootstrap();
     } catch (err) {
       console.error(err);
       abrirModalAviso("Erro", "Erro ao excluir regra");
@@ -418,4 +416,19 @@ function habilitarBotaoRegra() {
   document
     .querySelectorAll(".editar-btn, .excluir-btn")
     .forEach((b) => b.removeAttribute("disabled"));
+}
+
+async function carregarProgramacao() {
+  try {
+    let programacao = await programacaoService.listar();
+
+    if (programacao?.error) {
+      throw new Error(programacao.error);
+    }
+
+    programacao = programacao || [];
+    dataStore.programacao = programacao;
+  } catch (err) {
+    console.error(err);
+  }
 }

@@ -23,6 +23,7 @@ async function carregarInstrumentos() {
     }
 
     instrumentos = instrumentos || [];
+    dataStore.instrumentos = instrumentos;
 
     if (!instrumentos.length) {
       lista.innerHTML = `
@@ -122,7 +123,6 @@ async function renderCrudInstrumentos() {
 
 async function reloadInstrumentos() {
   carregarInstrumentos();
-  dataStore = await appScriptApi.bootstrap();
 }
 
 /* =========================
