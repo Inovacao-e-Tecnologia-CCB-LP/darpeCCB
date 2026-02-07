@@ -17,3 +17,5 @@ class InstrumentosService {
         return await appScriptApi.deleteWithPassword(this.entity, id, password)
     }
 }
+
+const instrumentosService = new InstrumentosService();

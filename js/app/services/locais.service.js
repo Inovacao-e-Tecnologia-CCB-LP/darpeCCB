@@ -17,3 +17,5 @@ class LocaisService {
         return await appScriptApi.deleteWithPassword(this.entity, id, password)
     }
 }
+
+const locaisService = new LocaisService();

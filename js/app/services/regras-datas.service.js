@@ -17,3 +17,5 @@ class RegrasDatasService {
         return await appScriptApi.deleteWithPassword(this.entity, id, password)
     }
 }
+
+const regrasDatasService = new RegrasDatasService();

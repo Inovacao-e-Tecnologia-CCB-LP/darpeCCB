@@ -13,3 +13,5 @@ class InscricoesService {
         return await appScriptApi.deleteWithToken(this.entity, id, delete_token);
     }
 }
+
+const inscricoesService = new InscricoesService();

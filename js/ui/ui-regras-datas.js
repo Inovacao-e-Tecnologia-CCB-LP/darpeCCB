@@ -84,11 +84,10 @@ function renderTabelaRegrasDatas(regras) {
         <td>${formatarQuando(r.dia_semana, r.ordinal)}</td>
         <td class="text-center">${formatarHorario(r.horario)}</td>
         <td class="text-center">
-          ${
-            r.ativo
-              ? '<span class="badge bg-success">Ativo</span>'
-              : '<span class="badge bg-secondary">Inativo</span>'
-          }
+          ${r.ativo
+        ? '<span class="badge bg-success">Ativo</span>'
+        : '<span class="badge bg-secondary">Inativo</span>'
+      }
         </td>
         <td class="text-center">
           <button class="btn btn-sm btn-outline-dark me-1 editar-btn" onclick="editarRegra(${r.id}, this)">
@@ -211,6 +210,7 @@ function formatarQuando(dia, ordinal) {
 
 async function reloadRegras() {
   mostrarLoading("listaRegrasDatas");
+  await carregarProgramacao();
   await carregarRegrasDatas();
 }
 
@@ -274,14 +274,11 @@ async function salvarRegra() {
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
-    await reloadRegras();
-
     abrirModalAviso(
       "Sucesso",
       payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!",
     );
-
-    await appScriptApi.bootstrap();
+    await reloadRegras();
   } catch (err) {
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
@@ -336,8 +333,6 @@ async function editarRegra(id, btn) {
       { once: true },
     );
 
-    await appScriptApi.bootstrap();
-
     modal.show();
   } catch (err) {
     habilitarBotaoRegra();
@@ -377,11 +372,9 @@ function excluirRegra(id, btnTrash) {
         return;
       }
 
+      abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
       await reloadRegras();
 
-      abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
-
-      await appScriptApi.bootstrap();
     } catch (err) {
       console.error(err);
       abrirModalAviso("Erro", "Erro ao excluir regra");
@@ -418,4 +411,19 @@ function habilitarBotaoRegra() {
   document
     .querySelectorAll(".editar-btn, .excluir-btn")
     .forEach((b) => b.removeAttribute("disabled"));
+}
+
+async function carregarProgramacao() {
+  try {
+    let programacao = await programacaoService.listar();
+
+    if (programacao?.error) {
+      throw new Error(programacao.error);
+    }
+
+    programacao = programacao || [];
+    dataStore.programacao = programacao;
+  } catch (err) {
+    console.error(err);
+  }
 }

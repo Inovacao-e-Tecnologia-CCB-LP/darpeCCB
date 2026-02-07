@@ -3,15 +3,6 @@ function setTitle(text) {
 }
 
 async function showMenuInicial() {
-  if (window.adminAuth?.authenticated) {
-    window.adminAuth = {
-      authenticated: false,
-      token: null,
-    };
-    location.reload();
-    return;
-  }
-
   window.adminAuth = {
     authenticated: false,
     token: null,
