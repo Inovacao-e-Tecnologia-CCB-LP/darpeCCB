@@ -1,6 +1,6 @@
 let mapaLocalId = null;
 
-async function abrirModalAviso(titulo, mensagem, closeEvent) {
+async function abrirModalAviso(titulo, mensagem) {
   return new Promise((resolve) => {
     document.getElementById("modalAvisoTitulo").innerText = titulo;
     document.getElementById("modalAvisoMensagem").innerText = mensagem;

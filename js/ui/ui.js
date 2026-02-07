@@ -3,15 +3,14 @@ function setTitle(text) {
 }
 
 async function showMenuInicial() {
-
-  // E ISSO TAMBEM
-  // NÃO MEXAM
-  if (window.adminSessaoAtiva) {
-    window.adminSessaoAtiva = false;
+  if (window.adminAuth?.authenticated) {
+    window.adminAuth = {
+      authenticated: false,
+      token: null,
+    };
     location.reload();
     return;
   }
-  // DEUS BENÇOE
 
   window.adminAuth = {
     authenticated: false,

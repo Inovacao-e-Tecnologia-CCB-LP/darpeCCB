@@ -1,89 +1,16 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Regras de Datas</h5>
-    <button class="btn btn-dark btn-sm" onclick="abrirModalNovaRegra()" id="novaRegraBtn">
-        <i class="bi bi-plus-circle"></i> Nova Regra
-    </button>
+  <h5 class="mb-0">Regras de Datas</h5>
+  <button
+    class="btn btn-dark btn-sm"
+    onclick="abrirModalNovaRegra()"
+    id="novaRegraBtn"
+  >
+    <i class="bi bi-plus-circle"></i> Nova Regra
+  </button>
 </div>
 
 <div id="listaRegrasDatas">
-    <div class="text-center my-4">
-        <div class="spinner-border text-dark"></div>
-    </div>
-</div>
-
-<!-- Modal Regra -->
-<div class="modal fade" id="modalRegra" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="modalRegraTitulo">Nova Regra</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="regraId">
-
-                <div class="form-floating mb-3">
-                    <select class="form-select" id="regraLocal">
-                        <option value="">Selecione...</option>
-                    </select>
-                    <label for="regraLocal">Local</label>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <select class="form-select" id="regraTipo">
-                        <option value="">Selecione o tipo</option>
-                        <option value="Música">Música</option>
-                        <option value="Evangelização">Evangelização</option>
-                    </select>
-                    <label for="regraTipo">Tipo de Visita</label>
-                </div>
-
-                <div class="row">
-                    <div class="col-6">
-                        <div class="form-floating mb-3">
-                            <select class="form-select" id="regraDiaSemana">
-                                <option value="1">Domingo</option>
-                                <option value="2">Segunda-feira</option>
-                                <option value="3">Terça-feira</option>
-                                <option value="4">Quarta-feira</option>
-                                <option value="5">Quinta-feira</option>
-                                <option value="6">Sexta-feira</option>
-                                <option value="7">Sábado</option>
-                            </select>
-                            <label for="regraDiaSemana">Dia da Semana</label>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="form-floating mb-3">
-                            <select class="form-select" id="regraOrdinal">
-                                <option value="0">Todas as semanas</option>
-                                <option value="1">1ª semana</option>
-                                <option value="2">2ª semana</option>
-                                <option value="3">3ª semana</option>
-                                <option value="4">4ª semana</option>
-                                <option value="5">5ª semana</option>
-                                <option value="-1">Última semana</option>
-                            </select>
-                            <label for="regraOrdinal">Ocorrência</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input type="time" class="form-control" id="regraHorario" placeholder="Horário">
-                    <label for="regraHorario">Horário</label>
-                </div>
-
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="regraAtivo" checked>
-                    <label class="form-check-label" for="regraAtivo">Ativo</label>
-                </div>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-dark" id="btnSalvarRegra">Salvar</button>
-            </div>
-        </div>
-    </div>
+  <div class="text-center my-4">
+    <div class="spinner-border text-dark"></div>
+  </div>
 </div>

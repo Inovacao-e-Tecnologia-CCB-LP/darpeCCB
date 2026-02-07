@@ -166,8 +166,12 @@ async function salvarInstrumento() {
     return;
   }
 
-  if (nome.trim() !== '' && !isNaN(nome)) return abrirModalAviso("Erro", "Nome do instrumento não pode ser vazio ou um número");
-  
+  if (nome.trim() !== "" && !isNaN(nome))
+    return abrirModalAviso(
+      "Erro",
+      "Nome do instrumento não pode ser vazio ou um número",
+    );
+
   const btn = document.getElementById("btnSalvarInstrumento");
   const textoOriginal = btn.innerHTML;
 
@@ -264,7 +268,11 @@ async function editarInstrumento(id, btn) {
     btnSalvar.onclick = async () => {
       const nome = document.getElementById("instrumentoNome").value.trim();
       const tipo = getTipoRadioSelecionado();
-      if (nome.trim() !== '' && !isNaN(nome)) return abrirModalAviso("Erro", "Nome do instrumento não pode ser vazio ou um número");
+      if (nome.trim() !== "" && !isNaN(nome))
+        return abrirModalAviso(
+          "Erro",
+          "Nome do instrumento não pode ser vazio ou um número",
+        );
 
       if (!nome || !["corda", "sopro"].includes(tipo)) {
         modal.hide();
@@ -333,8 +341,6 @@ async function editarInstrumento(id, btn) {
 ========================= */
 
 function excluirInstrumento(id, btnTrash) {
-  let sucesso = false;
-
   document.getElementById("confirmTitle").innerText = "Excluir Instrumento";
   document.getElementById("confirmMessage").innerText =
     "Deseja realmente excluir este instrumento?";
@@ -366,8 +372,6 @@ function excluirInstrumento(id, btnTrash) {
         return;
       }
 
-      sucesso = true;
-
       mostrarLoading("listaInstrumentos");
 
       await reloadInstrumentos();
@@ -377,17 +381,15 @@ function excluirInstrumento(id, btnTrash) {
       console.error(err);
       abrirModalAviso("Não foi possível excluir", err.message);
     } finally {
-      if (sucesso) {
-        bootstrap.Modal.getInstance(
-          document.getElementById("confirmModal"),
-        ).hide();
-      }
-
       btnOk.disabled = false;
       btnOk.innerHTML = textoOk;
       habilitarBotaoInstrumentos();
       btnTrash.disabled = false;
       btnTrash.innerHTML = textoTrash;
+
+      bootstrap.Modal.getInstance(
+        document.getElementById("confirmModal"),
+      ).hide();
     }
   };
 
@@ -396,32 +398,32 @@ function excluirInstrumento(id, btnTrash) {
 
 function desabilitarBotaoInstrumentos() {
   const btn = document.getElementById("novoInstrumentoBtn");
-  if (!btn.hasAttribute('disabled')) btn.setAttribute('disabled', '');
+  if (!btn.hasAttribute("disabled")) btn.setAttribute("disabled", "");
 
-  const editBtns = document.querySelectorAll('.editar-btn');
-  const deleteBtns = document.querySelectorAll('.excluir-btn');
+  const editBtns = document.querySelectorAll(".editar-btn");
+  const deleteBtns = document.querySelectorAll(".excluir-btn");
 
-  editBtns.forEach(btn => {
-    btn.setAttribute('disabled', '');
+  editBtns.forEach((btn) => {
+    btn.setAttribute("disabled", "");
   });
 
-  deleteBtns.forEach(btn => {
-    btn.setAttribute('disabled', '');
+  deleteBtns.forEach((btn) => {
+    btn.setAttribute("disabled", "");
   });
 }
 
 function habilitarBotaoInstrumentos() {
   const btn = document.getElementById("novoInstrumentoBtn");
-  if (btn.hasAttribute('disabled')) btn.removeAttribute('disabled');
+  if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
 
-  const editBtns = document.querySelectorAll('.editar-btn');
-  const deleteBtns = document.querySelectorAll('.excluir-btn');
+  const editBtns = document.querySelectorAll(".editar-btn");
+  const deleteBtns = document.querySelectorAll(".excluir-btn");
 
-  editBtns.forEach(btn => {
-    btn.removeAttribute('disabled');
+  editBtns.forEach((btn) => {
+    btn.removeAttribute("disabled");
   });
 
-  deleteBtns.forEach(btn => {
-    btn.removeAttribute('disabled');
+  deleteBtns.forEach((btn) => {
+    btn.removeAttribute("disabled");
   });
 }
