@@ -308,14 +308,14 @@ async function salvarLocal() {
     const mensagemSucesso = payload.id
       ? "Local editado com sucesso!"
       : "Local criado com sucesso!";
-
+    habilitarBotaoLocal();
     abrirModalAviso("Sucesso", mensagemSucesso);
     await reloadLocais();
   } catch (err) {
+    habilitarBotaoLocal();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar local");
   } finally {
-    habilitarBotaoLocal();
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
@@ -434,6 +434,7 @@ function excluirLocal(id, btnTrash) {
 function desabilitarBotaoLocal() {
   const btn = document.getElementById("novoLocalBtn");
   if (!btn.hasAttribute('disabled')) btn.setAttribute('disabled', '');
+  backButton.setAttribute("disabled", "");
 
   const editBtns = document.querySelectorAll('.editar-btn');
   const deleteBtns = document.querySelectorAll('.excluir-btn');
@@ -450,6 +451,7 @@ function desabilitarBotaoLocal() {
 function habilitarBotaoLocal() {
   const btn = document.getElementById("novoLocalBtn");
   if (btn.hasAttribute('disabled')) btn.removeAttribute('disabled');
+  backButton.removeAttribute("disabled");
 
   const editBtns = document.querySelectorAll('.editar-btn');
   const deleteBtns = document.querySelectorAll('.excluir-btn');

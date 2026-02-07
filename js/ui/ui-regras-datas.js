@@ -279,12 +279,13 @@ async function salvarRegra() {
       "Sucesso",
       payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!",
     );
+    habilitarBotaoRegra();
     await reloadRegras();
   } catch (err) {
+    habilitarBotaoRegra();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
   } finally {
-    habilitarBotaoRegra();
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
@@ -401,6 +402,7 @@ function excluirRegra(id, btnTrash) {
 function desabilitarBotaoRegra() {
   const btn = document.getElementById("novaRegraBtn");
   if (btn) btn.setAttribute("disabled", "");
+  backButton.setAttribute("disabled", "");
   document
     .querySelectorAll(".editar-btn, .excluir-btn")
     .forEach((b) => b.setAttribute("disabled", ""));
@@ -409,6 +411,8 @@ function desabilitarBotaoRegra() {
 function habilitarBotaoRegra() {
   const btn = document.getElementById("novaRegraBtn");
   if (btn) btn.removeAttribute("disabled");
+  backButton.removeAttribute("disabled");
+
   document
     .querySelectorAll(".editar-btn, .excluir-btn")
     .forEach((b) => b.removeAttribute("disabled"));
