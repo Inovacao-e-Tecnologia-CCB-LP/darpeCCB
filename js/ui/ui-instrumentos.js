@@ -5,18 +5,18 @@
 function abrirTelaInstrumentos() {
   setTitle("Admin • Instrumentos");
   conteudo.innerHTML = Ui.PainelInstrumentos();
-  carregarInstrumentos();
+  carregarInstrumentos(firstTime=true);
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarInstrumentos() {
+async function carregarInstrumentos(firstTime=false) {
   const lista = document.getElementById("listaInstrumentos");
 
   try {
-    let instrumentos = await instrumentosService.listar();
+    let instrumentos = firstTime ? dataStore.instrumentos : await instrumentosService.listar();
 
     if (instrumentos?.error) {
       throw new Error(instrumentos.error);

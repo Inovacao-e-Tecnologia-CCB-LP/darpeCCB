@@ -5,21 +5,22 @@
 async function abrirTelaRegrasDatas() {
   setTitle("Admin • Regras de Datas");
   conteudo.innerHTML = Ui.PainelRegrasDatas();
-  carregarRegrasDatas();
+  carregarRegrasDatas(firstTime=true);
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarRegrasDatas() {
+async function carregarRegrasDatas(firstTime=false) {
   const lista = document.getElementById("listaRegrasDatas");
 
   try {
     mostrarLoading("listaRegrasDatas");
 
-    const data = await regrasDatasService.listar();
+    const data = firstTime ? dataStore.regrasData : await regrasDatasService.listar();
     let regras = data || [];
+    dataStore.regrasData = regras;
 
     if (!regras.length) {
       lista.innerHTML = `

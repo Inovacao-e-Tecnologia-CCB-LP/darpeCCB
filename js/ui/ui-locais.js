@@ -5,20 +5,20 @@
 async function abrirTelaLocais() {
   setTitle("Admin • Locais");
   conteudo.innerHTML = Ui.PainelLocais();
-  carregarLocais();
+  carregarLocais(firstTime=true);
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarLocais() {
+async function carregarLocais(firstTime=false) {
   const lista = document.getElementById("listaLocais");
 
   try {
     mostrarLoading("listaLocais");
 
-    let locais = await locaisService.listar();
+    let locais = firstTime ? dataStore.locais : await locaisService.listar();
 
     if (locais?.error) {
       throw new Error(locais.error);
