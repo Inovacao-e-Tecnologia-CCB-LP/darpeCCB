@@ -4,3 +4,5 @@ class AuthService {
     return r;
   }
 }
+
+const authService = new AuthService();

@@ -34,3 +34,5 @@ class LocalStorageService {
         }
     }
 }
+
+const localStorageService = new LocalStorageService();
