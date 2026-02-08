@@ -3,7 +3,7 @@
 ========================= */
 
 async function abrirTelaLocais() {
-  setTitle("Admin • Locais");
+  setTitle("Locais");
   conteudo.innerHTML = Ui.PainelLocais();
   carregarLocais((firstTime = true));
 }

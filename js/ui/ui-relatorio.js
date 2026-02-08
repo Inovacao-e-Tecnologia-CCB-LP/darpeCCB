@@ -89,7 +89,7 @@ function obterValoresFormularioRelatorio() {
 ========================= */
 
 async function abrirTelaRelatorios() {
-  setTitle("Admin • Relatórios");
+  setTitle("Relatórios");
   conteudo.innerHTML = UiRelatorios.loading();
 
   try {
