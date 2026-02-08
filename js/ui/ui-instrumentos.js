@@ -5,18 +5,22 @@
 function abrirTelaInstrumentos() {
   setTitle("Admin • Instrumentos");
   conteudo.innerHTML = Ui.PainelInstrumentos();
-  carregarInstrumentos(firstTime=true);
+  carregarInstrumentos((firstTime = true));
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarInstrumentos(firstTime=false) {
+async function carregarInstrumentos(firstTime = false) {
   const lista = document.getElementById("listaInstrumentos");
 
   try {
-    let instrumentos = firstTime ? dataStore.instrumentos : await instrumentosService.listar();
+    mostrarLoading("listaInstrumentos");
+
+    let instrumentos = firstTime
+      ? dataStore.instrumentos
+      : await instrumentosService.listar();
 
     if (instrumentos?.error) {
       throw new Error(instrumentos.error);
@@ -121,7 +125,48 @@ async function renderCrudInstrumentos() {
    HELPERS
 ========================= */
 
+function montarPayloadInstrumento() {
+  const id = document.getElementById("instrumentoId").value;
+  const nome = document.getElementById("instrumentoNome").value.trim();
+
+  const tipo = document.querySelector(
+    'input[name="instrumentoTipo"]:checked',
+  )?.value;
+
+  if (!nome || !tipo) {
+    mostrarErroCampo(
+      "erroValidacaoCamposInstrumento",
+      "Preencha todos os campos corretamente",
+    );
+    return null;
+  }
+
+  return {
+    id: id ? Number(id) : null,
+    nome,
+    tipo,
+  };
+}
+
+function preencherFormularioInstrumento(instrumento) {
+  document.getElementById("instrumentoId").value = instrumento.id ?? "";
+  document.getElementById("instrumentoNome").value = instrumento.nome ?? "";
+
+  document
+    .querySelectorAll('input[name="instrumentoTipo"]')
+    .forEach((r) => (r.checked = false));
+
+  if (instrumento.tipo) {
+    const radio = document.querySelector(
+      `input[name="instrumentoTipo"][value="${instrumento.tipo}"]`,
+    );
+
+    if (radio) radio.checked = true;
+  }
+}
+
 async function reloadInstrumentos() {
+  mostrarLoading("listaInstrumentos");
   carregarInstrumentos();
 }
 
@@ -130,6 +175,8 @@ async function reloadInstrumentos() {
 ========================= */
 
 function abrirModalNovoInstrumento() {
+  limparErrosCamposInstrumento();
+
   document.getElementById("modalInstrumentoTitulo").innerText =
     "Novo Instrumento";
 
@@ -150,30 +197,18 @@ function abrirModalNovoInstrumento() {
 ========================= */
 
 async function salvarInstrumento() {
-  const id = document.getElementById("instrumentoId").value;
-  const nome = document.getElementById("instrumentoNome").value.trim();
-  const tipo = getTipoRadioSelecionado();
-
-  if (!nome || !tipo) {
-    const modal = bootstrap.Modal.getInstance(
-      document.getElementById("modalInstrumento"),
-    );
-    modal.hide();
-    await abrirModalAviso(
-      "Aviso",
-      "Preencha corretamente nome e tipo do instrumento",
-    ).then(() => modal.show());
-    return;
-  }
-
-  if (nome.trim() !== "" && !isNaN(nome))
-    return abrirModalAviso(
-      "Erro",
-      "Nome do instrumento não pode ser vazio ou um número",
-    );
+  limparErrosCamposInstrumento();
 
   const btn = document.getElementById("btnSalvarInstrumento");
   const textoOriginal = btn.innerHTML;
+
+  const payload = montarPayloadInstrumento();
+  if (!payload) {
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+    habilitarBotaoInstrumentos();
+    return;
+  }
 
   try {
     desabilitarBotaoInstrumentos();
@@ -184,17 +219,16 @@ async function salvarInstrumento() {
 
     let r;
 
-    if (id) {
-      r = await instrumentosService.atualizar(
-        { id, nome, tipo },
-        senhaDigitada,
-      );
+    if (payload.id) {
+      r = await instrumentosService.atualizar(payload, senhaDigitada);
     } else {
-      r = await instrumentosService.criar({ nome, tipo }, senhaDigitada);
+      r = await instrumentosService.criar(payload, senhaDigitada);
     }
 
     if (r?.error) {
-      abrirModalAviso("Aviso", r.error);
+      limparErrosCamposInstrumento();
+      mostrarErroCampo("erroInstrumentoNome", r.error);
+      habilitarBotaoInstrumentos();
       return;
     }
 
@@ -221,6 +255,8 @@ async function salvarInstrumento() {
 ========================= */
 
 async function editarInstrumento(id, btn) {
+  limparErrosCamposInstrumento();
+
   const textoOriginal = btn.innerHTML;
   let salvou = false;
 
@@ -230,21 +266,19 @@ async function editarInstrumento(id, btn) {
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
     const instrumentos = await instrumentosService.listar();
-    const instrumento = (instrumentos || []).find((i) => i.id === id);
+    const instrumento = (instrumentos || []).find(
+      (i) => Number(i.id) === Number(id),
+    );
 
     if (!instrumento) {
       abrirModalAviso("Erro", "Instrumento não encontrado");
-      btn.disabled = false;
-      btn.innerHTML = textoOriginal;
       return;
     }
 
+    preencherFormularioInstrumento(instrumento);
+
     document.getElementById("modalInstrumentoTitulo").innerText =
       "Editar Instrumento";
-
-    document.getElementById("instrumentoId").value = instrumento.id;
-    document.getElementById("instrumentoNome").value = instrumento.nome;
-    marcarTipoRadio(instrumento.tipo);
 
     const modalEl = document.getElementById("modalInstrumento");
     const modal = new bootstrap.Modal(modalEl);
@@ -262,23 +296,14 @@ async function editarInstrumento(id, btn) {
     );
 
     const btnSalvar = document.getElementById("btnSalvarInstrumento");
-    btnSalvar.onclick = null;
-
     btnSalvar.onclick = async () => {
-      const nome = document.getElementById("instrumentoNome").value.trim();
-      const tipo = getTipoRadioSelecionado();
-      if (nome.trim() !== "" && !isNaN(nome))
-        return abrirModalAviso(
-          "Erro",
-          "Nome do instrumento não pode ser vazio ou um número",
-        );
+      limparErrosCamposInstrumento();
 
-      if (!nome || !["corda", "sopro"].includes(tipo)) {
-        modal.hide();
-        await abrirModalAviso(
-          "Aviso",
-          "Preencha corretamente nome e tipo do instrumento",
-        ).then(() => modal.show());
+      const payload = montarPayloadInstrumento();
+      if (!payload) {
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+        habilitarBotaoInstrumentos();
         return;
       }
 
@@ -294,21 +319,19 @@ async function editarInstrumento(id, btn) {
           Salvando
         `;
 
-        const r = await instrumentosService.atualizar(
-          { id, nome, tipo },
-          senhaDigitada,
-        );
+        const r = await instrumentosService.atualizar(payload, senhaDigitada);
 
         if (r?.error) {
+          limparErrosCamposInstrumento();
+          mostrarErroCampo("erroInstrumentoNome", r.error);
+          habilitarBotaoInstrumentos();
           salvou = false;
-          abrirModalAviso("Aviso", r.error);
           return;
         }
 
         modal.hide();
 
         mostrarLoading("listaInstrumentos");
-
         abrirModalAviso("Sucesso", "Instrumento editado com sucesso!");
         await reloadInstrumentos();
 
@@ -317,6 +340,7 @@ async function editarInstrumento(id, btn) {
       } catch (err) {
         console.error(err);
         abrirModalAviso("Erro", "Erro ao editar instrumento");
+        salvou = false;
       } finally {
         habilitarBotaoInstrumentos();
         btnSalvar.disabled = false;
@@ -326,9 +350,9 @@ async function editarInstrumento(id, btn) {
 
     modal.show();
   } catch (err) {
-    habilitarBotaoInstrumentos();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao carregar instrumento");
+  } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
   }
@@ -374,7 +398,6 @@ function excluirInstrumento(id, btnTrash) {
 
       abrirModalAviso("Sucesso", "Instrumento excluído com sucesso!");
       await reloadInstrumentos();
-
     } catch (err) {
       console.error(err);
       abrirModalAviso("Não foi possível excluir", err.message);
@@ -393,6 +416,10 @@ function excluirInstrumento(id, btnTrash) {
 
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
+
+/* =========================
+   ESTADOS DE INTERFACE
+========================= */
 
 function desabilitarBotaoInstrumentos() {
   const btn = document.getElementById("novoInstrumentoBtn");
@@ -426,4 +453,9 @@ function habilitarBotaoInstrumentos() {
   deleteBtns.forEach((btn) => {
     btn.removeAttribute("disabled");
   });
+}
+
+function limparErrosCamposInstrumento() {
+  limparErroCampo("erroInstrumentoNome");
+  limparErroCampo("erroValidacaoCamposInstrumento");
 }

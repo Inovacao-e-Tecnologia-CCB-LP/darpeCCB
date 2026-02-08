@@ -1,5 +1,6 @@
 let mapaLocalId = null;
 
+// Modal de aviso
 async function abrirModalAviso(titulo, mensagem) {
   return new Promise((resolve) => {
     document.getElementById("modalAvisoTitulo").innerText = titulo;
@@ -45,6 +46,7 @@ function abrirModalConfirmacao(mensagem, textoBotao = "Confirmar") {
   });
 }
 
+// Modal de Copiar Endereço/Abrir Mapa
 function abrirModalMapa(localId) {
   const modalEl = document.getElementById("modalMapa");
   const btnAbrir = modalEl.querySelector("#btnAbrirMapa");
@@ -53,40 +55,4 @@ function abrirModalMapa(localId) {
 
   const modal = new bootstrap.Modal(modalEl);
   modal.show();
-}
-
-function mostrarToast(titulo, mensagem, tipo = "success", tempo = 2000) {
-  const toastEl = document.getElementById("toastAviso");
-  const iconEl = document.getElementById("toastIcon");
-  const tituloEl = document.getElementById("toastTitulo");
-  const mensagemEl = document.getElementById("toastMensagem");
-
-  const tipos = {
-    success: {
-      icon: "bi-check-circle-fill",
-      color: "text-success",
-    },
-    warning: {
-      icon: "bi-exclamation-triangle-fill",
-      color: "text-warning",
-    },
-    error: {
-      icon: "bi-x-circle-fill",
-      color: "text-danger",
-    },
-  };
-
-  const config = tipos[tipo] ?? tipos.success;
-
-  iconEl.className = `bi me-2 ${config.icon} ${config.color}`;
-
-  tituloEl.innerText = titulo;
-  mensagemEl.innerText = mensagem;
-
-  const toast = new bootstrap.Toast(toastEl, {
-    delay: tempo,
-    autohide: true,
-  });
-
-  toast.show();
 }

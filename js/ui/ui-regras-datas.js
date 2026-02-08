@@ -5,20 +5,22 @@
 async function abrirTelaRegrasDatas() {
   setTitle("Admin • Regras de Datas");
   conteudo.innerHTML = Ui.PainelRegrasDatas();
-  carregarRegrasDatas(firstTime=true);
+  carregarRegrasDatas((firstTime = true));
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarRegrasDatas(firstTime=false) {
+async function carregarRegrasDatas(firstTime = false) {
   const lista = document.getElementById("listaRegrasDatas");
 
   try {
     mostrarLoading("listaRegrasDatas");
 
-    const data = firstTime ? dataStore.regrasData : await regrasDatasService.listar();
+    const data = firstTime
+      ? dataStore.regrasData
+      : await regrasDatasService.listar();
     let regras = data || [];
     dataStore.regrasData = regras;
 
@@ -85,10 +87,11 @@ function renderTabelaRegrasDatas(regras) {
         <td>${formatarQuando(r.dia_semana, r.ordinal)}</td>
         <td class="text-center">${formatarHorario(r.horario)}</td>
         <td class="text-center">
-          ${r.ativo
-        ? '<span class="badge bg-success">Ativo</span>'
-        : '<span class="badge bg-secondary">Inativo</span>'
-      }
+          ${
+            r.ativo
+              ? '<span class="badge bg-success">Ativo</span>'
+              : '<span class="badge bg-secondary">Inativo</span>'
+          }
         </td>
         <td class="text-center">
           <button class="btn btn-sm btn-outline-dark me-1 editar-btn" onclick="editarRegra(${r.id}, this)">
@@ -156,7 +159,10 @@ function montarPayloadRegra() {
   const ativo = document.getElementById("regraAtivo").checked;
 
   if (!localId || !tipo || !horario) {
-    abrirModalAviso("Aviso", "Preencha corretamente todos os campos");
+    mostrarErroCampo(
+      "erroValidacaoCamposRegra",
+      "Preencha todos os campos corretamente",
+    );
     return null;
   }
 
@@ -220,6 +226,8 @@ async function reloadRegras() {
 ========================= */
 
 function abrirModalNovaRegra() {
+  limparErroCampo("erroValidacaoCamposRegra");
+
   document.getElementById("modalRegraTitulo").innerText = "Nova Regra";
   limparFormularioRegra();
 
@@ -251,16 +259,26 @@ function limparFormularioRegra() {
 ========================= */
 
 async function salvarRegra() {
-  const payload = montarPayloadRegra();
-  if (!payload) return;
+  limparErroCampo("erroValidacaoCamposRegra");
 
   const btn = document.getElementById("btnSalvarRegra");
   const textoOriginal = btn.innerHTML;
 
+  const payload = montarPayloadRegra();
+
+  if (!payload) {
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+    habilitarBotaoRegra();
+    return;
+  }
+
   try {
     desabilitarBotaoRegra();
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Salvando`;
+    btn.innerHTML = `
+      <span class="spinner-border spinner-border-sm"></span> Salvando
+    `;
 
     let r;
     if (payload.id) {
@@ -270,24 +288,27 @@ async function salvarRegra() {
     }
 
     if (r?.error) {
-      abrirModalAviso("Aviso", r.error);
+      mostrarErroCampo("erroValidacaoCamposRegra", r.error);
       return;
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
-    abrirModalAviso(
-      "Sucesso",
-      payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!",
-    );
-    habilitarBotaoRegra();
+
+    mostrarLoading("listaRegras");
+
+    const msg = payload.id
+      ? "Regra editada com sucesso!"
+      : "Regra criada com sucesso!";
+
+    abrirModalAviso("Sucesso", msg);
     await reloadRegras();
   } catch (err) {
-    habilitarBotaoRegra();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao salvar regra");
   } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
+    habilitarBotaoRegra();
   }
 }
 
@@ -296,22 +317,27 @@ async function salvarRegra() {
 ========================= */
 
 async function editarRegra(id, btn) {
+  limparErroCampo("erroValidacaoCamposRegra");
+
   let salvou = false;
   const textoOriginal = btn.innerHTML;
 
   try {
     desabilitarBotaoRegra();
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+    btn.innerHTML = `
+      <span class="spinner-border spinner-border-sm"></span>
+    `;
 
-    const data = await regrasDatasService.listar();
-    const regra = (data || []).find((r) => Number(r.id) === Number(id));
+    const regras = await regrasDatasService.listar();
+    const regra = (regras || []).find((r) => Number(r.id) === Number(id));
 
     if (!regra) {
       abrirModalAviso("Erro", "Regra não encontrada");
       return;
     }
 
+    limparFormularioRegra();
     preencherFormularioRegra(regra);
 
     document.getElementById("modalRegraTitulo").innerText = "Editar Regra";
@@ -337,9 +363,9 @@ async function editarRegra(id, btn) {
 
     modal.show();
   } catch (err) {
-    habilitarBotaoRegra();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao carregar regra");
+    habilitarBotaoRegra();
   } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
@@ -376,7 +402,6 @@ function excluirRegra(id, btnTrash) {
 
       abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
       await reloadRegras();
-
     } catch (err) {
       console.error(err);
       abrirModalAviso("Erro", "Erro ao excluir regra");
