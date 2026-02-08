@@ -9,7 +9,7 @@ async function showMenuInicial() {
   };
 
   mostrarBotaoAdmin();
-  setTitle("DARPE");
+  setTitle("Página Inicial");
   conteudo.innerHTML = Ui.Home();
 }
 
@@ -77,4 +77,18 @@ function marcarTipoRadio(tipo) {
     `input[name="instrumentoTipo"][value="${tipo}"]`,
   );
   if (radio) radio.checked = true;
+}
+
+function mostrarErroCampo(idErro, msg) {
+  const el = document.getElementById(idErro);
+  if (!el) return;
+  el.innerText = msg;
+  el.classList.remove("d-none");
+}
+
+function limparErroCampo(idErro) {
+  const el = document.getElementById(idErro);
+  if (!el) return;
+  el.innerText = "";
+  el.classList.add("d-none");
 }

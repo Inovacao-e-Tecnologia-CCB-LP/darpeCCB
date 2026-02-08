@@ -5,14 +5,14 @@
 async function abrirTelaLocais() {
   setTitle("Admin • Locais");
   conteudo.innerHTML = Ui.PainelLocais();
-  carregarLocais(firstTime=true);
+  carregarLocais((firstTime = true));
 }
 
 /* =========================
    LISTAGEM
 ========================= */
 
-async function carregarLocais(firstTime=false) {
+async function carregarLocais(firstTime = false) {
   const lista = document.getElementById("listaLocais");
 
   try {
@@ -210,7 +210,10 @@ function montarPayloadLocal() {
     permiteCordas === undefined ||
     permiteSopros === undefined
   ) {
-    abrirModalAviso("Aviso", "Preencha corretamente todos os campos");
+    mostrarErroCampo(
+      "erroValidacaoCamposLocal",
+      "Preencha todos os campos corretamente",
+    );
     return null;
   }
 
@@ -249,6 +252,8 @@ async function reloadLocais() {
 ========================= */
 
 function abrirModalNovoLocal() {
+  limparErrosCamposLocal();
+
   document.getElementById("modalLocalTitulo").innerText = "Novo Local";
   limparFormularioLocal();
   document.getElementById("btnSalvarLocal").onclick = salvarLocal;
@@ -273,13 +278,18 @@ function limparFormularioLocal() {
 ========================= */
 
 async function salvarLocal() {
-  const payload = montarPayloadLocal();
-  if (!payload) return;
-
-  if (payload.nome.trim() !== '' && !isNaN(payload.nome)) return abrirModalAviso("Erro", "Nome do local não pode ser vazio ou um número");
+  limparErrosCamposLocal();
 
   const btn = document.getElementById("btnSalvarLocal");
   const textoOriginal = btn.innerHTML;
+
+  const payload = montarPayloadLocal();
+  if (!payload) {
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+    habilitarBotaoLocal();
+    return;
+  }
 
   try {
     desabilitarBotaoLocal();
@@ -297,7 +307,8 @@ async function salvarLocal() {
     }
 
     if (r?.error) {
-      abrirModalAviso("Aviso", r.error);
+      mostrarErroCampo("erroLocalNome", r.error);
+      habilitarBotaoLocal();
       return;
     }
 
@@ -326,6 +337,8 @@ async function salvarLocal() {
 ========================= */
 
 async function editarLocal(id, btn) {
+  limparErrosCamposLocal();
+
   let salvou = false;
   const textoOriginal = btn.innerHTML;
 
@@ -348,7 +361,7 @@ async function editarLocal(id, btn) {
 
     document.getElementById("modalLocalTitulo").innerText = "Editar Local";
     document.getElementById("btnSalvarLocal").onclick = async () => {
-      salvou = true
+      salvou = true;
       await salvarLocal();
     };
 
@@ -409,9 +422,9 @@ function excluirLocal(id, btnTrash) {
       }
 
       mostrarLoading("listaLocais");
+
       abrirModalAviso("Sucesso", "Local excluído com sucesso!");
       await reloadLocais();
-
     } catch (err) {
       console.error(err);
       abrirModalAviso("Erro", "Erro ao excluir local");
@@ -431,36 +444,45 @@ function excluirLocal(id, btnTrash) {
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
 
+/* =========================
+   ESTADOS DE INTERFACE
+========================= */
+
 function desabilitarBotaoLocal() {
   const btn = document.getElementById("novoLocalBtn");
-  if (!btn.hasAttribute('disabled')) btn.setAttribute('disabled', '');
+  if (!btn.hasAttribute("disabled")) btn.setAttribute("disabled", "");
   backButton.setAttribute("disabled", "");
 
-  const editBtns = document.querySelectorAll('.editar-btn');
-  const deleteBtns = document.querySelectorAll('.excluir-btn');
+  const editBtns = document.querySelectorAll(".editar-btn");
+  const deleteBtns = document.querySelectorAll(".excluir-btn");
 
-  editBtns.forEach(btn => {
-    btn.setAttribute('disabled', '');
+  editBtns.forEach((btn) => {
+    btn.setAttribute("disabled", "");
   });
 
-  deleteBtns.forEach(btn => {
-    btn.setAttribute('disabled', '');
+  deleteBtns.forEach((btn) => {
+    btn.setAttribute("disabled", "");
   });
 }
 
 function habilitarBotaoLocal() {
   const btn = document.getElementById("novoLocalBtn");
-  if (btn.hasAttribute('disabled')) btn.removeAttribute('disabled');
+  if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
   backButton.removeAttribute("disabled");
 
-  const editBtns = document.querySelectorAll('.editar-btn');
-  const deleteBtns = document.querySelectorAll('.excluir-btn');
+  const editBtns = document.querySelectorAll(".editar-btn");
+  const deleteBtns = document.querySelectorAll(".excluir-btn");
 
-  editBtns.forEach(btn => {
-    btn.removeAttribute('disabled');
+  editBtns.forEach((btn) => {
+    btn.removeAttribute("disabled");
   });
 
-  deleteBtns.forEach(btn => {
-    btn.removeAttribute('disabled');
+  deleteBtns.forEach((btn) => {
+    btn.removeAttribute("disabled");
   });
+}
+
+function limparErrosCamposLocal() {
+  limparErroCampo("erroLocalNome");
+  limparErroCampo("erroValidacaoCamposLocal");
 }

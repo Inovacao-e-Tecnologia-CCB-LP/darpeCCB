@@ -41,7 +41,7 @@ async function validarSenhaAdmin() {
     const r = await authService.auth(senhaDigitada);
 
     if (!r?.success) {
-      mostrarErroSenha(r?.error || "Senha inválida");
+      mostrarErroCampo("erroSenha", r.error);
       return;
     }
 
@@ -58,10 +58,4 @@ async function validarSenhaAdmin() {
     textoBtn.classList.remove("d-none");
     spinner.classList.add("d-none");
   }
-}
-
-function mostrarErroSenha(msg) {
-  const erro = document.getElementById("erroSenha");
-  erro.innerText = msg;
-  erro.classList.remove("d-none");
 }
