@@ -17,6 +17,10 @@ function irParaTelaRegrasDatas() {
   navigateTo(() => guardAdmin(abrirTelaRegrasDatas));
 }
 
+function irParaTelaProgramacoes() {
+  navigateTo(() => guardAdmin(abrirTelaProgramacoes));
+}
+
 function irParaTelaRelatorios() {
   navigateTo(() => guardAdmin(abrirTelaRelatorios));
 }

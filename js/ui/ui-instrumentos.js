@@ -3,7 +3,7 @@
 ========================= */
 
 function abrirTelaInstrumentos() {
-  setTitle("Admin • Instrumentos");
+  setTitle("Instrumentos");
   conteudo.innerHTML = Ui.PainelInstrumentos();
   carregarInstrumentos((firstTime = true));
 }

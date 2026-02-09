@@ -3,7 +3,7 @@
 ========================= */
 
 async function abrirTelaRegrasDatas() {
-  setTitle("Admin • Regras de Datas");
+  setTitle("Regras de Datas");
   conteudo.innerHTML = Ui.PainelRegrasDatas();
   carregarRegrasDatas((firstTime = true));
 }
