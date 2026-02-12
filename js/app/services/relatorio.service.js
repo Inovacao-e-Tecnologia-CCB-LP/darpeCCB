@@ -16,7 +16,7 @@ class RelatoriosService {
     });
   }
 
-  obterVoluntarios(programacaoId, inscritosPorProgramacao) {
+  obterMusicos(programacaoId, inscritosPorProgramacao) {
     return inscritosPorProgramacao[programacaoId] || [];
   }
 }

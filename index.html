@@ -66,15 +66,24 @@
           </div>
 
           <div class="modal-body">
-            <input
-              type="password"
-              id="senhaAdmin"
-              class="form-control"
-              placeholder="Digite a senha"
-            />
-            <div id="erroSenha" class="text-danger mt-2 d-none">
-              Senha incorreta
-            </div>
+            <form
+              onsubmit="
+                validarSenhaAdmin();
+                return false;
+              "
+            >
+              <input
+                type="password"
+                id="senhaAdmin"
+                class="form-control"
+                placeholder="Digite a senha"
+                required
+              />
+
+              <div id="erroSenha" class="text-danger mt-2 d-none">
+                Senha incorreta
+              </div>
+            </form>
           </div>
 
           <div class="modal-footer">
@@ -449,6 +458,64 @@
             </button>
             <button type="button" class="btn btn-dark" id="btnSalvarRegra">
               Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Adicionar Músico -->
+    <div class="modal fade" id="modalAdicionarMusico" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-dark">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">Adicionar Músico</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="formAdicionarMusico">
+              <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input
+                  type="text"
+                  id="nomeMusicoModal"
+                  class="form-control"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Instrumento</label>
+                <input
+                  type="text"
+                  id="instrumentoMusicoModal"
+                  class="form-control"
+                />
+              </div>
+            </form>
+
+            <div
+              id="erroValidacaoCamposMusico"
+              class="text-danger mt-1 d-none"
+              style="font-size: 0.85rem"
+            ></div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              onclick="salvarMusicoModal()"
+            >
+              Adicionar
             </button>
           </div>
         </div>
