@@ -5,6 +5,7 @@
 const RelatorioState = {
   localId: null,
   programacaoId: null,
+  programacaoAdicionarId: null,
   modoEdicao: false,
   historicoRemocoes: [],
 
@@ -98,6 +99,12 @@ async function abrirTelaRelatorios() {
 
     conteudo.innerHTML = Ui.PainelRelatorio();
     RelatorioState.reset();
+
+    document
+      .getElementById("formRelatorio")
+      ?.addEventListener("submit", function (e) {
+        e.preventDefault();
+      });
 
     carregarLocaisRelatorio();
   } catch (err) {
@@ -202,18 +209,18 @@ function carregarProgramacoesRelatorio(localId) {
           document.getElementById("qtdInternos").value = "";
         }
 
-        carregarVoluntariosRelatorio(p.id);
+        carregarMusicosRelatorio(p.id);
       }),
     );
   });
 }
 
 /* =========================
-   VOLUNTÁRIOS
+   MÚSICOS
 ========================= */
 
-function carregarVoluntariosRelatorio(programacaoId) {
-  const container = document.getElementById("listaVoluntarios");
+function carregarMusicosRelatorio(programacaoId) {
+  const container = document.getElementById("listaMusicos");
   if (!container) return;
 
   container.innerHTML = "";
@@ -222,7 +229,7 @@ function carregarVoluntariosRelatorio(programacaoId) {
   if (!inscritosProg.length) {
     container.innerHTML = `
       <div class="text-muted fst-italic text-center">
-        Nenhum voluntário inscrito nesta programação.
+        Nenhum músico nesta programação.
       </div>
     `;
     return;
@@ -246,9 +253,34 @@ function carregarVoluntariosRelatorio(programacaoId) {
 
     const li = document.createElement("li");
     li.className = "d-flex justify-content-between align-items-center mb-1";
+
     li.innerHTML = `
-      <span>${i.nome}${instNome ? ` (${instNome})` : ""}</span>
-    `;
+    <span>${i.nome}${instNome ? ` (${instNome})` : ""}</span>
+    <button 
+      type="button"
+      class="btn btn-sm btn-outline-danger ms-2"
+      title="Remover"
+    >
+      <i class="bi bi-trash"></i>
+    </button>
+  `;
+
+    const btnRemover = li.querySelector("button");
+
+    btnRemover.onclick = async (e) => {
+      e.stopPropagation();
+
+      const confirmado = await abrirModalConfirmacao(
+        "Deseja excluir o músico?",
+        "Confirmar",
+      );
+
+      if (!confirmado) return;
+
+      inscritosProg.splice(index, 1);
+      carregarMusicosRelatorio(programacaoId);
+    };
+
     ul.appendChild(li);
   });
 
@@ -261,28 +293,85 @@ function carregarVoluntariosRelatorio(programacaoId) {
     );
   };
 
-  ul.querySelectorAll("button").forEach((btn) => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const index = Number(btn.dataset.index);
-      const voluntario = inscritosProg[index];
+  const inputMusicos = document.getElementById("qtdMusicos");
+  if (inputMusicos) {
+    inputMusicos.value = inscritosProg.length;
+  }
 
-      abrirConfirmacao(
-        "Confirmar exclusão",
-        `Deseja remover <strong>${voluntario.nome}</strong>?`,
-        () => {
-          RelatorioState.historicoRemocoes.push({
-            programacaoId,
-            voluntario,
-            index,
-          });
-          inscritosProg.splice(index, 1);
-          carregarVoluntariosRelatorio(programacaoId);
-          mostrarBotaoDesfazer();
-        },
-      );
-    };
-  });
+  const btnAdicionar = document.createElement("button");
+  btnAdicionar.type = "button";
+  btnAdicionar.className = "btn btn-outline-primary btn-sm mt-2";
+  btnAdicionar.innerHTML = '<i class="bi bi-plus"></i> Adicionar';
+
+  btnAdicionar.onclick = (e) => {
+    e.stopPropagation();
+    abrirModalAdicionarMusico(programacaoId);
+  };
+
+  container.appendChild(btnAdicionar);
+}
+
+function abrirModalAdicionarMusico(programacaoId) {
+  RelatorioState.programacaoAdicionarId = programacaoId;
+
+  document.getElementById("nomeMusicoModal").value = "";
+  document.getElementById("instrumentoMusicoModal").value = "";
+
+  limparErroCampo("erroValidacaoCamposMusico");
+
+  const modal = new bootstrap.Modal(
+    document.getElementById("modalAdicionarMusico"),
+  );
+
+  modal.show();
+
+  // Foco automático no nome
+  setTimeout(() => {
+    document.getElementById("nomeMusicoModal").focus();
+  }, 300);
+}
+
+function salvarMusicoModal() {
+  const nome = document.getElementById("nomeMusicoModal").value.trim();
+  const instrumento = document
+    .getElementById("instrumentoMusicoModal")
+    .value.trim();
+
+  if (!nome || !instrumento) {
+    mostrarErroCampo(
+      "erroValidacaoCamposMusico",
+      "Preencha todos os campos obrigatórios.",
+    );
+    return;
+  }
+
+  const programacaoId = RelatorioState.programacaoAdicionarId;
+
+  const novo = {
+    nome,
+    instrumento,
+    instrumentoNome: instrumento || "",
+  };
+
+  if (!inscritosPorProgramacao[programacaoId]) {
+    inscritosPorProgramacao[programacaoId] = [];
+  }
+
+  inscritosPorProgramacao[programacaoId].push(novo);
+
+  // Atualiza lista
+  carregarMusicosRelatorio(programacaoId);
+
+  // Atualiza contador
+  const inputMusicos = document.getElementById("qtdMusicos");
+  if (inputMusicos) {
+    inputMusicos.value = inscritosPorProgramacao[programacaoId].length;
+  }
+
+  // Fecha modal
+  bootstrap.Modal.getInstance(
+    document.getElementById("modalAdicionarMusico"),
+  ).hide();
 }
 
 /* =========================
@@ -304,9 +393,9 @@ function montarDadosRelatorio() {
   const local = dataStore.locais.find((l) => l.id == localId);
   const programacao = dataStore.programacao.find((p) => p.id == programacaoId);
 
-  const voluntariosRaw = inscritosPorProgramacao[programacaoId] || [];
+  const musicosRaw = inscritosPorProgramacao[programacaoId] || [];
 
-  const voluntarios = voluntariosRaw.map((c) => ({
+  const musicos = musicosRaw.map((c) => ({
     ...c,
     instrumentoNome:
       c.instrumento_id && instrumentosMap[c.instrumento_id]
@@ -314,12 +403,16 @@ function montarDadosRelatorio() {
         : c.instrumento || "",
   }));
 
+  const qtdMusicosManual = Number(
+    document.getElementById("qtdMusicos")?.value || musicos.length,
+  );
+
   return {
     responsavel: form.responsavel,
     local,
     programacao,
-    voluntarios,
-    qtdVoluntarios: voluntarios.length,
+    musicos,
+    qtdMusicos: qtdMusicosManual,
     qtdInternos: form.qtdInternos,
     observacoes: form.observacoes,
     evangelizacao:
@@ -414,7 +507,7 @@ async function gerarPDF() {
     linha("Qtde. Internos:", String(dados.qtdInternos));
   }
 
-  linha("Qtde. Músicos:", String(dados.qtdVoluntarios));
+  linha("Qtde. Músicos:", String(dados.qtdMusicos));
 
   /* ================= EVANGELIZAÇÃO ================= */
   if (dados.evangelizacao) {
@@ -445,23 +538,23 @@ async function gerarPDF() {
     }
   }
 
-  /* ================= VOLUNTÁRIOS ================= */
+  /* ================= MÚSICOS ================= */
   y += 4;
   doc.line(MARGEM_ESQ, y, MARGEM_DIR, y);
   y += 7;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(FONT_SUBTITULO);
-  doc.text("Nome/Instrumento dos Voluntários", MARGEM_ESQ, y);
+  doc.text("Nome/Instrumento dos Músicos", MARGEM_ESQ, y);
   y += 6;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(FONT_TEXTO);
 
-  if (!dados.voluntarios.length) {
-    doc.text("Nenhum voluntário inscrito.", MARGEM_ESQ, y);
+  if (!dados.musicos.length) {
+    doc.text("Nenhum músico inscrito.", MARGEM_ESQ, y);
   } else {
-    dados.voluntarios.forEach((c) => {
+    dados.musicos.forEach((c) => {
       let instNome = c.instrumento;
 
       if (c.instrumento_id && instrumentosMap[c.instrumento_id]) {
@@ -515,7 +608,7 @@ function gerarMensagemWhatsAppRelatorio(dados) {
   if (dados.qtdInternos > 0) {
     linhas.push(`💠 *Qtde. Internos:* _${dados.qtdInternos}_`);
   }
-  linhas.push(`🎶 *Qtde. Músicos:* _${dados.qtdVoluntarios}_`);
+  linhas.push(`🎶 *Qtde. Músicos:* _${dados.qtdMusicos}_`);
   if (dados.evangelizacao?.palavra) {
     linhas.push(`📖 *Palavra:* _${dados.evangelizacao.palavra}_`);
   }
@@ -529,13 +622,13 @@ function gerarMensagemWhatsAppRelatorio(dados) {
     linhas.push(`${dados.observacoes}`);
   }
 
-    linhas.push("");
+  linhas.push("");
 
-  // 👥 voluntarios
-  if (dados.voluntarios?.length) {
-    linhas.push("*👥 Nome/Instrumento dos Voluntários*");
-      linhas.push("");
-    dados.voluntarios.forEach((c) => {
+  // 👥 musicos
+  if (dados.musicos?.length) {
+    linhas.push("*👥 Nome/Instrumento dos Músicos*");
+    linhas.push("");
+    dados.musicos.forEach((c) => {
       linhas.push(
         `• _${c.nome}${c.instrumentoNome ? " (" + c.instrumentoNome + ")" : ""}_`,
       );

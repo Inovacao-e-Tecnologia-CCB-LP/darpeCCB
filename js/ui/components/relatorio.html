@@ -15,8 +15,11 @@
         <div class="col-12 col-xl-10">
           <!-- LOCAL SELECIONADO (RESUMO) -->
           <div id="localSelecionadoHeader" class="d-none mb-1">
-            <button id="btnToggleLocais" class="btn btn-dark w-100 d-flex justify-content-between align-items-center"
-              type="button">
+            <button
+              id="btnToggleLocais"
+              class="btn btn-dark w-100 d-flex justify-content-between align-items-center"
+              type="button"
+            >
               <span id="localSelecionadoNome"></span>
               <i class="bi bi-chevron-down"></i>
             </button>
@@ -24,7 +27,10 @@
 
           <!-- LISTA DE LOCAIS -->
           <div id="collapseLocais" class="mb-1">
-            <div id="listaLocais" class="list-group border rounded overflow-hidden">
+            <div
+              id="listaLocais"
+              class="list-group border rounded overflow-hidden"
+            >
               <!-- Gerado via JS -->
             </div>
           </div>
@@ -54,14 +60,25 @@
               <label class="form-label fw-semibold small">
                 <i class="bi bi-calendar-date me-1"></i> Data
               </label>
-              <input type="date" id="dataRelatorio" class="form-control" readonly />
+              <input
+                type="date"
+                id="dataRelatorio"
+                class="form-control"
+                readonly
+              />
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-semibold small">
                 <i class="bi bi-person-badge me-1"></i> Responsável
               </label>
-              <input type="text" id="responsavel" class="form-control" placeholder="Nome do responsável" required />
+              <input
+                type="text"
+                id="responsavel"
+                class="form-control"
+                placeholder="Nome do responsável"
+                required
+              />
             </div>
           </div>
 
@@ -70,28 +87,53 @@
             <label class="form-label fw-semibold small">
               <i class="bi bi-chat-text me-1"></i> Observações
             </label>
-            <textarea id="observacoes" rows="4" class="form-control" placeholder="Observações adicionais"></textarea>
+            <textarea
+              id="observacoes"
+              rows="4"
+              class="form-control"
+              placeholder="Observações adicionais"
+            ></textarea>
           </div>
 
-          <!-- QTD INTERNOS (CENTRALIZADO) -->
-          <div class="row justify-content-center mt-4">
-            <div class="col-12 col-md-6 col-lg-4 text-center">
+          <!-- QTDE INTERNOS + QTDE MÚSICOS -->
+          <div class="row g-2 mt-4">
+            <div class="col-md-6">
               <label class="form-label fw-semibold">
-                <i class="bi bi-person-fill me-1"></i> Qtd. Internos
+                <i class="bi bi-person-fill me-1"></i> Qtde. Internos
               </label>
-              <input type="number" id="qtdInternos" class="form-control text-center" min="0" placeholder="Ex: 15" />
-              <div class="form-text">
-                Quantidade de participantes que
-                <b>não são músicos</b>.
-              </div>
+              <input
+                type="number"
+                id="qtdInternos"
+                class="form-control"
+                min="0"
+              />
+              <div class="form-text">Quantidade de internos no local</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-music-note-beamed me-1"></i> Qtde. Músicos
+              </label>
+              <input
+                type="number"
+                id="qtdMusicos"
+                class="form-control"
+                min="0"
+              />
+              <div class="form-text">Quantidade de músicos no local.</div>
             </div>
           </div>
 
           <!-- CAMPOS EVANGELIZAÇÃO -->
-          <div class="row d-none justify-content-center mt-4" id="camposEvangelizacao">
+          <div
+            class="row d-none justify-content-center mt-4"
+            id="camposEvangelizacao"
+          >
             <div class="col-12 col-md-8 col-lg-6">
               <div class="card border-warning shadow-sm">
-                <div class="card-header bg-warning-subtle fw-semibold text-center">
+                <div
+                  class="card-header bg-warning-subtle fw-semibold text-center"
+                >
                   <i class="bi bi-megaphone me-1"></i>
                   Informações da Evangelização
                 </div>
@@ -106,7 +148,12 @@
                   <div class="row g-3 justify-content-center">
                     <div class="col-12">
                       <label class="form-label">Palavra</label>
-                      <input type="text" id="palavra" class="form-control text-center" placeholder="Ex: João 3:16–21" />
+                      <input
+                        type="text"
+                        id="palavra"
+                        class="form-control text-center"
+                        placeholder="Ex: João 3:16–21"
+                      />
                       <div class="form-text text-center">
                         Informe o livro, capítulo e versículos revelados na
                         evangelização.
@@ -120,24 +167,32 @@
             </div>
           </div>
 
-          <!-- VOLUNTÁRIOS -->
+          <!-- MÚSICOS -->
           <div class="col-12 mt-3">
             <label class="form-label fw-semibold">
-              <i class="bi bi-people me-1"></i> Nome/Instrumentos dos
-              Voluntários
+              <i class="bi bi-people me-1"></i> Nome/Instrumentos dos Músicos
             </label>
 
-            <div id="listaVoluntarios" class="border rounded p-3 bg-body-secondary small hover-shadow"
-              style="cursor: pointer"></div>
+            <div
+              id="listaMusicos"
+              class="border rounded p-3 bg-body-secondary small hover-shadow"
+              style="cursor: pointer"
+            ></div>
           </div>
 
           <!-- AÇÕES -->
-          <div class="col-12 d-flex flex-wrap gap-2 justify-content-center justify-content-md-end mt-3">
+          <div
+            class="col-12 d-flex flex-wrap gap-2 justify-content-center justify-content-md-end mt-3"
+          >
             <button type="button" class="btn btn-primary" onclick="gerarPDF()">
               <i class="bi bi-file-earmark-pdf"></i> Gerar PDF
             </button>
 
-            <button type="button" class="btn btn-success" onclick="enviarWhatsAppRelatorio()">
+            <button
+              type="button"
+              class="btn btn-success"
+              onclick="enviarWhatsAppRelatorio()"
+            >
               <i class="bi bi-whatsapp"></i> Enviar no WhatsApp
             </button>
           </div>

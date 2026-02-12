@@ -1,4 +1,4 @@
-const appScriptApi = new AppScriptApi()
+const appScriptApi = new AppScriptApi();
 const Ui = new UiComponents();
 
 /* ================= APP ================= */
@@ -37,7 +37,7 @@ function updateBackButton() {
 
 async function init() {
   esconderBotaoAdmin();
-  backButton.style.display = 'none';
+  backButton.style.display = "none";
   setTitle("Carregando...");
   conteudo.innerHTML = '<div class="spinner-border"></div>';
 
@@ -75,3 +75,27 @@ function resetAndGoHome() {
   navigationStack.length = 0;
   navigateTo(showMenuInicial);
 }
+
+// ================================
+// Foco global para todas as modais
+// ================================
+
+document.addEventListener("shown.bs.modal", (event) => {
+  const modalEl = event.target;
+  if (!modalEl) return;
+
+  // Busca o primeiro input ou botão visível, ignorando o botão de fechar (btn-close)
+  const foco = modalEl.querySelector(
+    "input:not([type=hidden]):not([disabled]), button:not([disabled]):not(.btn-close)",
+  );
+
+  if (foco) {
+    foco.focus();
+  }
+});
+
+document.addEventListener("hide.bs.modal", (event) => {
+  if (document.activeElement) {
+    document.activeElement.blur();
+  }
+});
