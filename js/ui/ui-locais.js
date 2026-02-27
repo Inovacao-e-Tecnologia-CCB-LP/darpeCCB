@@ -2,6 +2,9 @@
    UI • LOCAIS
 ========================= */
 
+// IDs dos instrumentos específicos selecionados no modal (estado temporário)
+let _instrumentosEspecificosTemp = [];
+
 async function abrirTelaLocais() {
   setTitle("Locais");
   conteudo.innerHTML = Ui.PainelLocais();
@@ -15,178 +18,200 @@ async function abrirTelaLocais() {
 async function carregarLocais(firstTime = false) {
   const lista = document.getElementById("listaLocais");
 
+  travarUI();
   try {
     mostrarLoading("listaLocais");
 
     let locais = firstTime ? dataStore.locais : await locaisService.listar();
-
-    if (locais?.error) {
-      throw new Error(locais.error);
-    }
+    if (locais?.error) throw new Error(locais.error);
 
     locais = locais || [];
     dataStore.locais = locais;
 
     if (!locais.length) {
-      lista.innerHTML = `
-        <div class="alert alert-secondary text-center">
-          Nenhum local cadastrado
-        </div>
-      `;
+      lista.innerHTML = `<div class="alert alert-secondary text-center">Nenhum local cadastrado</div>`;
       return;
     }
 
-    if (isMobile()) {
-      renderCardsLocais(locais);
-    } else {
-      renderTabelaLocais(locais);
-    }
+    renderCardsLocais(locais);
   } catch (err) {
     console.error(err);
-    lista.innerHTML = `
-      <div class="alert alert-danger text-center">
-        Erro ao carregar locais
-      </div>
-    `;
+    lista.innerHTML = `<div class="alert alert-danger text-center">Erro ao carregar locais</div>`;
+  } finally {
+    liberarUI();
   }
 }
 
+// Retorna array de IDs dos instrumentos específicos ou null
+function _parseInstrumentosPermitidos(local) {
+  if (!local.instrumentos_permitidos) return null;
+  try {
+    const parsed = typeof local.instrumentos_permitidos === 'string'
+      ? JSON.parse(local.instrumentos_permitidos)
+      : local.instrumentos_permitidos;
+    return Array.isArray(parsed) && parsed.length ? parsed.map(Number) : null;
+  } catch { return null; }
+}
+
+// Retorna string com nomes dos instrumentos específicos ou null
+function _resumoInstrumentosEspecificos(local) {
+  const ids = _parseInstrumentosPermitidos(local);
+  if (!ids) return null;
+  const nomes = ids.map(id => {
+    const inst = (dataStore.instrumentos || []).find(i => Number(i.id) === Number(id));
+    return inst ? inst.nome : null;
+  }).filter(Boolean);
+  return nomes.length ? nomes.join(', ') : null;
+}
+
 function renderTabelaLocais(locais) {
-  let html = `
-    <div class="table-responsive rounded shadow-sm overflow-hidden">
-      <table class="table table-bordered align-middle mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th>Nome</th>
-            <th class="text-center">Endereço</th>
-            <th class="text-center">Cordas</th>
-            <th class="text-center">Sopros</th>
-            <th class="text-center">Limite</th>
-            <th class="text-center" width="120">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  locais.forEach((l) => {
-    html += `
-  <tr>
-    <td>${l.nome}</td>
-
-    <td>
-      <span
-        class="d-inline-block text-truncate"
-        style="max-width: 280px"
-        title="${l.endereco || ""}"
-      >
-        ${l.endereco || "-"}
-      </span>
-    </td>
-
-    <td class="text-center">
-      ${
-        l.permite_cordas
-          ? '<i class="bi bi-check-circle-fill text-success"></i>'
-          : '<i class="bi bi-x-circle-fill text-danger"></i>'
-      }
-    </td>
-
-    <td class="text-center">
-      ${
-        l.permite_sopros
-          ? '<i class="bi bi-check-circle-fill text-success"></i>'
-          : '<i class="bi bi-x-circle-fill text-danger"></i>'
-      }
-    </td>
-
-    <td class="text-center">${l.limite}</td>
-
-    <td class="text-center">
-      <button class="btn btn-sm btn-outline-dark me-1 editar-btn"
-        onclick="editarLocal(${l.id}, this)">
-        <i class="bi bi-pencil"></i>
-      </button>
-      <button class="btn btn-sm btn-outline-danger excluir-btn"
-        onclick="excluirLocal(${l.id}, this)">
-        <i class="bi bi-trash"></i>
-      </button>
-    </td>
-  </tr>
-`;
-  });
-
-  html += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
-  document.getElementById("listaLocais").innerHTML = html;
+  renderCardsLocais(locais);
 }
 
 function renderCardsLocais(locais) {
-  let html = `<div class="d-grid gap-3">`;
+  let html = `<div class="d-flex flex-column gap-3">`;
 
   locais.forEach((l) => {
+    const resumo = _resumoInstrumentosEspecificos(l);
+
+    const cordasIcon = l.permite_cordas
+      ? `<span class="permissao-chip permissao-ok"><i class="bi bi-check-lg"></i> Cordas</span>`
+      : `<span class="permissao-chip permissao-no"><i class="bi bi-x-lg"></i> Cordas</span>`;
+    const soprosIcon = l.permite_sopros
+      ? `<span class="permissao-chip permissao-ok"><i class="bi bi-check-lg"></i> Sopros</span>`
+      : `<span class="permissao-chip permissao-no"><i class="bi bi-x-lg"></i> Sopros</span>`;
+
+    const especificosHtml = resumo
+      ? `<div class="card-info-row">
+           <i class="bi bi-music-note-list"></i>
+           <span class="text-muted small">Específicos:</span>
+           <div class="d-flex flex-wrap gap-1 ms-1">${resumo.split(', ').map(n => `<span class="badge-instrumento">${n}</span>`).join('')}</div>
+         </div>`
+      : '';
+
     html += `
-      <div class="card shadow-sm">
-        <div class="modal-header bg-dark text-white rounded-top p-2">
-          <h5 class="card-title mt-0 mb-0">${l.nome}</h5>
-        </div>
-        <div class="card-body">
-
-          <p class="mb-2 text-muted">
-            <i class="bi bi-geo-alt"></i>
-            ${l.endereco || "-"}
-          </p>
-
-          <div class="d-flex justify-content-between mb-2">
-            <span>
-              Cordas:
-              ${
-                l.permite_cordas
-                  ? '<i class="bi bi-check-circle-fill text-success"></i>'
-                  : '<i class="bi bi-x-circle-fill text-danger"></i>'
-              }
-            </span>
-
-            <span>
-              Sopros:
-              ${
-                l.permite_sopros
-                  ? '<i class="bi bi-check-circle-fill text-success"></i>'
-                  : '<i class="bi bi-x-circle-fill text-danger"></i>'
-              }
-            </span>
+      <div class="item-card">
+        <div class="item-card-header">
+          <div class="item-card-titulo">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span>${l.nome}</span>
           </div>
-
-          <p class="mb-3">
-            <strong>Limite:</strong> ${l.limite}
-          </p>
-
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-dark w-50"
-              onclick="editarLocal(${l.id}, this)">
-              <i class="bi bi-pencil"></i> Editar
-            </button>
-
-            <button class="btn btn-sm btn-outline-danger w-50"
-              onclick="excluirLocal(${l.id}, this)">
-              <i class="bi bi-trash"></i> Excluir
-            </button>
-          </div>
+          <span class="item-card-badge">${l.limite} vagas</span>
         </div>
-      </div>
-    `;
+        <div class="item-card-body">
+          <div class="card-info-row">
+            <i class="bi bi-map"></i>
+            <span>${l.endereco || 'Endereço não informado'}</span>
+          </div>
+          <div class="card-info-row">
+            <i class="bi bi-music-note-beamed"></i>
+            <div class="d-flex gap-2 flex-wrap">${cordasIcon}${soprosIcon}</div>
+          </div>
+          ${especificosHtml}
+        </div>
+        <div class="item-card-actions">
+          <button class="btn btn-outline-dark editar-btn" onclick="editarLocal(${l.id}, this)">
+            <i class="bi bi-pencil me-1"></i>Editar
+          </button>
+          <button class="btn btn-outline-danger excluir-btn" onclick="excluirLocal(${l.id}, this)">
+            <i class="bi bi-trash me-1"></i>Excluir
+          </button>
+        </div>
+      </div>`;
   });
 
   html += `</div>`;
-
   document.getElementById("listaLocais").innerHTML = html;
 }
 
 /* =========================
-   HELPERS
+   MODAL INSTRUMENTOS ESPECÍFICOS
+========================= */
+
+function abrirModalInstrumentosEspecificos() {
+  const instrumentos = dataStore.instrumentos || [];
+  const container = document.getElementById('listaInstrumentosEspecificos');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  if (!instrumentos.length) {
+    container.innerHTML = `<span class="text-muted small">Nenhum instrumento cadastrado.</span>`;
+  } else {
+    // Agrupa por tipo para melhor visualização
+    const tipos = [...new Set(instrumentos.map(i => i.tipo))];
+
+    tipos.forEach(tipo => {
+      const grupo = document.createElement('div');
+      grupo.className = 'w-100';
+      grupo.innerHTML = `<p class="fw-semibold mb-2 text-capitalize">${_formatarTipo(tipo)}</p>`;
+
+      const linha = document.createElement('div');
+      linha.className = 'd-flex flex-wrap gap-2 mb-3';
+
+      instrumentos.filter(i => i.tipo === tipo).forEach(inst => {
+        const checked = _instrumentosEspecificosTemp.includes(Number(inst.id));
+        const label = document.createElement('label');
+        label.className = `btn btn-sm ${checked ? 'btn-dark' : 'btn-outline-dark'} instrumento-esp-btn`;
+        label.style.cursor = 'pointer';
+        label.innerHTML = `
+          <input type="checkbox" class="d-none instrumento-esp-check"
+            value="${inst.id}" ${checked ? 'checked' : ''}>
+          ${inst.nome}
+        `;
+        label.addEventListener('click', function(e) {
+          e.preventDefault();
+          const cb = this.querySelector('input');
+          cb.checked = !cb.checked;
+          this.classList.toggle('btn-dark', cb.checked);
+          this.classList.toggle('btn-outline-dark', !cb.checked);
+        });
+        linha.appendChild(label);
+      });
+
+      grupo.appendChild(linha);
+      container.appendChild(grupo);
+    });
+  }
+
+  // Abre como modal aninhado (sobre o modal do local)
+  bootstrap.Modal.getOrCreateInstance(
+    document.getElementById('modalInstrumentosEspecificos')
+  ).show();
+}
+
+function confirmarInstrumentosEspecificos() {
+  const checks = document.querySelectorAll('.instrumento-esp-check:checked');
+  _instrumentosEspecificosTemp = Array.from(checks).map(c => Number(c.value));
+
+  _atualizarResumoInstrumentosEspecificos();
+
+  bootstrap.Modal.getInstance(
+    document.getElementById('modalInstrumentosEspecificos')
+  ).hide();
+}
+
+function _atualizarResumoInstrumentosEspecificos() {
+  const span = document.getElementById('resumoInstrumentosEspecificos');
+  if (!span) return;
+
+  if (!_instrumentosEspecificosTemp.length) {
+    span.textContent = 'Nenhum instrumento específico selecionado';
+    span.className = 'text-muted small fst-italic';
+    return;
+  }
+
+  const nomes = _instrumentosEspecificosTemp.map(id => {
+    const inst = (dataStore.instrumentos || []).find(i => Number(i.id) === id);
+    return inst ? inst.nome : null;
+  }).filter(Boolean);
+
+  span.textContent = nomes.join(', ');
+  span.className = 'text-dark small fw-semibold';
+}
+
+/* =========================
+   HELPERS — PAYLOAD
 ========================= */
 
 function montarPayloadLocal() {
@@ -194,28 +219,17 @@ function montarPayloadLocal() {
   const nome = document.getElementById("localNome").value.trim();
   const limite = document.getElementById("localLimite").value;
   const endereco = document.getElementById("localEndereco").value.trim();
+  const permiteCordas = document.querySelector('input[name="permiteCordas"]:checked')?.value;
+  const permiteSopros = document.querySelector('input[name="permiteSopros"]:checked')?.value;
 
-  const permiteCordas = document.querySelector(
-    'input[name="permiteCordas"]:checked',
-  )?.value;
-
-  const permiteSopros = document.querySelector(
-    'input[name="permiteSopros"]:checked',
-  )?.value;
-
-  if (
-    !nome ||
-    !limite ||
-    !endereco ||
-    permiteCordas === undefined ||
-    permiteSopros === undefined
-  ) {
-    mostrarErroCampo(
-      "erroValidacaoCamposLocal",
-      "Preencha todos os campos corretamente",
-    );
+  if (!nome || !limite || !endereco || permiteCordas === undefined || permiteSopros === undefined) {
+    mostrarErroCampo("erroValidacaoCamposLocal", "Preencha todos os campos corretamente.");
     return null;
   }
+
+  const instrumentos_permitidos = _instrumentosEspecificosTemp.length
+    ? JSON.stringify(_instrumentosEspecificosTemp)
+    : '';
 
   return {
     id: id ? Number(id) : null,
@@ -224,6 +238,7 @@ function montarPayloadLocal() {
     endereco,
     permite_cordas: permiteCordas,
     permite_sopros: permiteSopros,
+    instrumentos_permitidos,
   };
 }
 
@@ -233,13 +248,12 @@ function preencherFormularioLocal(local) {
   document.getElementById("localLimite").value = local.limite;
   document.getElementById("localEndereco").value = local.endereco || "";
 
-  document.querySelector(
-    `input[name="permiteCordas"][value="${local.permite_cordas}"]`,
-  ).checked = true;
+  document.querySelector(`input[name="permiteCordas"][value="${local.permite_cordas}"]`).checked = true;
+  document.querySelector(`input[name="permiteSopros"][value="${local.permite_sopros}"]`).checked = true;
 
-  document.querySelector(
-    `input[name="permiteSopros"][value="${local.permite_sopros}"]`,
-  ).checked = true;
+  // Carrega instrumentos específicos no estado temporário
+  _instrumentosEspecificosTemp = _parseInstrumentosPermitidos(local) || [];
+  _atualizarResumoInstrumentosEspecificos();
 }
 
 async function reloadLocais() {
@@ -253,9 +267,10 @@ async function reloadLocais() {
 
 function abrirModalNovoLocal() {
   limparErrosCamposLocal();
-
+  _instrumentosEspecificosTemp = [];
   document.getElementById("modalLocalTitulo").innerText = "Novo Local";
   limparFormularioLocal();
+  _atualizarResumoInstrumentosEspecificos();
   document.getElementById("btnSalvarLocal").onclick = salvarLocal;
   new bootstrap.Modal(document.getElementById("modalLocal")).show();
 }
@@ -265,11 +280,7 @@ function limparFormularioLocal() {
   document.getElementById("localNome").value = "";
   document.getElementById("localLimite").value = "";
   document.getElementById("localEndereco").value = "";
-
-  document
-    .querySelectorAll(
-      'input[name="permiteCordas"], input[name="permiteSopros"]',
-    )
+  document.querySelectorAll('input[name="permiteCordas"], input[name="permiteSopros"]')
     .forEach((r) => (r.checked = false));
 }
 
@@ -282,52 +293,43 @@ async function salvarLocal() {
 
   const btn = document.getElementById("btnSalvarLocal");
   const textoOriginal = btn.innerHTML;
-
   const payload = montarPayloadLocal();
-  if (!payload) {
-    btn.disabled = false;
-    btn.innerHTML = textoOriginal;
-    habilitarBotaoLocal();
-    return;
-  }
+
+  if (!payload) return;
+
+  _travarModal("modalLocal");
+  btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Salvando`;
 
   try {
-    desabilitarBotaoLocal();
-    btn.disabled = true;
-    btn.innerHTML = `
-      <span class="spinner-border spinner-border-sm"></span> Salvando
-    `;
+    const signal = _getModalSignal("modalLocal");
 
     let r;
-
     if (payload.id) {
-      r = await locaisService.atualizar(payload, senhaDigitada);
+      r = await locaisService.atualizar(payload, senhaDigitada, signal);
     } else {
-      r = await locaisService.criar(payload, senhaDigitada);
+      r = await locaisService.criar(payload, senhaDigitada, signal);
+      // Atribui cor aleatória ao novo local imediatamente
+      if (r && !r.error && r.id && typeof _getCorLocal === 'function') {
+        _getCorLocal(r.id);
+      }
     }
+
+    if (signal.aborted) return;
 
     if (r?.error) {
       mostrarErroCampo("erroLocalNome", r.error);
-      habilitarBotaoLocal();
       return;
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalLocal")).hide();
-
-    mostrarLoading("listaLocais");
-
-    const mensagemSucesso = payload.id
-      ? "Local editado com sucesso!"
-      : "Local criado com sucesso!";
-    habilitarBotaoLocal();
-    abrirModalAviso("Sucesso", mensagemSucesso);
+    abrirModalAviso("Sucesso", payload.id ? "Local editado com sucesso!" : "Local criado com sucesso!");
     await reloadLocais();
   } catch (err) {
-    habilitarBotaoLocal();
+    if (err?.name === "AbortError") return;
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar local");
+    abrirModalAviso("Erro", "Erro ao salvar local.");
   } finally {
-    btn.disabled = false;
+    _liberarModal("modalLocal");
     btn.innerHTML = textoOriginal;
   }
 }
@@ -338,27 +340,23 @@ async function salvarLocal() {
 
 async function editarLocal(id, btn) {
   limparErrosCamposLocal();
-
   let salvou = false;
   const textoOriginal = btn.innerHTML;
 
   try {
     desabilitarBotaoLocal();
     btn.disabled = true;
-    btn.innerHTML = `
-      <span class="spinner-border spinner-border-sm"></span>
-    `;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
     const locais = await locaisService.listar();
     const local = (locais || []).find((l) => Number(l.id) === Number(id));
 
     if (!local) {
-      abrirModalAviso("Erro", "Local não encontrado");
+      abrirModalAviso("Erro", "Local não encontrado.");
       return;
     }
 
     preencherFormularioLocal(local);
-
     document.getElementById("modalLocalTitulo").innerText = "Editar Local";
     document.getElementById("btnSalvarLocal").onclick = async () => {
       salvou = true;
@@ -368,22 +366,19 @@ async function editarLocal(id, btn) {
     const modalEl = document.getElementById("modalLocal");
     const modal = new bootstrap.Modal(modalEl);
 
-    modalEl.addEventListener(
-      "hidden.bs.modal",
-      () => {
-        if (!salvou) {
-          btn.disabled = false;
-          btn.innerHTML = textoOriginal;
-          habilitarBotaoLocal();
-        }
-      },
-      { once: true },
-    );
+    modalEl.addEventListener("hidden.bs.modal", () => {
+      if (!salvou) {
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+        habilitarBotaoLocal();
+      }
+    }, { once: true });
+
     modal.show();
   } catch (err) {
     habilitarBotaoLocal();
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao carregar local");
+    abrirModalAviso("Erro", "Erro ao carregar local.");
   } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
@@ -396,48 +391,34 @@ async function editarLocal(id, btn) {
 
 function excluirLocal(id, btnTrash) {
   document.getElementById("confirmTitle").innerText = "Excluir Local";
-  document.getElementById("confirmMessage").innerText =
-    "Deseja realmente excluir este local?";
+  document.getElementById("confirmMessage").innerText = "Deseja realmente excluir este local?";
 
   const btnOk = document.getElementById("confirmOk");
-
   btnOk.onclick = async () => {
     const textoOk = btnOk.innerHTML;
     const textoTrash = btnTrash.innerHTML;
 
+    _travarModal("confirmModal");
     try {
-      desabilitarBotaoLocal();
-      btnOk.disabled = true;
-      btnTrash.disabled = true;
-      btnOk.innerHTML = `
-        <span class="spinner-border spinner-border-sm me-2"></span>
-        Excluindo
-      `;
+      btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Excluindo`;
 
-      const r = await locaisService.excluir(id, senhaDigitada);
+      const signal = _getModalSignal("confirmModal");
+      const r = await locaisService.excluir(id, senhaDigitada, signal);
 
-      if (r?.error) {
-        abrirModalAviso("Aviso", r.error);
-        return;
-      }
-
-      mostrarLoading("listaLocais");
+      if (signal.aborted) return;
+      if (r?.error) { abrirModalAviso("Aviso", r.error); return; }
 
       abrirModalAviso("Sucesso", "Local excluído com sucesso!");
       await reloadLocais();
     } catch (err) {
+      if (err?.name === "AbortError") return;
       console.error(err);
-      abrirModalAviso("Erro", "Erro ao excluir local");
+      abrirModalAviso("Erro", "Erro ao excluir local.");
     } finally {
-      habilitarBotaoLocal();
-      btnOk.disabled = false;
-      btnTrash.disabled = false;
+      _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
       btnTrash.innerHTML = textoTrash;
-
-      bootstrap.Modal.getInstance(
-        document.getElementById("confirmModal"),
-      ).hide();
+      bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
     }
   };
 
@@ -448,39 +429,9 @@ function excluirLocal(id, btnTrash) {
    ESTADOS DE INTERFACE
 ========================= */
 
-function desabilitarBotaoLocal() {
-  const btn = document.getElementById("novoLocalBtn");
-  if (!btn.hasAttribute("disabled")) btn.setAttribute("disabled", "");
-  backButton.setAttribute("disabled", "");
-
-  const editBtns = document.querySelectorAll(".editar-btn");
-  const deleteBtns = document.querySelectorAll(".excluir-btn");
-
-  editBtns.forEach((btn) => {
-    btn.setAttribute("disabled", "");
-  });
-
-  deleteBtns.forEach((btn) => {
-    btn.setAttribute("disabled", "");
-  });
-}
-
-function habilitarBotaoLocal() {
-  const btn = document.getElementById("novoLocalBtn");
-  if (btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
-  backButton.removeAttribute("disabled");
-
-  const editBtns = document.querySelectorAll(".editar-btn");
-  const deleteBtns = document.querySelectorAll(".excluir-btn");
-
-  editBtns.forEach((btn) => {
-    btn.removeAttribute("disabled");
-  });
-
-  deleteBtns.forEach((btn) => {
-    btn.removeAttribute("disabled");
-  });
-}
+// Delegados ao sistema central travarUI/liberarUI
+function desabilitarBotaoLocal() { travarUI(); }
+function habilitarBotaoLocal()   { liberarUI(); }
 
 function limparErrosCamposLocal() {
   limparErroCampo("erroLocalNome");

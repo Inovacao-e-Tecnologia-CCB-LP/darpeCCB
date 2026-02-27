@@ -43,7 +43,7 @@ function abrirMapa(localId) {
   const localObj = locaisMap[localId];
 
   if (!localObj) {
-    alert("Endereço não encontrado");
+    abrirModalAviso("Erro", "Endereço não encontrado.");
     return;
   }
 
@@ -67,17 +67,8 @@ function mostrarLoading(containerId) {
   `;
 }
 
-function getTipoRadioSelecionado() {
-  const radio = document.querySelector('input[name="instrumentoTipo"]:checked');
-  return radio ? radio.value : "";
-}
-
-function marcarTipoRadio(tipo) {
-  const radio = document.querySelector(
-    `input[name="instrumentoTipo"][value="${tipo}"]`,
-  );
-  if (radio) radio.checked = true;
-}
+// getTipoRadioSelecionado e marcarTipoRadio foram migrados para
+// ui-instrumentos.js como parte do sistema de tipos dinâmicos.
 
 function mostrarErroCampo(idErro, msg) {
   const el = document.getElementById(idErro);
@@ -91,4 +82,90 @@ function limparErroCampo(idErro) {
   if (!el) return;
   el.innerText = "";
   el.classList.add("d-none");
+}
+
+/* =============================================================
+   SISTEMA CENTRAL DE TRAVA DE UI
+   ─────────────────────────────────────────────────────────────
+   travarUI()   — desabilita backButton + todos os botões de
+                  ação da tela atual (novo, editar, excluir,
+                  compartilhar, whatsapp, pdf, etc.)
+   liberarUI()  — restaura tudo
+
+   Uso com profundidade: chamadas aninhadas são contadas;
+   só libera quando o contador chegar a 0.
+============================================================= */
+
+let _uiLockDepth = 0;
+
+/**
+ * Seletores que identificam "botões de ação" na tela.
+ * Inclui todos os padrões usados no sistema.
+ */
+const _BTN_ACAO_SELETORES = [
+  // botões "Novo ..." de cada painel
+  "#novoLocalBtn",
+  "#novoInstrumentoBtn",
+  "#novaRegraBtn",
+  "#novaIntegracaoBtn",
+  // ações inline de tabelas / cards
+  ".editar-btn",
+  ".excluir-btn",
+  ".compartilhar-btn",
+  ".editar-integracao-btn",
+  // botões de relatório
+  "#btnGerarPDF",
+  "#btnEnviarWhatsApp",
+  // botão confirmar presença (fluxo de inscrição)
+  "#btnConfirmar",
+  // botão de whatsapp na lista de inscritos
+  ".btn-whatsapp-share",
+].join(", ");
+
+function travarUI() {
+  _uiLockDepth++;
+  if (_uiLockDepth > 1) return; // já travado
+
+  // Trava o botão Voltar
+  backButton.setAttribute("disabled", "");
+  backButton.classList.add("ui-locked");
+
+  // Trava todos os botões de ação visíveis no #conteudo
+  document
+    .querySelectorAll(_BTN_ACAO_SELETORES)
+    .forEach((b) => {
+      b.setAttribute("disabled", "");
+      b.classList.add("ui-locked");
+    });
+}
+
+function liberarUI() {
+  if (_uiLockDepth <= 0) return;
+  _uiLockDepth--;
+  if (_uiLockDepth > 0) return; // ainda há chamadas aninhadas
+
+  // Libera backButton
+  backButton.removeAttribute("disabled");
+  backButton.classList.remove("ui-locked");
+
+  // Libera todos os botões marcados
+  document
+    .querySelectorAll(".ui-locked")
+    .forEach((b) => {
+      b.removeAttribute("disabled");
+      b.classList.remove("ui-locked");
+    });
+}
+
+/**
+ * Executa uma operação async travando/liberando a UI automaticamente.
+ * Uso: await comUITravada(async () => { ... })
+ */
+async function comUITravada(fn) {
+  travarUI();
+  try {
+    return await fn();
+  } finally {
+    liberarUI();
+  }
 }

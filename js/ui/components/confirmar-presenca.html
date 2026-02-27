@@ -1,12 +1,33 @@
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="mb-3">
-            <input id="nome" type="text" class="form-control form-control-lg" placeholder="Nome e Sobrenome">
+<div class="confirmar-wrapper">
+  <div id="nomeSalvoCard" class="d-none mb-4">
+    <div class="card-item">
+      <div class="card-item-body">
+        <p class="mb-1 text-muted small fw-semibold text-uppercase" style="letter-spacing:.05em">Nome salvo anteriormente</p>
+        <p class="mb-4 fw-semibold fs-5" id="nomeSalvoTexto"></p>
+        <div class="grade-escolha">
+          <button type="button" class="btn btn-dark" onclick="usarNomeSalvo()">
+            <i class="bi bi-check2-circle"></i>
+            Usar este nome
+          </button>
+          <button type="button" class="btn btn-outline-dark" onclick="digitarNovoNome()">
+            <i class="bi bi-pencil"></i>
+            Usar outro nome
+          </button>
         </div>
-        <div class="d-grid">
-            <button id="btnConfirmar" class="btn btn-dark btn-lg" onclick="salvarInscricao()">
-                Confirmar
-            </button>
-        </div>
+      </div>
     </div>
+  </div>
+
+  <div id="inputNomeCard">
+    <div class="mb-3">
+      <input id="nome" type="text" class="form-control form-control-lg"
+        placeholder="Nome e Sobrenome" autocomplete="off" data-input-filter="nome">
+    </div>
+    <div class="grade-escolha">
+      <button id="btnConfirmar" class="btn btn-dark" onclick="salvarInscricao()">
+        <i class="bi bi-check2-circle"></i>
+        Confirmar
+      </button>
+    </div>
+  </div>
 </div>
