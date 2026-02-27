@@ -6,6 +6,15 @@ let _calMeses       = [];
 let _calIdx         = 0;
 let _calDados       = [];
 /* ── Paleta vibrante por local ──────────────────────────── */
+/* ── Cor fixa para locais "Hospital" ────────────────────── */
+const _COR_HOSPITAL = {
+  bg:     '#ffd6d6',   /* fundo célula calendário — vermelho bem claro   */
+  border: '#8b0000',   /* borda/dot — vermelho sangue escuro              */
+  dot:    '#8b0000',   /* bolinha da legenda                              */
+  text:   '#5c0000',   /* texto nos cards de detalhe                     */
+  bgCard: '#ffe4e4',   /* fundo card de detalhe — rosinha suave           */
+};
+
 const _CAL_PALETA = [
   { bg: '#fde8e8', border: '#c0392b', dot: '#c0392b', text: '#7b241c', bgCard: '#fff0f0' },
   { bg: '#d6eaf8', border: '#1a5276', dot: '#1a5276', text: '#0d2b3e', bgCard: '#eaf4fb' },
@@ -36,6 +45,16 @@ function _salvarCores() {
 
 function _getCorLocal(localId) {
   const key = String(localId);
+
+  // Força vermelho sangue em qualquer local cujo nome contenha "hospital"
+  const localObj = (dataStore.locais || []).find(l => String(l.id) === key);
+  const nomeLocal = (localObj?.nome || '').toLowerCase();
+  if (nomeLocal.includes('hospital')) {
+    _calCoresLocais[key] = { ..._COR_HOSPITAL };
+    _salvarCores();
+    return _calCoresLocais[key];
+  }
+
   if (!_calCoresLocais[key]) {
     const usadas = new Set(Object.values(_calCoresLocais).map(c => c.dot));
     const livres = _CAL_PALETA.filter(c => !usadas.has(c.dot));

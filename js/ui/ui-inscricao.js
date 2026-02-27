@@ -271,11 +271,11 @@ function _renderConfirmarIntegracaoComNome(nome) {
         </p>
         <p class="fw-bold fs-5 mb-3">${nome}</p>
         <div class="d-grid gap-2">
-          <button id="btnConfirmar" type="button" class="btn btn-dark btn-lg" onclick="salvarInscricao()">
-            Confirmar
+          <button id="btnConfirmar" type="button" class="btn btn-dark btn-lg" onclick="salvarInscricao(this)">
+            <i class="bi bi-check2-circle me-2"></i>Confirmar
           </button>
           <button type="button" class="btn btn-outline-dark btn-lg" onclick="_showListaNomesIntegracao()">
-            Cadastrar novo nome
+            <i class="bi bi-person-plus me-2"></i>Cadastrar novo nome
           </button>
         </div>
       </div>
@@ -342,8 +342,8 @@ async function _showListaNomesIntegracao() {
   btnConfirmar.id = 'btnConfirmar';
   btnConfirmar.type = 'button';
   btnConfirmar.className = `btn btn-dark btn-lg mt-3${_nomeSelecionadoIntegracao ? '' : ' d-none'}`;
-  btnConfirmar.textContent = 'Confirmar';
-  btnConfirmar.onclick = salvarInscricao;
+  btnConfirmar.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Confirmar';
+  btnConfirmar.onclick = function() { salvarInscricao(this); };
 
   col.appendChild(grid);
   col.appendChild(btnConfirmar);
@@ -369,11 +369,11 @@ function _selecionarNomeIntegracao(nome, grid) {
 }
 
 // Chamado quando usuário clica "Usar este nome" (cenários A e B)
-function usarNomeSalvo() {
+function usarNomeSalvo(btn) {
   const nomeIntegracaoAtivo = nomeIntegracao || localStorage.getItem('nome_integracao');
   // Cenário A: usa nome de integração
   if (nomeIntegracaoAtivo && _confirmarModo === 'nome_salvo') {
-    salvarInscricao();
+    salvarInscricao(btn || null);
     return;
   }
   // Cenário B: usa darpe_ultimo_nome
@@ -381,7 +381,7 @@ function usarNomeSalvo() {
   if (!nomeSalvo) return;
   const inputNome = document.getElementById('nome');
   if (inputNome) inputNome.value = nomeSalvo;
-  salvarInscricao();
+  salvarInscricao(btn || null);
 }
 
 // Chamado quando usuário clica "Usar outro nome" (cenários A e B)
@@ -399,8 +399,9 @@ function digitarNovoNome() {
   }
 }
 
-async function salvarInscricao() {
-  const btn = document.getElementById("btnConfirmar");
+async function salvarInscricao(btnEl) {
+  // Aceita o botão passado diretamente (ex: usarNomeSalvo) ou busca pelo id
+  const btn = btnEl || document.getElementById("btnConfirmar");
 
   const nomeIntegracaoAtivo = nomeIntegracao || localStorage.getItem('nome_integracao');
   const localTemIntegracao =
@@ -444,9 +445,11 @@ async function salvarInscricao() {
     localStorageService.salvarNome(nome);
   }
 
-  const originalHTML = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  const originalHTML = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Salvando...';
+  }
 
   const payload = {
     local: escolha.local.id,
@@ -476,8 +479,10 @@ async function salvarInscricao() {
     console.error(e);
     abrirModalAviso("Erro", "Erro ao salvar inscrição.");
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = originalHTML;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
   }
 }
 
