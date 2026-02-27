@@ -16,29 +16,30 @@
       rel="stylesheet"
     />
     <link href="css/style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/mobile-acessibilidade.css">
   </head>
 
   <body>
-    <header class="bg-dark text-white text-center p-3 shadow">
+    <header class="bg-dark text-white p-3 shadow">
       <div class="container">
-        <div class="row align-items-center">
+        <div class="header-bar">
           <!-- Voltar -->
-          <div class="col-2 p-0 text-start">
+          <div class="header-side header-left">
             <button
               id="backButton"
               class="btn btn-dark border-light text-white"
             >
-              Voltar
+              <i class="bi bi-chevron-left me-1"></i>Voltar
             </button>
           </div>
 
-          <!-- Título -->
-          <div class="col-8">
+          <!-- Título — sempre centrado na tela -->
+          <div class="header-center">
             <h1 id="titulo" class="h3 m-0">Título</h1>
           </div>
 
           <!-- Admin -->
-          <div class="col-2 text-end">
+          <div class="header-side header-right">
             <button
               id="adminButton"
               class="btn btn-outline-light btn-lg"
@@ -97,21 +98,22 @@
             </form>
           </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">
-              Cancelar
-            </button>
+          <div class="modal-footer flex-column gap-2 px-3 pb-3">
             <button
-              class="btn btn-dark"
+              class="btn btn-dark btn-lg w-100 fw-bold"
               onclick="validarSenhaAdmin()"
               id="btnEntrarAdmin"
             >
+              <i class="bi bi-shield-lock me-2"></i>
               <span id="textoBtnAdmin">Entrar</span>
               <span
                 id="spinnerBtnAdmin"
-                class="spinner-border spinner-border-sm d-none"
+                class="spinner-border spinner-border-sm d-none ms-2"
                 role="status"
               ></span>
+            </button>
+            <button class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">
+              Cancelar
             </button>
           </div>
         </div>

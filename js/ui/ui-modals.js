@@ -205,3 +205,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+
+/* ================================================
+   ENTER KEY — dispara o botão de ação principal
+   de qualquer modal aberto (exceto modais de aviso
+   que já fecham via data-bs-dismiss).
+   Regra: o botão de ação é o ÚLTIMO .btn não-secundário
+   do .modal-footer que esteja visível e habilitado.
+================================================ */
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter') return;
+
+  // Só age se houver um modal visível
+  const modalAberto = document.querySelector('.modal.show');
+  if (!modalAberto) return;
+
+  // Se o foco está num textarea, deixa o Enter funcionar normalmente
+  const focused = document.activeElement;
+  if (focused && focused.tagName === 'TEXTAREA') return;
+
+  // Se o foco está num input dentro de um input-group com botão próprio
+  // (ex: campo de nome na integração), deixa o onkeydown do input agir
+  if (focused && focused.tagName === 'INPUT' && focused.hasAttribute('onkeydown')) return;
+
+  // Encontra o botão de ação principal do modal:
+  // último botão no footer que NÃO seja Cancelar / fechar / secundário
+  const footer = modalAberto.querySelector('.modal-footer');
+  if (!footer) return;
+
+  const botoes = [...footer.querySelectorAll('.btn:not([data-bs-dismiss]):not(.btn-secondary):not(.btn-outline-secondary):not(.btn-close)')];
+  const btnAcao = botoes.filter(b => !b.disabled && b.offsetParent !== null).pop();
+
+  if (btnAcao) {
+    e.preventDefault();
+    btnAcao.click();
+  }
+});

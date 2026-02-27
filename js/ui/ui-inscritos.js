@@ -75,181 +75,92 @@ async function showInscritos() {
       grupos[localNome][i.programacao_id].push(i);
     });
 
-    if (isMobile()) {
-      // ── MOBILE: Cards bonitos ────────────────────────────
-      let html = '<div class="inscritos-mobile-wrapper">';
+    // ── Accordion único para todas as telas ─────────────────
+    let html = '<div class="accordion" id="accordionInscritos">';
+    let index = 0;
 
-      for (const local in grupos) {
-        const primeiroPid = Object.keys(grupos[local])[0];
-        const p = programacaoMap[primeiroPid];
-        if (!p) continue;
-        const localObj = locaisMap[p.local_id];
+    for (const local in grupos) {
+      const primeiroPid = Object.keys(grupos[local])[0];
+      const p = programacaoMap[primeiroPid];
+      if (!p) continue;
 
-        html += `
-          <div class="inscritos-local-section">
-            <div class="inscritos-local-header">
-              <div class="d-flex align-items-center gap-2">
-                <div class="inscritos-local-icon">
-                  <i class="bi bi-geo-alt-fill"></i>
-                </div>
-                <div>
-                  <div class="fw-bold">${local}</div>
-                  <div class="inscritos-local-endereco link-mapa copy-text" data-localid="${p.local_id}" title="Copiar endereço">
-                    <i class="bi bi-map me-1"></i>${localObj?.endereco ?? "Endereço não informado"}
-                  </div>
-                </div>
-              </div>
-            </div>`;
+      const localObj = locaisMap[p.local_id];
 
-        for (const pid in grupos[local]) {
-          const prog = programacaoMap[pid];
-          if (!prog) continue;
-          const inscritosDoProg = grupos[local][pid];
+      html += `
+            <div class="accordion-item border-dark">
 
-          html += `
-            <div class="inscritos-prog-card">
-              <div class="inscritos-prog-header">
-                <div>
-                  <div class="inscritos-prog-titulo">${prog.tipo_visita}</div>
-                  <div class="inscritos-prog-subtitulo">
-                    <i class="bi bi-calendar3 me-1"></i>${formatarData(prog.data)}
-                    &nbsp;·&nbsp;
-                    <i class="bi bi-clock me-1"></i>${formatarHorario(prog.horario)}
-                  </div>
-                  <div class="inscritos-prog-desc">${prog.descricao}</div>
-                </div>
-                <button class="inscritos-share-btn" onclick="compartilhar(${pid})">
-                  <i class="bi bi-whatsapp"></i>
+            <h2 class="accordion-header" id="heading-${index}">
+                <button class="accordion-button collapsed bg-dark text-white"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapse-${index}">
+                ${local}
                 </button>
-              </div>
-              <div class="inscritos-prog-badge">
-                <i class="bi bi-people-fill me-1"></i>${inscritosDoProg.length} inscrito${inscritosDoProg.length !== 1 ? "s" : ""}
-              </div>
-              <div class="inscritos-pessoas-lista">`;
+            </h2>
 
-          inscritosDoProg.forEach((i, idx) => {
-            const auth = localStorageService.buscarAutorizacao(i.id);
-            let instNome = i.instrumento;
-            if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
-              instNome = instrumentosMap[i.instrumento_id].nome;
-            } else if (instrumentosMap[i.instrumento]) {
-              instNome = instrumentosMap[i.instrumento].nome;
-            }
-            const iniciais = (i.nome || "?").split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
+            <div id="collapse-${index}" class="accordion-collapse collapse">
 
-            html += `
-                <div class="inscrito-pessoa-card">
-                  <div class="inscrito-avatar">${iniciais}</div>
-                  <div class="inscrito-info">
-                    <div class="inscrito-nome">${i.nome}</div>
-                    <div class="inscrito-instrumento">
-                      <i class="bi bi-music-note me-1"></i>${instNome}
-                    </div>
-                  </div>
-                  ${auth ? `
-                    <button class="inscrito-excluir-btn" onclick="excluirInscricao(${i.id}, this)" title="Remover inscrição">
-                      <i class="bi bi-trash"></i>
-                    </button>` : ""}
-                </div>`;
-          });
+            <p class="link-mapa copy-text" 
+            data-localid="${p.local_id}" 
+            title="Copiar endereço e abrir mapa">
+              <i class="bi bi-geo-alt-fill me-1"></i>
+              ${localObj?.endereco ?? "Endereço não informado"}
+            </p>
 
-          html += `</div></div>`;
-        }
+            <div class="accordion-body bg-light">`;
 
-        html += `</div>`;
-      }
-
-      html += '</div>';
-      conteudo.innerHTML = html;
-
-    } else {
-      // ── DESKTOP: Accordion original ──────────────────────
-      let html = '<div class="accordion" id="accordionInscritos">';
-      let index = 0;
-
-      for (const local in grupos) {
-        const primeiroPid = Object.keys(grupos[local])[0];
-        const p = programacaoMap[primeiroPid];
+      for (const pid in grupos[local]) {
+        const p = programacaoMap[pid];
         if (!p) continue;
 
-        const localObj = locaisMap[p.local_id];
-
         html += `
-              <div class="accordion-item border-dark">
+                <div class="card mb-3 border-dark">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center gap-2 py-3">
+                        <div class="text-start">
+                          <div class="fw-semibold fs-6">${p.tipo_visita} &bull; ${formatarData(p.data)}</div>
+                          <div class="small opacity-75">${p.descricao} &bull; ${formatarHorario(p.horario)}</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light flex-shrink-0"
+                            onclick="compartilhar(${pid})">
+                            <i class="bi bi-whatsapp me-1"></i>Compartilhar
+                        </button>
+                    </div>
+                    <ul class="list-group list-group-flush">`;
 
-              <h2 class="accordion-header" id="heading-${index}">
-                  <button class="accordion-button collapsed bg-dark text-white"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapse-${index}">
-                  ${local}
-                  </button>
-              </h2>
+        grupos[local][pid].forEach((i) => {
+          const auth = localStorageService.buscarAutorizacao(i.id);
 
-              <div id="collapse-${index}" class="accordion-collapse collapse">
-
-              <p class="link-mapa copy-text" 
-              data-localid="${p.local_id}" 
-              title="Copiar endereço e abrir mapa">
-                <i class="bi bi-geo-alt-fill me-1"></i>
-                ${localObj?.endereco ?? "Endereço não informado"}
-              </p>
-
-              <div class="accordion-body bg-light">`;
-
-        for (const pid in grupos[local]) {
-          const p = programacaoMap[pid];
-          if (!p) continue;
+          let instNome = i.instrumento;
+          if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
+            instNome = instrumentosMap[i.instrumento_id].nome;
+          } else if (instrumentosMap[i.instrumento]) {
+            instNome = instrumentosMap[i.instrumento].nome;
+          }
 
           html += `
-                  <div class="card mb-3 border-dark">
-                      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center gap-2 py-3">
-                          <div class="text-start">
-                            <div class="fw-semibold fs-6">${p.tipo_visita} &bull; ${formatarData(p.data)}</div>
-                            <div class="small opacity-75">${p.descricao} &bull; ${formatarHorario(p.horario)}</div>
-                          </div>
-                          <button class="btn btn-sm btn-outline-light flex-shrink-0"
-                              onclick="compartilhar(${pid})">
-                              <i class="bi bi-whatsapp me-1"></i>Compartilhar
-                          </button>
-                      </div>
-                      <ul class="list-group list-group-flush">`;
+                    <li class="list-group-item d-flex justify-content-between align-items-center gap-2 py-3">
+                        <span class="d-flex flex-column align-items-start">
+                          <span class="fw-semibold">${i.nome}</span>
+                          <span class="text-muted small">${instNome}</span>
+                        </span>
+                        ${
+                          auth
+                            ? `<button class="btn btn-sm btn-outline-danger flex-shrink-0"
+                            onclick="excluirInscricao(${i.id}, this)">
+                            <i class="bi bi-trash"></i></button>`
+                            : ""
+                        }
+                    </li>`;
+        });
 
-          grupos[local][pid].forEach((i) => {
-            const auth = localStorageService.buscarAutorizacao(i.id);
-
-            let instNome = i.instrumento;
-            if (i.instrumento_id && instrumentosMap[i.instrumento_id]) {
-              instNome = instrumentosMap[i.instrumento_id].nome;
-            } else if (instrumentosMap[i.instrumento]) {
-              instNome = instrumentosMap[i.instrumento].nome;
-            }
-
-            html += `
-                      <li class="list-group-item d-flex justify-content-between align-items-center gap-2 py-3">
-                          <span class="d-flex flex-column align-items-start">
-                            <span class="fw-semibold">${i.nome}</span>
-                            <span class="text-muted small">${instNome}</span>
-                          </span>
-                          ${
-                            auth
-                              ? `<button class="btn btn-sm btn-outline-danger flex-shrink-0"
-                              onclick="excluirInscricao(${i.id}, this)">
-                              <i class="bi bi-trash"></i></button>`
-                              : ""
-                          }
-                      </li>`;
-          });
-
-          html += `</ul></div>`;
-        }
-
-        html += `</div></div></div>`;
-        index++;
+        html += `</ul></div>`;
       }
 
-      html += "</div>";
-      conteudo.innerHTML = html;
+      html += `</div></div></div>`;
+      index++;
     }
+
+    html += "</div>";
+    conteudo.innerHTML = html;
 
     copiarTexto(conteudo);
   } catch (err) {

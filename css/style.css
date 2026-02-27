@@ -42,43 +42,62 @@ body {
 }
 
 /* ===========================
-   HEADER MOBILE
+   HEADER — layout com título sempre centrado
 =========================== */
 header .container {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
 }
 
+/* Barra do header: botões nas pontas, título absolutamente centrado */
+.header-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+
+.header-side {
+  flex: 0 0 auto;
+  z-index: 1;
+}
+
+.header-left  { margin-right: auto; }
+.header-right { margin-left: auto;  }
+
+/* Título centralizado absolutamente na largura total da barra */
+.header-center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;          /* cliques passam pelos botões atrás */
+  padding: 0 0.5rem;
+}
+
+#titulo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(1rem, 4vw, 1.75rem);
+  pointer-events: auto;
+}
+
 @media (max-width: 576px) {
   header {
-    padding: 0.6rem 0 !important;
-  }
-
-  header .col-2 {
-    flex: 0 0 auto;
-    width: auto;
-  }
-
-  header .col-8 {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  #titulo {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: clamp(0.9rem, 3.5vw, 1.75rem);
+    padding: 0.65rem 0 !important;
   }
 
   #backButton {
-    font-size: 0.8rem;
-    padding: 0.3rem 0.5rem;
+    font-size: 0.95rem;
+    padding: 0.55rem 0.85rem;
+    min-height: 2.75rem;
   }
 
   #adminButton {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.9rem;
+    padding: 0.55rem 0.75rem;
+    font-size: 1rem;
+    min-height: 2.75rem;
   }
 }
 
@@ -1782,398 +1801,4 @@ header .container {
     font-size: 0.78rem;
     padding: 0.25rem 0.75rem;
   }
-}
-
-/* =====================================================
-   INSCRITOS — MOBILE CARDS
-===================================================== */
-
-/* Wrapper principal */
-.inscritos-mobile-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding-bottom: 1rem;
-}
-
-/* Seção de local */
-.inscritos-local-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-/* Header do local */
-.inscritos-local-header {
-  background: #1a1a2e;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
-  border-radius: 1rem;
-  padding: 1rem 1.1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.inscritos-local-icon {
-  width: 2.4rem;
-  height: 2.4rem;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  flex-shrink: 0;
-}
-
-.inscritos-local-endereco {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.65);
-  margin-top: 0.15rem;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.inscritos-local-endereco:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Card de programação */
-.inscritos-prog-card {
-  background: #fff;
-  border-radius: 0.9rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  border: 1px solid #e9ecef;
-}
-
-.inscritos-prog-header {
-  background: #212529;
-  color: #fff;
-  padding: 0.9rem 1rem;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.inscritos-prog-titulo {
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 0.2rem;
-}
-
-.inscritos-prog-subtitulo {
-  font-size: 0.78rem;
-  opacity: 0.75;
-  margin-bottom: 0.1rem;
-}
-
-.inscritos-prog-desc {
-  font-size: 0.75rem;
-  opacity: 0.6;
-}
-
-.inscritos-share-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #25d366;
-  border-radius: 0.6rem;
-  padding: 0.45rem 0.7rem;
-  font-size: 1.15rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.inscritos-share-btn:hover {
-  background: rgba(37, 211, 102, 0.18);
-}
-
-/* Badge de contagem */
-.inscritos-prog-badge {
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-  padding: 0.45rem 1rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #6c757d;
-}
-
-/* Lista de pessoas */
-.inscritos-pessoas-lista {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Card de cada pessoa */
-.inscrito-pessoa-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background 0.12s;
-}
-
-.inscrito-pessoa-card:last-child {
-  border-bottom: none;
-}
-
-.inscrito-pessoa-card:hover {
-  background: #f8f9fa;
-}
-
-/* Avatar com iniciais */
-.inscrito-avatar {
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #212529, #495057);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-
-.inscrito-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.inscrito-nome {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #212529;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.inscrito-instrumento {
-  font-size: 0.76rem;
-  color: #6c757d;
-  margin-top: 0.05rem;
-}
-
-/* Botão excluir */
-.inscrito-excluir-btn {
-  background: transparent;
-  border: 1px solid #dee2e6;
-  color: #dc3545;
-  border-radius: 0.5rem;
-  padding: 0.3rem 0.55rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.inscrito-excluir-btn:hover {
-  background: #fff1f2;
-  border-color: #dc3545;
-}
-
-
-/* =====================================================
-   ADMIN CARD — ícone colorido e descrição
-===================================================== */
-
-.admin-card-icon-wrap {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 0.5rem;
-}
-
-.admin-card-icon-wrap .bi {
-  font-size: 2rem !important;
-}
-
-.admin-card-desc {
-  font-size: 0.78rem;
-  color: #6c757d;
-  margin: 0.1rem 0 0;
-  line-height: 1.3;
-}
-
-@media (max-width: 576px) {
-  .admin-card .card-body.text-center {
-    flex-direction: row;
-    text-align: left;
-    gap: 1rem;
-    padding: 1.1rem 1.25rem;
-  }
-  .admin-card-icon-wrap {
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 0.7rem;
-    margin: 0;
-    flex-shrink: 0;
-  }
-  .admin-card-icon-wrap .bi {
-    font-size: 1.4rem !important;
-  }
-  .admin-card h5 {
-    font-size: 0.95rem;
-    margin-bottom: 0.1rem;
-  }
-  .admin-card-desc {
-    font-size: 0.75rem;
-  }
-}
-
-
-/* =====================================================
-   ZONA 477–576px — ajustes específicos para telas
-   entre celular grande e tablet pequeno
-===================================================== */
-
-@media (min-width: 477px) and (max-width: 576px) {
-
-  /* Admin grid: 2 colunas nessa faixa é mais bonito que 1 */
-  .admin-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  /* Admin card: voltar para coluna vertical nessa faixa */
-  .admin-card .card-body.text-center {
-    flex-direction: column !important;
-    text-align: center !important;
-    padding: 1.5rem 1rem !important;
-    gap: 0.6rem !important;
-  }
-
-  .admin-card-icon-wrap {
-    width: 3.2rem !important;
-    height: 3.2rem !important;
-    margin: 0 auto 0.25rem !important;
-    border-radius: 0.85rem !important;
-  }
-
-  .admin-card-icon-wrap .bi {
-    font-size: 1.6rem !important;
-  }
-
-  .admin-card h5 {
-    font-size: 0.95rem !important;
-    text-align: center;
-  }
-
-  .admin-card-desc {
-    font-size: 0.72rem !important;
-    text-align: center;
-  }
-
-  /* Calendário: ligeiramente maior que no mobile pequeno */
-  .cal-header-dia { font-size: 0.58rem; }
-  .cal-num { font-size: 0.68rem; }
-  .cal-nav { padding: 0.6rem 0.8rem; }
-
-  /* Modais: um pouco mais de margem */
-  .modal-dialog {
-    margin: 0.75rem;
-  }
-
-  /* Grade de escolha: botões com mais padding */
-  .grade-escolha .btn {
-    padding: 0.875rem 1.1rem;
-    font-size: 1rem;
-  }
-
-  /* Título truncado com tamanho médio */
-  #titulo {
-    font-size: clamp(1rem, 4vw, 1.4rem);
-  }
-}
-
-/* =====================================================
-   ZONA ≤476px — mobile pequeno
-===================================================== */
-
-@media (max-width: 476px) {
-
-  /* Admin grid: 1 coluna horizontal (lista) */
-  .admin-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-
-  /* Admin card: linha horizontal */
-  .admin-card .card-body.text-center {
-    flex-direction: row !important;
-    text-align: left !important;
-    padding: 1rem 1.1rem !important;
-    gap: 0.85rem !important;
-    align-items: center !important;
-  }
-
-  .admin-card-icon-wrap {
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    border-radius: 0.65rem !important;
-    margin: 0 !important;
-    flex-shrink: 0 !important;
-  }
-
-  .admin-card-icon-wrap .bi {
-    font-size: 1.3rem !important;
-  }
-
-  .admin-card h5 {
-    font-size: 0.92rem !important;
-    margin-bottom: 0.05rem !important;
-  }
-
-  .admin-card-desc {
-    font-size: 0.72rem !important;
-  }
-}
-
-/* =====================================================
-   TODOS OS TAMANHOS — garantias gerais
-===================================================== */
-
-/* Evita overflow horizontal em qualquer tela */
-html, body {
-  overflow-x: hidden;
-  max-width: 100%;
-}
-
-/* Containers não transbordam */
-.container, .container-fluid {
-  padding-left: max(0.75rem, env(safe-area-inset-left));
-  padding-right: max(0.75rem, env(safe-area-inset-right));
-}
-
-/* Cards sempre contidos na largura */
-.card, .item-card, .inscritos-prog-card {
-  min-width: 0;
-  word-break: break-word;
-}
-
-/* Textos longos nunca transbordam */
-.item-card-titulo span,
-.inscrito-nome,
-.inscritos-prog-titulo {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-/* Imagens responsivas */
-img {
-  max-width: 100%;
-  height: auto;
 }
