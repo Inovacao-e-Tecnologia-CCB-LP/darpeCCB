@@ -371,7 +371,7 @@ function _abrirDetalhesDia(dia, eventosJson) {
           </div>
           <div class="cal-det-row cal-det-vestimenta" style="background:${cor.dot}18;">
             <i class="bi bi-${vestIcon}" style="color:${cor.dot}"></i>
-            <span><strong>Vestimenta:</strong> ${vest}</span>
+            <span><strong>Traje:</strong> ${vest}</span>
           </div>
         </div>
         <button class="btn btn-outline-danger btn-sm w-100 mt-3"
