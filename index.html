@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>DARPE - Lençóis Paulista</title>
     <link rel="icon" href="Img/darpe-logo.png" />
     <link
@@ -16,29 +16,30 @@
       rel="stylesheet"
     />
     <link href="css/style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/mobile-acessibilidade.css">
   </head>
 
   <body>
-    <header class="bg-dark text-white text-center p-3 shadow">
+    <header class="bg-dark text-white p-3 shadow">
       <div class="container">
-        <div class="row align-items-center">
+        <div class="header-bar">
           <!-- Voltar -->
-          <div class="col-2 p-0 text-start">
+          <div class="header-side header-left">
             <button
               id="backButton"
               class="btn btn-dark border-light text-white"
             >
-              Voltar
+              <i class="bi bi-chevron-left me-1"></i>Voltar
             </button>
           </div>
 
-          <!-- Título -->
-          <div class="col-8">
+          <!-- Título — sempre centrado na tela -->
+          <div class="header-center">
             <h1 id="titulo" class="h3 m-0">Título</h1>
           </div>
 
           <!-- Admin -->
-          <div class="col-2 text-end">
+          <div class="header-side header-right">
             <button
               id="adminButton"
               class="btn btn-outline-light btn-lg"
@@ -54,7 +55,7 @@
 
     <!-- Modal Admin -->
     <div class="modal fade" id="modalAdmin" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-dark">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title">Acesso Administrativo</h5>
@@ -72,35 +73,47 @@
                 return false;
               "
             >
-              <input
-                type="password"
-                id="senhaAdmin"
-                class="form-control"
-                placeholder="Digite a senha"
-                required
-              />
-
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="senhaAdmin"
+                  class="form-control"
+                  placeholder="Digite a senha"
+                  required
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  id="btnToggleSenha"
+                  onclick="toggleVerSenha()"
+                  tabindex="-1"
+                  title="Mostrar/ocultar senha"
+                >
+                  <i class="bi bi-eye" id="iconeSenha"></i>
+                </button>
+              </div>
               <div id="erroSenha" class="text-danger mt-2 d-none">
                 Senha incorreta
               </div>
             </form>
           </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">
-              Cancelar
-            </button>
+          <div class="modal-footer flex-column gap-2 px-3 pb-3">
             <button
-              class="btn btn-dark"
+              class="btn btn-dark btn-lg w-100 fw-bold"
               onclick="validarSenhaAdmin()"
               id="btnEntrarAdmin"
             >
+              <i class="bi bi-shield-lock me-2"></i>
               <span id="textoBtnAdmin">Entrar</span>
               <span
                 id="spinnerBtnAdmin"
-                class="spinner-border spinner-border-sm d-none"
+                class="spinner-border spinner-border-sm d-none ms-2"
                 role="status"
               ></span>
+            </button>
+            <button class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">
+              Cancelar
             </button>
           </div>
         </div>
@@ -109,7 +122,7 @@
 
     <!-- Modal Local -->
     <div class="modal fade" id="modalLocal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title" id="modalLocalTitulo">Novo Local</h5>
@@ -131,6 +144,7 @@
                 class="form-control"
                 id="localNome"
                 placeholder="Ex: Hospital"
+                data-input-filter="text-especial"
               />
 
               <!-- ERRO DO CAMPO -->
@@ -149,6 +163,7 @@
                 class="form-control"
                 id="localEndereco"
                 placeholder="Ex: Rua das Flores, 123 - Centro"
+                data-input-filter="endereco"
               />
               <small class="text-muted">
                 Informe o endereço completo do local
@@ -217,6 +232,19 @@
               </div>
             </div>
 
+            <!-- INSTRUMENTOS ESPECÍFICOS -->
+            <div class="mb-3">
+              <label class="form-label d-block fw-semibold">Instrumentos específicos</label>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-outline-dark btn-sm" onclick="abrirModalInstrumentosEspecificos()">
+                  <i class="bi bi-music-note-list me-1"></i> Gerenciar instrumentos
+                </button>
+                <span id="resumoInstrumentosEspecificos" class="text-muted small fst-italic">
+                  Todos os instrumentos do tipo permitido
+                </span>
+              </div>
+            </div>
+
             <!-- LIMITE -->
             <div class="mb-3">
               <label class="form-label">Limite de pessoas do Local</label>
@@ -225,6 +253,7 @@
                 class="form-control"
                 id="localLimite"
                 min="0"
+                data-input-filter="numero"
               />
             </div>
 
@@ -252,9 +281,38 @@
       </div>
     </div>
 
+    <!-- Modal Instrumentos Específicos do Local -->
+    <div class="modal fade" id="modalInstrumentosEspecificos" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-music-note-list me-2"></i>Instrumentos Específicos
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted small mb-3">
+              Selecione os instrumentos <strong>adicionais</strong> permitidos neste local, além de todos os do tipo já liberado (cordas/sopros).<br>
+              Se nenhum for marcado, valem apenas as regras de tipo (cordas/sopros).
+            </p>
+            <div id="listaInstrumentosEspecificos" class="d-flex flex-wrap gap-3">
+              <!-- preenchido dinamicamente -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-dark" onclick="confirmarInstrumentosEspecificos()">
+              <i class="bi bi-check2 me-1"></i> Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Instrumento -->
     <div class="modal fade" id="modalInstrumento" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title" id="modalInstrumentoTitulo">
@@ -277,6 +335,7 @@
                 class="form-control"
                 id="instrumentoNome"
                 placeholder="Ex: Violino"
+                data-input-filter="text-especial"
               />
 
               <!-- ERRO DO CAMPO -->
@@ -287,47 +346,32 @@
               ></div>
             </div>
 
-            <!-- TIPO COM RADIO -->
+            <!-- TIPO DINÂMICO -->
             <div class="mb-3">
               <label class="form-label d-block">Tipo</label>
 
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="instrumentoTipo"
-                  id="tipoCorda"
-                  value="corda"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="tipoCorda"
-                >
-                  <img
-                    src="Img/Cordas.png"
-                    alt="Corda"
-                    width="24"
-                    height="24"
-                  />
-                  Cordas
-                </label>
-              </div>
+              <!-- Radios gerados dinamicamente via JS -->
+              <div id="instrumentoTipoRadios" class="d-flex flex-wrap gap-2 mb-2"></div>
 
-              <div class="form-check form-check-inline align-items-center">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="instrumentoTipo"
-                  id="tipoSopro"
-                  value="sopro"
-                />
-                <label
-                  class="form-check-label d-flex align-items-center gap-2"
-                  for="tipoSopro"
-                >
-                  <img src="Img/Sopro.png" alt="Sopro" width="24" height="24" />
-                  Sopros
-                </label>
+              <!-- Opção de criar novo tipo -->
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNovoTipo" onclick="toggleNovoTipo()">
+                <i class="bi bi-plus-circle me-1"></i> Novo tipo
+              </button>
+
+              <div id="novoTipoContainer" class="d-none mt-2">
+                <div class="input-group input-group-sm" style="max-width: 280px">
+                  <input type="text" class="form-control" id="inputNovoTipo"
+                    placeholder="Ex: Percussão"
+                    data-input-filter="text-especial"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarNovoTipo()}" />
+                  <button class="btn btn-dark" type="button" onclick="confirmarNovoTipo()">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" type="button" onclick="cancelarNovoTipo()">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+                <div id="erroNovoTipo" class="text-danger mt-1 d-none" style="font-size: 0.82rem"></div>
               </div>
             </div>
 
@@ -361,7 +405,7 @@
 
     <!-- Modal Regra -->
     <div class="modal fade" id="modalRegra" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content shadow">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title" id="modalRegraTitulo">Nova Regra</h5>
@@ -375,26 +419,27 @@
           <div class="modal-body">
             <input type="hidden" id="regraId" />
 
-            <div class="form-floating mb-3">
-              <select class="form-select" id="regraLocal">
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="regraLocal"><i class="bi bi-geo-alt me-1"></i>Local</label>
+              <select class="form-select darpe-select" id="regraLocal">
                 <option value="">Selecione...</option>
               </select>
-              <label for="regraLocal">Local</label>
             </div>
 
-            <div class="form-floating mb-3">
-              <select class="form-select" id="regraTipo">
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="regraTipo"><i class="bi bi-tag me-1"></i>Tipo de Visita</label>
+              <select class="form-select darpe-select" id="regraTipo">
                 <option value="">Selecione o tipo</option>
                 <option value="Música">Música</option>
                 <option value="Evangelização">Evangelização</option>
               </select>
-              <label for="regraTipo">Tipo de Visita</label>
             </div>
 
             <div class="row">
               <div class="col-6">
-                <div class="form-floating mb-3">
-                  <select class="form-select" id="regraDiaSemana">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" for="regraDiaSemana"><i class="bi bi-calendar-week me-1"></i>Dia da Semana</label>
+                  <select class="form-select darpe-select" id="regraDiaSemana">
                     <option value="1">Domingo</option>
                     <option value="2">Segunda-feira</option>
                     <option value="3">Terça-feira</option>
@@ -403,12 +448,12 @@
                     <option value="6">Sexta-feira</option>
                     <option value="7">Sábado</option>
                   </select>
-                  <label for="regraDiaSemana">Dia da Semana</label>
                 </div>
               </div>
               <div class="col-6">
-                <div class="form-floating mb-3">
-                  <select class="form-select" id="regraOrdinal">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" for="regraOrdinal"><i class="bi bi-arrow-repeat me-1"></i>Ocorrência</label>
+                  <select class="form-select darpe-select" id="regraOrdinal">
                     <option value="0">Todas as semanas</option>
                     <option value="1">1ª semana</option>
                     <option value="2">2ª semana</option>
@@ -417,7 +462,6 @@
                     <option value="5">5ª semana</option>
                     <option value="-1">Última semana</option>
                   </select>
-                  <label for="regraOrdinal">Ocorrência</label>
                 </div>
               </div>
             </div>
@@ -466,7 +510,7 @@
 
     <!-- Modal Adicionar Músico -->
     <div class="modal fade" id="modalAdicionarMusico" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-dark">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title">Adicionar Músico</h5>
@@ -486,6 +530,7 @@
                   id="nomeMusicoModal"
                   class="form-control"
                   required
+                  data-input-filter="nome"
                 />
               </div>
 
@@ -495,6 +540,7 @@
                   type="text"
                   id="instrumentoMusicoModal"
                   class="form-control"
+                  data-input-filter="text-especial"
                 />
               </div>
             </form>
@@ -524,7 +570,7 @@
 
     <!-- Modal Copiar/Mapa -->
     <div class="modal fade" id="modalMapa" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-dark">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title">Sucesso</h5>
@@ -555,7 +601,7 @@
 
     <!-- Modal Aviso -->
     <div class="modal fade" id="modalAviso" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header bg-dark text-white">
             <h5 class="modal-title" id="modalAvisoTitulo">Aviso</h5>
@@ -577,7 +623,7 @@
 
     <!-- Modal Confirmação -->
     <div class="modal fade" id="confirmModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
             <h5 class="modal-title" id="confirmTitle">Confirmação</h5>
@@ -604,7 +650,149 @@
       </div>
     </div>
 
-    <main id="conteudo" class="container mt-4 text-center"></main>
+    <div class="modal fade" id="modalIntegracao" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-people-fill me-2"></i><span id="modalIntegracaoTitulo">Nova Integração</span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+
+            <!-- Seleção de Local -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold"><i class="bi bi-geo-alt me-1"></i>Local</label>
+              <select id="selectLocalIntegracao" class="form-select darpe-select">
+                <option value="">Selecione o local</option>
+              </select>
+              <div
+                id="erroIntegracaoLocal"
+                class="text-danger mt-1 d-none"
+                style="font-size: 0.85rem"
+              ></div>
+            </div>
+
+            <!-- Adicionar Nome -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Nomes com acesso</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="inputNomeIntegracao"
+                  class="form-control"
+                  placeholder="Digite o nome e pressione Adicionar"
+                  data-input-filter="nome"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarNomeIntegracao();}"
+                />
+                <button
+                  class="btn btn-outline-dark"
+                  type="button"
+                  onclick="adicionarNomeIntegracao()"
+                >
+                  <i class="bi bi-plus-lg me-1"></i>Adicionar
+                </button>
+              </div>
+              <div
+                id="erroIntegracaoNomes"
+                class="text-danger mt-1 d-none"
+                style="font-size: 0.85rem"
+              ></div>
+            </div>
+
+            <!-- Lista Temporária -->
+            <div
+              id="listaNomesIntegracao"
+              class="border rounded p-2 small bg-light"
+              style="min-height: 56px"
+            >
+              <div class="text-muted text-center fst-italic py-2">
+                Nenhum nome adicionado.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              id="btnSalvarIntegracao"
+              onclick="salvarIntegracao()"
+            >
+              <i class="bi bi-check-lg me-1"></i>Salvar Integração
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <!-- Modal Correção de Nome -->
+    <div class="modal fade" id="modalCorrecaoNome" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-dark">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title"><i class="bi bi-spell-check me-2"></i>Verificação de nome</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="btnFecharCorrecaoNome"></button>
+          </div>
+          <div class="modal-body text-center">
+            <p class="mb-1 text-muted small">Nome digitado:</p>
+            <p class="mb-3 fw-semibold fs-6" id="correcaoNomeOriginal"></p>
+            <div class="py-3 px-3 mb-3 rounded-3" style="background-color:#212529;color:#fff;border:2px solid #212529;">
+              <p class="mb-1 small" style="color:rgba(255,255,255,0.7);">Sugestão com acentuação correta:</p>
+              <p class="mb-0 fw-bold fs-5" id="correcaoNomeSugerido" style="color:#fff;"></p>
+            </div>
+            <p class="text-muted small">Deseja usar o nome com a acentuação correta?</p>
+          </div>
+          <div class="modal-footer gap-2">
+            <button type="button" class="btn btn-outline-dark" id="btnManterNome">
+              Manter como digitei
+            </button>
+            <button type="button" class="btn btn-dark" id="btnUsarCorrecao">
+              <i class="bi bi-check2 me-1"></i>Usar sugestão
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Detalhes Calendário -->
+    <div class="modal fade" id="modalCalDetalhe" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-dark text-white">
+            <h6 class="modal-title fw-semibold" id="calDetData"></h6>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-3" id="calDetBody"></div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-dark w-100" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-1"></i>Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main id="conteudo" class="container mt-3 mt-md-4 text-center"></main>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -614,6 +802,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <script src="js/app/input-filters.js"></script>
+    <script src="js/app/nome-corrector.js"></script>
     <script src="js/app/helpers.js"></script>
     <script src="js/app/api.js"></script>
     <script src="js/ui/components/ui-components.js"></script>
@@ -637,5 +827,8 @@
     <script src="js/ui/ui-inscricao.js"></script>
     <script src="js/ui/ui-inscritos.js"></script>
     <script src="js/ui/ui-relatorio.js"></script>
+    <script src="js/app/services/integracoes.service.js"></script>
+    <script src="js/ui/ui-integracoes.js"></script>
+    <script src="js/ui/darpe-select.js"></script>
   </body>
 </html>

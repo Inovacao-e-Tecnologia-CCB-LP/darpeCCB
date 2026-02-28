@@ -19,6 +19,15 @@ function abrirModalAdmin() {
   document.getElementById("senhaAdmin").value = "";
   document.getElementById("erroSenha").classList.add("d-none");
 
+  // Reseta ícone do olho ao abrir
+  const input = document.getElementById("senhaAdmin");
+  const icone = document.getElementById("iconeSenha");
+  if (input) input.type = "password";
+  if (icone) {
+    icone.classList.remove("bi-eye-slash");
+    icone.classList.add("bi-eye");
+  }
+
   const modal = new bootstrap.Modal(document.getElementById("modalAdmin"));
   modal.show();
 }
@@ -33,15 +42,20 @@ async function validarSenhaAdmin() {
 
   erro.classList.add("d-none");
 
+  _travarModal("modalAdmin");
   btn.disabled = true;
   textoBtn.classList.add("d-none");
   spinner.classList.remove("d-none");
 
   try {
-    const r = await authService.auth(senhaDigitada);
+    const signal = _getModalSignal("modalAdmin");
+    const r = await authService.auth(senhaDigitada, signal);
+
+    // Cancelado pelo usuário
+    if (signal.aborted) return;
 
     if (!r?.success) {
-      mostrarErroCampo("erroSenha", r.error);
+      mostrarErroCampo("erroSenha", r.error || "Senha incorreta");
       return;
     }
 
@@ -51,9 +65,11 @@ async function validarSenhaAdmin() {
     bootstrap.Modal.getInstance(document.getElementById("modalAdmin")).hide();
     navigateTo(() => guardAdmin(mostrarAdmin));
   } catch (err) {
+    if (err?.name === "AbortError") return;
     console.error(err);
-    mostrarErroSenha("Erro ao validar senha");
+    mostrarErroCampo("erroSenha", "Erro ao validar senha");
   } finally {
+    _liberarModal("modalAdmin");
     btn.disabled = false;
     textoBtn.classList.remove("d-none");
     spinner.classList.add("d-none");

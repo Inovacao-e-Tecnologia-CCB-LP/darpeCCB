@@ -93,6 +93,7 @@ async function abrirTelaRelatorios() {
   setTitle("Relatórios");
   conteudo.innerHTML = UiRelatorios.loading();
 
+  travarUI();
   try {
     inscritos = await inscricoesService.listar();
     initMaps();
@@ -107,13 +108,74 @@ async function abrirTelaRelatorios() {
       });
 
     carregarLocaisRelatorio();
+
+    // ── Sugestão de nome do responsável via localStorage ──────────────────
+    _preencherResponsavelLocalStorage();
+
   } catch (err) {
     console.error(err);
     conteudo.innerHTML = UiRelatorios.alerta(
       "danger",
-      "❌ Erro ao carregar dados dos relatórios",
+      " Erro ao carregar dados dos relatórios",
     );
+  } finally {
+    liberarUI();
   }
+}
+
+/**
+ * Verifica se há um nome salvo no localStorage.
+ * Se houver, exibe uma sugestão discreta no campo responsável
+ * perguntando se o usuário quer usar esse nome.
+ */
+function _preencherResponsavelLocalStorage() {
+  const nomeSalvo = localStorageService.buscarNome();
+  const inputResponsavel = document.getElementById("responsavel");
+
+  if (!nomeSalvo || !inputResponsavel) return;
+
+  // Cria o banner de sugestão abaixo do campo
+  const containerId = "sugestaoResponsavelContainer";
+  const jaExiste = document.getElementById(containerId);
+  if (jaExiste) jaExiste.remove();
+
+  const container = document.createElement("div");
+  container.id = containerId;
+  container.className = "mt-2 d-flex align-items-center gap-2 flex-wrap";
+  container.innerHTML = `
+    <span class="small text-muted">
+      <i class="bi bi-person-check me-1"></i>Último responsável:
+    </span>
+    <button
+      type="button"
+      class="btn btn-sm btn-dark px-3"
+      id="btnUsarNomeSalvo"
+      style="font-size:0.82rem;"
+    >
+      ${nomeSalvo}
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary px-2"
+      id="btnIgnorarNomeSalvo"
+      title="Ignorar sugestão"
+      style="font-size:0.82rem;"
+    >
+      <i class="bi bi-x"></i>
+    </button>
+  `;
+
+  inputResponsavel.parentNode.appendChild(container);
+
+  document.getElementById("btnUsarNomeSalvo").addEventListener("click", () => {
+    inputResponsavel.value = nomeSalvo;
+    container.remove();
+    inputResponsavel.dispatchEvent(new Event("input"));
+  });
+
+  document.getElementById("btnIgnorarNomeSalvo").addEventListener("click", () => {
+    container.remove();
+  });
 }
 
 /* =========================
@@ -390,6 +452,9 @@ function montarDadosRelatorio() {
     return null;
   }
 
+  // Salva o nome do responsável no localStorage para sugestão futura
+  localStorageService.salvarNome(form.responsavel);
+
   const local = dataStore.locais.find((l) => l.id == localId);
   const programacao = dataStore.programacao.find((p) => p.id == programacaoId);
 
@@ -426,6 +491,8 @@ async function gerarPDF() {
   const dados = montarDadosRelatorio();
   if (!dados) return;
 
+  travarUI();
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "mm", "a4");
 
@@ -445,7 +512,7 @@ async function gerarPDF() {
   const logoUrl = "Img/logo-ccb.png";
   const logoImg = await carregarImagemBase64(logoUrl);
   doc.addImage(logoImg, "PNG", 80, y, 50, 22);
-  y += 30; // ⬅ antes era 35
+  y += 30; //  antes era 35
 
   /* ================= CABEÇALHO ================= */
   doc.setFont("helvetica", "bold");
@@ -481,7 +548,7 @@ async function gerarPDF() {
     doc.setFontSize(FONT_TEXTO);
     doc.text(valor || "-", MARGEM_ESQ + 55, y);
 
-    y += 7; // ⬅ antes era 9
+    y += 7; //  antes era 9
 
     if (y > 270) {
       doc.addPage();
@@ -530,7 +597,7 @@ async function gerarPDF() {
 
     const textoObs = doc.splitTextToSize(dados.observacoes, LARGURA_TEXTO);
     doc.text(textoObs, MARGEM_ESQ, y);
-    y += textoObs.length * 5; // ⬅ antes era 6
+    y += textoObs.length * 5; //  antes era 6
 
     if (y > 270) {
       doc.addPage();
@@ -564,7 +631,7 @@ async function gerarPDF() {
       const texto = instNome ? `${c.nome} (${instNome})` : c.nome;
 
       doc.text("• " + texto, MARGEM_ESQ + 2, y);
-      y += 5; // ⬅ antes era 6
+      y += 5; //  antes era 6
 
       if (y > 270) {
         doc.addPage();
@@ -576,6 +643,7 @@ async function gerarPDF() {
   /* ================= SALVAR ================= */
   const nomeArquivo = gerarNomeRelatorioPDF(dados);
   doc.save(nomeArquivo);
+  liberarUI();
 }
 
 function gerarNomeRelatorioPDF(dados) {
@@ -594,39 +662,39 @@ function gerarMensagemWhatsAppRelatorio(dados) {
   linhas.push("*DARPE*");
   linhas.push("_Relatório de Atendimento_");
   linhas.push("");
-  linhas.push("*📋 Dados Gerais*");
+  linhas.push("* Dados Gerais*");
   linhas.push("");
-  linhas.push(`👤 *Nome do Responsável:* _${dados.responsavel}_`);
-  linhas.push(`📍 *Nome do Local:* _${dados.local?.nome || "-"}_`);
-  linhas.push(`📆 *Data:* _${formatarData(dados.programacao?.data)}_`);
+  linhas.push(` *Nome do Responsável:* _${dados.responsavel}_`);
+  linhas.push(` *Nome do Local:* _${dados.local?.nome || "-"}_`);
+  linhas.push(` *Data:* _${formatarData(dados.programacao?.data)}_`);
   linhas.push(
-    `🕒 *Horário:* _${dados.programacao?.horario?.replace(/'/g, "") || "-"}_`,
+    ` *Horário:* _${dados.programacao?.horario?.replace(/'/g, "") || "-"}_`,
   );
   linhas.push(
-    `🎼 *Tipo de Visita:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
+    ` *Tipo de Visita:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
   );
   if (dados.qtdInternos > 0) {
-    linhas.push(`💠 *Qtde. Internos:* _${dados.qtdInternos}_`);
+    linhas.push(` *Qtde. Internos:* _${dados.qtdInternos}_`);
   }
-  linhas.push(`🎶 *Qtde. Músicos:* _${dados.qtdMusicos}_`);
+  linhas.push(` *Qtde. Músicos:* _${dados.qtdMusicos}_`);
   if (dados.evangelizacao?.palavra) {
-    linhas.push(`📖 *Palavra:* _${dados.evangelizacao.palavra}_`);
+    linhas.push(` *Palavra:* _${dados.evangelizacao.palavra}_`);
   }
 
   linhas.push("");
 
-  // 📝 OBSERVAÇÕES
+  //  OBSERVAÇÕES
   if (dados.observacoes?.trim()) {
-    linhas.push("*📝 Observações*");
+    linhas.push("* Observações*");
     linhas.push("");
     linhas.push(`${dados.observacoes}`);
   }
 
   linhas.push("");
 
-  // 👥 musicos
+  //  musicos
   if (dados.musicos?.length) {
-    linhas.push("*👥 Nome/Instrumento dos Músicos*");
+    linhas.push("* Nome/Instrumento dos Músicos*");
     linhas.push("");
     dados.musicos.forEach((c) => {
       linhas.push(

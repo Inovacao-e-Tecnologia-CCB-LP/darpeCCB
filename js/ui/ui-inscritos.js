@@ -40,6 +40,7 @@ async function showInscritos() {
 
   abortController = new AbortController();
 
+  travarUI();
   try {
     inscritos = await inscricoesService.listar();
 
@@ -74,6 +75,7 @@ async function showInscritos() {
       grupos[localNome][i.programacao_id].push(i);
     });
 
+    // ── Accordion único para todas as telas ─────────────────
     let html = '<div class="accordion" id="accordionInscritos">';
     let index = 0;
 
@@ -112,11 +114,14 @@ async function showInscritos() {
 
         html += `
                 <div class="card mb-3 border-dark">
-                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                        <b>${p.tipo_visita} - ${formatarData(p.data)} – ${p.descricao} (${formatarHorario(p.horario)})</b>
-                        <button class="btn btn-dark"
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center gap-2 py-3">
+                        <div class="text-start">
+                          <div class="fw-semibold fs-6">${p.tipo_visita} &bull; ${formatarData(p.data)}</div>
+                          <div class="small opacity-75">${p.descricao} &bull; ${formatarHorario(p.horario)}</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light flex-shrink-0"
                             onclick="compartilhar(${pid})">
-                            <i class="bi bi-whatsapp"></i>
+                            <i class="bi bi-whatsapp me-1"></i>Compartilhar
                         </button>
                     </div>
                     <ul class="list-group list-group-flush">`;
@@ -132,14 +137,14 @@ async function showInscritos() {
           }
 
           html += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            ${i.nome}
-                            <span class="text-muted">(${instNome})</span>
+                    <li class="list-group-item d-flex justify-content-between align-items-center gap-2 py-3">
+                        <span class="d-flex flex-column align-items-start">
+                          <span class="fw-semibold">${i.nome}</span>
+                          <span class="text-muted small">${instNome}</span>
                         </span>
                         ${
                           auth
-                            ? `<button class="btn btn-sm btn-outline-danger"
+                            ? `<button class="btn btn-sm btn-outline-danger flex-shrink-0"
                             onclick="excluirInscricao(${i.id}, this)">
                             <i class="bi bi-trash"></i></button>`
                             : ""
@@ -162,21 +167,23 @@ async function showInscritos() {
     console.error(err);
     conteudo.innerHTML = `
             <div class="alert alert-dark text-center">
-                ❌ Erro ao carregar inscrições
+                 Erro ao carregar inscrições
             </div>`;
+  } finally {
+    liberarUI();
   }
 }
 
 function compartilhar(pid) {
   const p = programacaoMap[pid];
   if (!p) {
-    alert("Programação não encontrada");
+    abrirModalAviso("Erro", "Programação não encontrada.");
     return;
   }
 
   const localObj = locaisMap[p.local_id];
   if (!localObj) {
-    alert("Local não encontrado");
+    abrirModalAviso("Erro", "Local não encontrado.");
     return;
   }
 
@@ -185,11 +192,11 @@ function compartilhar(pid) {
   const dataFormatada = new Date(p.data).toLocaleDateString("pt-BR");
 
   let mensagem = `*${localObj.nome}*\n\n`;
-  mensagem += `📍 _${localObj.endereco}_\n`;
-  mensagem += `🎶 *${p.tipo_visita}*\n`;
-  mensagem += `📆 ${dataFormatada}\n`;
-  mensagem += `🕒 ${formatarHorario(p.horario)}\n\n`;
-  mensagem += `👥 *Inscritos* (${inscritosProg.length}/${localObj.limite}):\n`;
+  mensagem += ` _${localObj.endereco}_\n`;
+  mensagem += ` *${p.tipo_visita}*\n`;
+  mensagem += ` ${dataFormatada}\n`;
+  mensagem += ` ${formatarHorario(p.horario)}\n\n`;
+  mensagem += ` *Inscritos* (${inscritosProg.length}/${localObj.limite}):\n`;
 
   inscritosProg.forEach((i) => {
     let instNome = i.instrumento;

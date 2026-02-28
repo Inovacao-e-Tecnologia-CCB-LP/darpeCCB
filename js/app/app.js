@@ -6,6 +6,8 @@ const Ui = new UiComponents();
 let dataStore = {};
 let escolha = {};
 let abortController;
+// Nome recebido via URL (?nome=) — definido em init(), usado em showEscolherLocal
+let nomeIntegracao = null;
 const navigationStack = [];
 const titulo = document.getElementById("titulo");
 const conteudo = document.getElementById("conteudo");
@@ -36,6 +38,9 @@ function updateBackButton() {
 }
 
 async function init() {
+  // ── Capturar ?nome= antes de qualquer renderização ──
+  nomeIntegracao = integracoesService.capturarNomeDaUrl();
+
   esconderBotaoAdmin();
   backButton.style.display = "none";
   setTitle("Carregando...");

@@ -15,6 +15,7 @@ async function abrirTelaRegrasDatas() {
 async function carregarRegrasDatas(firstTime = false) {
   const lista = document.getElementById("listaRegrasDatas");
 
+  travarUI();
   try {
     mostrarLoading("listaRegrasDatas");
 
@@ -42,11 +43,7 @@ async function carregarRegrasDatas(firstTime = false) {
       return localA.localeCompare(localB) || a.dia_semana - b.dia_semana;
     });
 
-    if (isMobile()) {
-      renderCardsRegrasDatas(regras);
-    } else {
-      renderTabelaRegrasDatas(regras);
-    }
+    renderCardsRegrasDatas(regras);
   } catch (err) {
     console.error(err);
     lista.innerHTML = `
@@ -54,94 +51,77 @@ async function carregarRegrasDatas(firstTime = false) {
         Erro ao carregar regras
       </div>
     `;
+  } finally {
+    liberarUI();
   }
 }
 
 function renderTabelaRegrasDatas(regras) {
-  let html = `
-    <div class="table-responsive rounded shadow-sm overflow-hidden">
-      <table class="table table-bordered align-middle mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th>Local</th>
-            <th>Tipo</th>
-            <th>Quando</th>
-            <th class="text-center">Horário</th>
-            <th class="text-center">Status</th>
-            <th class="text-center" width="120">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  regras.forEach((r) => {
-    const local = dataStore.locais.find((l) => l.id == r.local_id);
-    const nomeLocal = local
-      ? local.nome
-      : '<span class="text-danger">Local excluído</span>';
-
-    html += `
-      <tr>
-        <td>${nomeLocal}</td>
-        <td>${r.tipo_visita}</td>
-        <td>${formatarQuando(r.dia_semana, r.ordinal)}</td>
-        <td class="text-center">${formatarHorario(r.horario)}</td>
-        <td class="text-center">
-          ${
-            r.ativo
-              ? '<span class="badge bg-success">Ativo</span>'
-              : '<span class="badge bg-secondary">Inativo</span>'
-          }
-        </td>
-        <td class="text-center">
-          <button class="btn btn-sm btn-outline-dark me-1 editar-btn" onclick="editarRegra(${r.id}, this)">
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button class="btn btn-sm btn-outline-danger excluir-btn" onclick="excluirRegra(${r.id}, this)">
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-
-  html += `</tbody></table></div>`;
-  document.getElementById("listaRegrasDatas").innerHTML = html;
+  renderCardsRegrasDatas(regras);
 }
 
 function renderCardsRegrasDatas(regras) {
-  let html = `<div class="d-grid gap-3">`;
-
+  // Agrupar por local para visual mais limpo
+  const porLocal = {};
   regras.forEach((r) => {
     const local = dataStore.locais.find((l) => l.id == r.local_id);
-    const nomeLocal = local ? local.nome : "Local excluído";
-
-    html += `
-      <div class="card shadow-sm">
-        <div class="modal-header bg-dark text-white rounded-top p-2">
-          <h6 class="mb-0">${nomeLocal}</h6>
-        </div>
-        <div class="card-body">
-          <p class="mb-1"><strong>Tipo:</strong> ${r.tipo_visita}</p>
-          <p class="mb-1"><strong>Quando:</strong> ${formatarQuando(r.dia_semana, r.ordinal)}</p>
-          <p class="mb-2"><strong>Horário:</strong> ${formatarHorario(r.horario)}</p>
-          <p class="mb-3">
-            <strong>Status:</strong> ${r.ativo ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}
-          </p>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-dark w-50 editar-btn" onclick="editarRegra(${r.id}, this)">
-              <i class="bi bi-pencil"></i> Editar
-            </button>
-            <button class="btn btn-sm btn-outline-danger w-50 excluir-btn" onclick="excluirRegra(${r.id}, this)">
-              <i class="bi bi-trash"></i> Excluir
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
+    const nomeLocal = local ? local.nome : 'Local excluído';
+    if (!porLocal[nomeLocal]) porLocal[nomeLocal] = [];
+    porLocal[nomeLocal].push(r);
   });
 
-  html += `</div>`;
+  let html = '<div class="d-flex flex-column gap-4">';
+
+  Object.entries(porLocal).forEach(([nomeLocal, itens]) => {
+    html += `
+      <div class="grupo-secao">
+        <div class="grupo-secao-header">
+          <i class="bi bi-geo-alt-fill"></i>
+          <span>${nomeLocal}</span>
+          <span class="grupo-secao-count">${itens.length}</span>
+        </div>
+        <div class="d-flex flex-column gap-2">`;
+
+    itens.forEach((r) => {
+      const ativoEl = r.ativo
+        ? `<span class="status-dot status-dot-ok"></span>`
+        : `<span class="status-dot status-dot-no"></span>`;
+
+      html += `
+          <div class="item-card">
+            <div class="item-card-body">
+              <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  ${ativoEl}
+                  <span class="fw-semibold">${r.tipo_visita}</span>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                  <button class="btn btn-sm btn-outline-dark editar-btn" onclick="editarRegra(${r.id}, this)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger excluir-btn" onclick="excluirRegra(${r.id}, this)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-info-grid">
+                <div class="card-info-cell">
+                  <i class="bi bi-calendar-week"></i>
+                  <span>${formatarQuando(r.dia_semana, r.ordinal)}</span>
+                </div>
+                <div class="card-info-cell">
+                  <i class="bi bi-clock"></i>
+                  <span>${formatarHorario(r.horario)}</span>
+                </div>
+              </div>
+            </div>
+          </div>`;
+    });
+
+    html += '</div></div>';
+  });
+
+  html += '</div>';
   document.getElementById("listaRegrasDatas").innerHTML = html;
 }
 
@@ -161,7 +141,7 @@ function montarPayloadRegra() {
   if (!localId || !tipo || !horario) {
     mostrarErroCampo(
       "erroValidacaoCamposRegra",
-      "Preencha todos os campos corretamente",
+      "Preencha todos os campos corretamente.",
     );
     return null;
   }
@@ -265,27 +245,22 @@ async function salvarRegra() {
   const textoOriginal = btn.innerHTML;
 
   const payload = montarPayloadRegra();
+  if (!payload) return;
 
-  if (!payload) {
-    btn.disabled = false;
-    btn.innerHTML = textoOriginal;
-    habilitarBotaoRegra();
-    return;
-  }
+  _travarModal("modalRegra");
+  btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Salvando`;
 
   try {
-    desabilitarBotaoRegra();
-    btn.disabled = true;
-    btn.innerHTML = `
-      <span class="spinner-border spinner-border-sm"></span> Salvando
-    `;
+    const signal = _getModalSignal("modalRegra");
 
     let r;
     if (payload.id) {
-      r = await regrasDatasService.atualizar(payload, senhaDigitada);
+      r = await regrasDatasService.atualizar(payload, senhaDigitada, signal);
     } else {
-      r = await regrasDatasService.criar(payload, senhaDigitada);
+      r = await regrasDatasService.criar(payload, senhaDigitada, signal);
     }
+
+    if (signal.aborted) return;
 
     if (r?.error) {
       mostrarErroCampo("erroValidacaoCamposRegra", r.error);
@@ -294,21 +269,16 @@ async function salvarRegra() {
 
     bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
 
-    mostrarLoading("listaRegras");
-
-    const msg = payload.id
-      ? "Regra editada com sucesso!"
-      : "Regra criada com sucesso!";
-
+    const msg = payload.id ? "Regra editada com sucesso!" : "Regra criada com sucesso!";
     abrirModalAviso("Sucesso", msg);
     await reloadRegras();
   } catch (err) {
+    if (err?.name === "AbortError") return;
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar regra");
+    abrirModalAviso("Erro", "Erro ao salvar regra.");
   } finally {
-    btn.disabled = false;
+    _liberarModal("modalRegra");
     btn.innerHTML = textoOriginal;
-    habilitarBotaoRegra();
   }
 }
 
@@ -333,7 +303,7 @@ async function editarRegra(id, btn) {
     const regra = (regras || []).find((r) => Number(r.id) === Number(id));
 
     if (!regra) {
-      abrirModalAviso("Erro", "Regra não encontrada");
+      abrirModalAviso("Erro", "Regra não encontrada.");
       return;
     }
 
@@ -364,7 +334,7 @@ async function editarRegra(id, btn) {
     modal.show();
   } catch (err) {
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao carregar regra");
+    abrirModalAviso("Erro", "Erro ao carregar regra.");
     habilitarBotaoRegra();
   } finally {
     btn.disabled = false;
@@ -387,33 +357,27 @@ function excluirRegra(id, btnTrash) {
     const textoOk = btnOk.innerHTML;
     const textoTrash = btnTrash.innerHTML;
 
+    _travarModal("confirmModal");
     try {
-      desabilitarBotaoRegra();
-      btnOk.disabled = true;
-      btnTrash.disabled = true;
       btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Excluindo`;
 
-      const r = await regrasDatasService.excluir(id, senhaDigitada);
+      const signal = _getModalSignal("confirmModal");
+      const r = await regrasDatasService.excluir(id, senhaDigitada, signal);
 
-      if (r?.error) {
-        abrirModalAviso("Aviso", r.error);
-        return;
-      }
+      if (signal.aborted) return;
+      if (r?.error) { abrirModalAviso("Aviso", r.error); return; }
 
       abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
       await reloadRegras();
     } catch (err) {
+      if (err?.name === "AbortError") return;
       console.error(err);
-      abrirModalAviso("Erro", "Erro ao excluir regra");
+      abrirModalAviso("Erro", "Erro ao excluir regra.");
     } finally {
-      habilitarBotaoRegra();
-      btnOk.disabled = false;
-      btnTrash.disabled = false;
+      _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
       btnTrash.innerHTML = textoTrash;
-      bootstrap.Modal.getInstance(
-        document.getElementById("confirmModal"),
-      ).hide();
+      bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
     }
   };
 
@@ -424,24 +388,9 @@ function excluirRegra(id, btnTrash) {
    ESTADOS DE INTERFACE
 ========================= */
 
-function desabilitarBotaoRegra() {
-  const btn = document.getElementById("novaRegraBtn");
-  if (btn) btn.setAttribute("disabled", "");
-  backButton.setAttribute("disabled", "");
-  document
-    .querySelectorAll(".editar-btn, .excluir-btn")
-    .forEach((b) => b.setAttribute("disabled", ""));
-}
-
-function habilitarBotaoRegra() {
-  const btn = document.getElementById("novaRegraBtn");
-  if (btn) btn.removeAttribute("disabled");
-  backButton.removeAttribute("disabled");
-
-  document
-    .querySelectorAll(".editar-btn, .excluir-btn")
-    .forEach((b) => b.removeAttribute("disabled"));
-}
+// Delegados ao sistema central travarUI/liberarUI
+function desabilitarBotaoRegra() { travarUI(); }
+function habilitarBotaoRegra()   { liberarUI(); }
 
 async function carregarProgramacao() {
   try {
