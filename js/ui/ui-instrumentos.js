@@ -81,8 +81,40 @@ function _getCorTipo(tipo) {
 
 function _formatarTipo(tipo) {
   if (!tipo) return "";
-  const t = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
-  return t.endsWith("s") ? t : t + "s";
+
+  const chave = tipo.toLowerCase();
+
+  // Casos especiais
+  if (chave === "corda") return "Cordas";
+  if (chave === "sopro") return "Sopros";
+
+  // Padrão normal
+  return chave.charAt(0).toUpperCase() + chave.slice(1);
+}
+
+function _getIconeTipo(tipo) {
+  const chave = (tipo || "").toLowerCase();
+
+  const mapa = {
+    corda: "bi-music-note-beamed",
+    sopro: "bi-wind",
+    teclas: "bi-keyboard",
+    outros: "bi-music-note",
+  };
+
+  return mapa[chave] || "bi-music-note";
+}
+
+function _getEstiloIconeTipo(tipo) {
+  const chave = (tipo || "").toLowerCase();
+
+  const mapa = {
+    corda: { bg: "#dbeafe", color: "#1d4ed8" }, // azul
+    sopro: { bg: "#dcfce7", color: "#15803d" }, // verde
+    teclas: { bg: "#ede9fe", color: "#6d28d9" }, // amarelo
+  };
+
+  return mapa[chave] || { bg: "#f3f4f6", color: "#6b7280" };
 }
 
 function renderTabelaInstrumentos(instrumentos) {
@@ -104,19 +136,15 @@ function renderCardsInstrumentos(instrumentos) {
 
   Object.entries(grupos).forEach(([tipo, itens]) => {
     const tipoLabel = _formatarTipo(tipo);
-    const iconeGrupo =
-      tipo === "corda"
-        ? "bi-music-note-beamed"
-        : tipo === "sopro"
-          ? "bi-volume-up"
-          : "bi-vinyl";
+    const iconeGrupo = _getIconeTipo(tipo);
+    const estilo = _getEstiloIconeTipo(tipo);
 
     html += `
       <div class="grupo-secao">
         <div class="grupo-secao-header">
           <i class="bi ${iconeGrupo}"></i>
           <span>${tipoLabel}</span>
-          <span class="grupo-secao-count">${itens.length}</span>
+          <span class="grupo-secao-count">Total: ${itens.length}</span>
         </div>
         <div class="d-flex flex-column gap-2">`;
 
@@ -125,8 +153,8 @@ function renderCardsInstrumentos(instrumentos) {
           <div class="item-card item-card-compacto">
             <div class="item-card-body d-flex align-items-center justify-content-between gap-3">
               <div class="d-flex align-items-center gap-2">
-                <div class="item-card-icon-circle" style="background:${tipo === "corda" ? "#dbeafe" : tipo === "sopro" ? "#dcfce7" : "#f3f4f6"}">
-                  <i class="bi bi-music-note" style="color:${tipo === "corda" ? "#1d4ed8" : tipo === "sopro" ? "#15803d" : "#6b7280"}"></i>
+                <div class="item-card-icon-circle" style="background:${estilo.bg}">
+                  <i class="bi ${_getIconeTipo(tipo)}" style="color:${estilo.color}"></i>
                 </div>
                 <span class="fw-semibold">${i.nome}</span>
               </div>

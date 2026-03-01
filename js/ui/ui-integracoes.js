@@ -1,6 +1,4 @@
-
 let nomesTemporarios = [];
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Navegação
@@ -12,7 +10,6 @@ async function abrirTelaIntegracoes() {
   await carregarIntegracoes(true);
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Carregamento
 // ─────────────────────────────────────────────────────────────────────────────
@@ -23,7 +20,7 @@ async function carregarIntegracoes(firstTime = false) {
     mostrarLoading("listaIntegracoes");
 
     const nomes = firstTime
-      ? (dataStore.nomes_integracao ?? await integracoesService.listar())
+      ? (dataStore.nomes_integracao ?? (await integracoesService.listar()))
       : await integracoesService.listar();
 
     if (nomes?.error) throw new Error(nomes.error);
@@ -43,7 +40,6 @@ async function carregarIntegracoes(firstTime = false) {
     liberarUI();
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Renderização
@@ -72,12 +68,9 @@ function renderizarIntegracoes(nomes) {
   renderCardsIntegracoes(grupos);
 }
 
-
 function renderTabelaIntegracoes(grupos) {
   renderCardsIntegracoes(grupos);
 }
-
-
 
 function renderCardsIntegracoes(grupos) {
   const container = document.getElementById("listaIntegracoes");
@@ -85,15 +78,18 @@ function renderCardsIntegracoes(grupos) {
   let html = '<div class="d-flex flex-column gap-4">';
 
   Object.entries(grupos).forEach(([idLocal, nomes]) => {
-    const local = dataStore.locais.find((l) => Number(l.id) === Number(idLocal));
+    const local = dataStore.locais.find(
+      (l) => Number(l.id) === Number(idLocal),
+    );
     const nomeLocal = local?.nome || "Local não encontrado";
 
     html += `
       <div class="grupo-secao">
         <div class="grupo-secao-header">
           <i class="bi bi-geo-alt-fill"></i>
-          <span>${nomeLocal}</span>
-          <span class="grupo-secao-count">${nomes.length}</span>
+          <span>${nomeLocal}
+          <span class="grupo-secao-count">Total: ${nomes.length}</span>
+          </span>
           <button class="btn btn-sm btn-outline-light ms-auto editar-integracao-btn"
             onclick="abrirModalEditarIntegracao(${idLocal})">
             <i class="bi bi-pencil me-1"></i>Editar
@@ -127,13 +123,12 @@ function renderCardsIntegracoes(grupos) {
           </div>`;
     });
 
-    html += '</div></div>';
+    html += "</div></div>";
   });
 
-  html += '</div>';
+  html += "</div>";
   container.innerHTML = html;
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Compartilhar (link temporário — apenas frontend)
@@ -148,13 +143,12 @@ async function compartilharNomeIntegracao(nomeEncoded, btn) {
   try {
     await integracoesService.compartilhar(nome);
   } catch (err) {
-    console.error('Erro ao compartilhar:', err);
+    console.error("Erro ao compartilhar:", err);
   } finally {
     btn.disabled = false;
     btn.innerHTML = original;
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Modal de cadastro (Nova Integração)
@@ -172,14 +166,15 @@ function abrirModalIntegracao() {
   const select = document.getElementById("selectLocalIntegracao");
   select.disabled = false;
 
-  document.getElementById("modalIntegracaoTitulo").textContent = "Nova Integração";
+  document.getElementById("modalIntegracaoTitulo").textContent =
+    "Nova Integração";
   document.getElementById("btnSalvarIntegracao").onclick = salvarIntegracao;
 
   _preencherLocaisSelect();
   _renderListaTemporaria();
 
   bootstrap.Modal.getOrCreateInstance(
-    document.getElementById("modalIntegracao")
+    document.getElementById("modalIntegracao"),
   ).show();
 }
 
@@ -270,7 +265,6 @@ function _renderListaTemporaria() {
   });
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Modal Editar Integração — adicionar nomes a local existente
 // ─────────────────────────────────────────────────────────────────────────────
@@ -287,13 +281,15 @@ function abrirModalEditarIntegracao(idLocal) {
   const select = document.getElementById("selectLocalIntegracao");
   select.disabled = true;
 
-  document.getElementById("modalIntegracaoTitulo").textContent = "Editar Integração";
-  document.getElementById("btnSalvarIntegracao").onclick = () => salvarNomesNaIntegracao(idLocal);
+  document.getElementById("modalIntegracaoTitulo").textContent =
+    "Editar Integração";
+  document.getElementById("btnSalvarIntegracao").onclick = () =>
+    salvarNomesNaIntegracao(idLocal);
 
   _renderListaTemporaria();
 
   bootstrap.Modal.getOrCreateInstance(
-    document.getElementById("modalIntegracao")
+    document.getElementById("modalIntegracao"),
   ).show();
 }
 
@@ -317,7 +313,7 @@ async function salvarNomesNaIntegracao(idLocal) {
     for (const nome of nomesTemporarios) {
       const r = await integracoesService.criar(
         { nome, id_local: idLocal },
-        senhaDigitada
+        senhaDigitada,
       );
 
       if (r?.error) {
@@ -327,7 +323,7 @@ async function salvarNomesNaIntegracao(idLocal) {
     }
 
     bootstrap.Modal.getInstance(
-      document.getElementById("modalIntegracao")
+      document.getElementById("modalIntegracao"),
     ).hide();
 
     abrirModalAviso("Sucesso", "Nomes adicionados com sucesso!");
@@ -343,7 +339,6 @@ async function salvarNomesNaIntegracao(idLocal) {
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Salvar Nova Integração
 // ─────────────────────────────────────────────────────────────────────────────
@@ -354,7 +349,9 @@ async function salvarIntegracao() {
   erroLocal.classList.add("d-none");
   erroNomes.classList.add("d-none");
 
-  const localId = Number(document.getElementById("selectLocalIntegracao").value);
+  const localId = Number(
+    document.getElementById("selectLocalIntegracao").value,
+  );
 
   if (!localId) {
     erroLocal.textContent = "Selecione um local.";
@@ -383,7 +380,7 @@ async function salvarIntegracao() {
       const r = await integracoesService.criar(
         { nome, id_local: localId },
         senhaDigitada,
-        signal
+        signal,
       );
 
       if (signal.aborted) return;
@@ -400,14 +397,16 @@ async function salvarIntegracao() {
     const rLocal = await locaisService.atualizar(
       { id: localId, integracoes: "TRUE" },
       senhaDigitada,
-      signal
+      signal,
     );
 
     if (rLocal?.error) {
       console.warn("Aviso ao atualizar local:", rLocal.error);
     }
 
-    bootstrap.Modal.getInstance(document.getElementById("modalIntegracao")).hide();
+    bootstrap.Modal.getInstance(
+      document.getElementById("modalIntegracao"),
+    ).hide();
 
     abrirModalAviso("Sucesso", "Integração criada com sucesso!");
     await carregarIntegracoes();
@@ -420,7 +419,6 @@ async function salvarIntegracao() {
     btnSalvar.innerHTML = textoOriginal;
   }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Excluir nome
@@ -446,17 +444,23 @@ function excluirNomeIntegracao(id, idLocal, btnTrash) {
       const r = await integracoesService.excluir(id, senhaDigitada, signal);
 
       if (signal.aborted) return;
-      if (r?.error) { abrirModalAviso("Erro", r.error); return; }
+      if (r?.error) {
+        abrirModalAviso("Erro", r.error);
+        return;
+      }
 
       const nomesAtualizados = await integracoesService.listar();
       dataStore.nomes_integracao = nomesAtualizados || [];
 
       const aindaTemNomes = dataStore.nomes_integracao.some(
-        (n) => Number(n.id_local) === Number(idLocal)
+        (n) => Number(n.id_local) === Number(idLocal),
       );
 
       if (!aindaTemNomes) {
-        await locaisService.atualizar({ id: idLocal, integracoes: "FALSE" }, senhaDigitada);
+        await locaisService.atualizar(
+          { id: idLocal, integracoes: "FALSE" },
+          senhaDigitada,
+        );
       }
 
       abrirModalAviso("Sucesso", "Nome removido com sucesso!");
@@ -469,18 +473,23 @@ function excluirNomeIntegracao(id, idLocal, btnTrash) {
       _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
       btnTrash.innerHTML = textoTrash;
-      bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
+      bootstrap.Modal.getInstance(
+        document.getElementById("confirmModal"),
+      ).hide();
     }
   };
 
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers de UI
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Delegados ao sistema central travarUI/liberarUI
-function desabilitarBotoesIntegracoes() { travarUI(); }
-function habilitarBotoesIntegracoes()   { liberarUI(); }
+function desabilitarBotoesIntegracoes() {
+  travarUI();
+}
+function habilitarBotoesIntegracoes() {
+  liberarUI();
+}

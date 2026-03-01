@@ -12,24 +12,28 @@ async function showEscolherLocal() {
 
   // ── Resolver nome de integração ────────────────────────────────────────────
   // Prioridade: ?nome= da URL (já capturado em nomeIntegracao) → localStorage
-  const nomeIntegracaoAtivo = nomeIntegracao || localStorage.getItem('nome_integracao');
+  const nomeIntegracaoAtivo =
+    nomeIntegracao || localStorage.getItem("nome_integracao");
 
   // IDs de TODOS os locais vinculados a este nome (pode ser mais de um)
   let idsLocaisIntegracao = [];
 
   if (nomeIntegracaoAtivo) {
     try {
-      const registros = dataStore.nomes_integracao ?? await integracoesService.listar();
+      const registros =
+        dataStore.nomes_integracao ?? (await integracoesService.listar());
       dataStore.nomes_integracao = registros || [];
 
       // filter (não find) → todos os locais do nome
       const registrosDoNome = registros.filter(
-        (r) => r.nome?.toLowerCase().trim() === nomeIntegracaoAtivo.toLowerCase().trim()
+        (r) =>
+          r.nome?.toLowerCase().trim() ===
+          nomeIntegracaoAtivo.toLowerCase().trim(),
       );
 
       idsLocaisIntegracao = registrosDoNome.map((r) => Number(r.id_local));
     } catch (err) {
-      console.warn('Aviso ao buscar integração:', err);
+      console.warn("Aviso ao buscar integração:", err);
     }
   }
 
@@ -39,7 +43,7 @@ async function showEscolherLocal() {
   const semIntegracao = (l) =>
     !l.integracoes ||
     l.integracoes === false ||
-    String(l.integracoes).toUpperCase() === 'FALSE';
+    String(l.integracoes).toUpperCase() === "FALSE";
 
   // Função: local é um dos locais de integração deste nome
   const ehLocalDoNome = (l) => idsLocaisIntegracao.includes(Number(l.id));
@@ -52,7 +56,7 @@ async function showEscolherLocal() {
   } else {
     // Com integração: locais normais + TODOS os locais vinculados ao nome
     locaisExibidos = dataStore.locais.filter(
-      (l) => semIntegracao(l) || ehLocalDoNome(l)
+      (l) => semIntegracao(l) || ehLocalDoNome(l),
     );
   }
 
@@ -99,9 +103,18 @@ async function showEscolherLocal() {
 function showEscolherData() {
   setTitle("Escolha a data");
 
-  const programacoesFiltradas = dataStore.programacao.filter(
-    (p) => p.local_id == escolha.local.id,
-  );
+  const programacoesFiltradas = dataStore.programacao
+    .filter((p) => p.local_id == escolha.local.id)
+    .sort((a, b) => {
+      const dataA = new Date(a.data);
+      const dataB = new Date(b.data);
+
+      if (dataA.getTime() !== dataB.getTime()) {
+        return dataA - dataB;
+      }
+
+      return a.horario.localeCompare(b.horario);
+    });
 
   if (programacoesFiltradas.length === 0) {
     conteudo.innerHTML = `
@@ -125,7 +138,7 @@ function showEscolherData() {
   });
 
   const obs = document.createElement("div");
-  obs.className = "col-12 col-sm-10 col-md-8 mx-auto";
+  obs.className = "traje-card col-12 col-sm-10 col-md-8 mx-auto";
   obs.innerHTML = Ui.ObservacaoTrajes();
 
   conteudo.innerHTML = "";
@@ -141,45 +154,96 @@ function showEscolherInstrumento() {
   let instrumentosEspecificos = null;
   if (local.instrumentos_permitidos) {
     try {
-      const parsed = typeof local.instrumentos_permitidos === 'string'
-        ? JSON.parse(local.instrumentos_permitidos)
-        : local.instrumentos_permitidos;
+      const parsed =
+        typeof local.instrumentos_permitidos === "string"
+          ? JSON.parse(local.instrumentos_permitidos)
+          : local.instrumentos_permitidos;
+
       if (Array.isArray(parsed) && parsed.length) {
         instrumentosEspecificos = parsed.map(Number);
       }
-    } catch (e) { /* ignora */ }
+    } catch (e) {
+      /* ignora */
+    }
   }
 
-  const instrumentosDisponiveis = dataStore.instrumentos.filter((i) => {
-    const liberadoPorTipo =
-      (i.tipo === "corda" && local.permite_cordas) ||
-      (i.tipo === "sopro" && local.permite_sopros);
+  // Ordem personalizada de tipos
+  const ordemTipos = {
+    corda: 1,
+    sopro: 2,
+    percussao: 3, // se existir
+  };
 
-    const ehEspecifico = instrumentosEspecificos
-      ? instrumentosEspecificos.includes(Number(i.id))
-      : false;
+  const instrumentosDisponiveis = dataStore.instrumentos
+    .filter((i) => {
+      const liberadoPorTipo =
+        (i.tipo === "corda" && local.permite_cordas) ||
+        (i.tipo === "sopro" && local.permite_sopros);
 
-    return liberadoPorTipo || ehEspecifico;
-  });
+      const ehEspecifico = instrumentosEspecificos
+        ? instrumentosEspecificos.includes(Number(i.id))
+        : false;
+
+      return liberadoPorTipo || ehEspecifico;
+    })
+    .sort((a, b) => {
+      // 1️⃣ Ordena por tipo
+      const ordemA = ordemTipos[a.tipo] || 99;
+      const ordemB = ordemTipos[b.tipo] || 99;
+
+      if (ordemA !== ordemB) {
+        return ordemA - ordemB;
+      }
+
+      // 2️⃣ Ordena alfabeticamente pelo nome
+      return a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" });
+    });
 
   if (instrumentosDisponiveis.length === 0) {
     conteudo.innerHTML = `
-        <div class="alert alert-secondary text-center">
-          Não há instrumentos compatíveis com as regras deste local.
-        </div>
-      `;
+      <div class="alert alert-secondary text-center">
+        Não há instrumentos compatíveis com as regras deste local.
+      </div>
+    `;
     return;
   }
 
   const g = document.createElement("div");
   g.className = "grade-escolha";
 
+  let tipoAtual = null;
+
   instrumentosDisponiveis.forEach((i) => {
+    // Se mudou o tipo, cria um título
+    if (i.tipo !== tipoAtual) {
+      tipoAtual = i.tipo;
+
+      const titulo = document.createElement("div");
+      titulo.className = "fw-bold mt-4 mb-2 d-flex align-items-center gap-2";
+
+      const span = document.createElement("span");
+      span.textContent = _formatarTipo(tipoAtual);
+
+      titulo.appendChild(span);
+      g.appendChild(titulo);
+    }
+
     const btn = document.createElement("button");
     btn.className = "btn btn-outline-dark";
-    const icone = i.tipo === "corda" ? "bi-music-note-beamed" : "bi-volume-up";
-    btn.innerHTML = `<i class="bi ${icone}"></i><span>${i.nome}</span>`;
+
+    const estilo = _getEstiloIconeTipo(i.tipo);
+
+    btn.innerHTML = `
+  <div class="d-flex align-items-center gap-2">
+    <div style="background:${estilo.bg}; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+      <i class="bi ${_getIconeTipo(i.tipo)}" style="color:${estilo.color}; font-size:0.9rem;"></i>
+    </div>
+    <span>${i.nome}</span>
+  </div>
+`;
+
     btn.onclick = () => selecionarInstrumento(i);
+
     g.appendChild(btn);
   });
 
@@ -198,14 +262,15 @@ async function showConfirmar() {
   _confirmarModo = null;
   _nomeSelecionadoIntegracao = null;
 
-  const nomeIntegracaoAtivo = nomeIntegracao || localStorage.getItem('nome_integracao');
+  const nomeIntegracaoAtivo =
+    nomeIntegracao || localStorage.getItem("nome_integracao");
   const localTemIntegracao =
     escolha.local?.integracoes === true ||
-    String(escolha.local?.integracoes).toUpperCase() === 'TRUE';
+    String(escolha.local?.integracoes).toUpperCase() === "TRUE";
 
   // ── CENÁRIO C: local tem integração ──────────────────────────────────────
   if (localTemIntegracao) {
-    _confirmarModo = 'integracao_local';
+    _confirmarModo = "integracao_local";
 
     if (nomeIntegracaoAtivo) {
       // Tem nome salvo → mostra direto com opção de trocar
@@ -220,48 +285,48 @@ async function showConfirmar() {
 
   // ── CENÁRIO A: local normal + navegador tem nome_integracao ──────────────
   if (nomeIntegracaoAtivo) {
-    _confirmarModo = 'nome_salvo';
+    _confirmarModo = "nome_salvo";
     conteudo.innerHTML = Ui.ConfirmarPresenca();
-    const cardSalvo  = document.getElementById('nomeSalvoCard');
-    const textoSalvo = document.getElementById('nomeSalvoTexto');
-    const inputCard  = document.getElementById('inputNomeCard');
+    const cardSalvo = document.getElementById("nomeSalvoCard");
+    const textoSalvo = document.getElementById("nomeSalvoTexto");
+    const inputCard = document.getElementById("inputNomeCard");
     if (cardSalvo && textoSalvo) {
       // Rótulo específico para nome de integração
-      const rotulo = cardSalvo.querySelector('p.text-muted.small');
-      if (rotulo) rotulo.textContent = 'Nome vinculado ao seu link';
+      const rotulo = cardSalvo.querySelector("p.text-muted.small");
+      if (rotulo) rotulo.textContent = "Nome vinculado ao seu link";
       textoSalvo.textContent = nomeIntegracaoAtivo;
-      cardSalvo.classList.remove('d-none');
-      inputCard.classList.add('d-none');
+      cardSalvo.classList.remove("d-none");
+      inputCard.classList.add("d-none");
     }
     return;
   }
 
   // ── CENÁRIO B: local normal + usuário comum ───────────────────────────────
-  _confirmarModo = 'input';
+  _confirmarModo = "input";
   conteudo.innerHTML = Ui.ConfirmarPresenca();
   const nomeSalvoLocal = localStorageService.buscarNome();
   if (nomeSalvoLocal) {
-    _confirmarModo = 'nome_salvo';
-    const cardSalvo  = document.getElementById('nomeSalvoCard');
-    const textoSalvo = document.getElementById('nomeSalvoTexto');
-    const inputCard  = document.getElementById('inputNomeCard');
+    _confirmarModo = "nome_salvo";
+    const cardSalvo = document.getElementById("nomeSalvoCard");
+    const textoSalvo = document.getElementById("nomeSalvoTexto");
+    const inputCard = document.getElementById("inputNomeCard");
     if (cardSalvo && textoSalvo) {
       textoSalvo.textContent = nomeSalvoLocal;
-      cardSalvo.classList.remove('d-none');
-      inputCard.classList.add('d-none');
+      cardSalvo.classList.remove("d-none");
+      inputCard.classList.add("d-none");
     }
   }
 }
 
 // ── Cenário C — passo 1: mostra nome salvo com botão de trocar ───────────────
 function _renderConfirmarIntegracaoComNome(nome) {
-  conteudo.innerHTML = '';
+  conteudo.innerHTML = "";
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'row justify-content-center';
+  const wrapper = document.createElement("div");
+  wrapper.className = "row justify-content-center";
 
-  const col = document.createElement('div');
-  col.className = 'col-12 col-sm-10 col-md-6';
+  const col = document.createElement("div");
+  col.className = "col-12 col-sm-10 col-md-6";
 
   col.innerHTML = `
     <div class="card border-dark mb-3">
@@ -291,15 +356,16 @@ async function _showListaNomesIntegracao() {
 
   let nomes = [];
   try {
-    const registros = dataStore.nomes_integracao ?? await integracoesService.listar();
+    const registros =
+      dataStore.nomes_integracao ?? (await integracoesService.listar());
     dataStore.nomes_integracao = registros || [];
     nomes = registros
       .filter((r) => Number(r.id_local) === Number(escolha.local.id))
       .map((r) => r.nome)
       .filter(Boolean)
-      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      .sort((a, b) => a.localeCompare(b, "pt-BR"));
   } catch (err) {
-    console.warn('Aviso ao buscar nomes de integração:', err);
+    console.warn("Aviso ao buscar nomes de integração:", err);
   }
 
   if (!nomes.length) {
@@ -310,40 +376,46 @@ async function _showListaNomesIntegracao() {
     return;
   }
 
-  conteudo.innerHTML = '';
+  conteudo.innerHTML = "";
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'row justify-content-center';
+  const wrapper = document.createElement("div");
+  wrapper.className = "row justify-content-center";
 
-  const col = document.createElement('div');
-  col.className = 'col-12 col-sm-10 col-md-6';
+  const col = document.createElement("div");
+  col.className = "col-12 col-sm-10 col-md-6";
 
   col.innerHTML = `
     <p class="text-muted small fw-semibold text-uppercase mb-2" style="letter-spacing:.05em">
       Selecione seu nome
     </p>`;
 
-  const grid = document.createElement('div');
-  grid.className = 'd-grid gap-2';
+  const grid = document.createElement("div");
+  grid.className = "d-grid gap-2";
 
   nomes.forEach((nome) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    const ehAtivo = _nomeSelecionadoIntegracao &&
-      nome.toLowerCase().trim() === _nomeSelecionadoIntegracao.toLowerCase().trim();
-    btn.className = ehAtivo ? 'btn btn-dark btn-lg' : 'btn btn-outline-dark btn-lg';
+    const btn = document.createElement("button");
+    btn.type = "button";
+    const ehAtivo =
+      _nomeSelecionadoIntegracao &&
+      nome.toLowerCase().trim() ===
+        _nomeSelecionadoIntegracao.toLowerCase().trim();
+    btn.className = ehAtivo
+      ? "btn btn-dark btn-lg"
+      : "btn btn-outline-dark btn-lg";
     btn.textContent = nome;
     btn.dataset.nome = nome;
     btn.onclick = () => _selecionarNomeIntegracao(nome, grid);
     grid.appendChild(btn);
   });
 
-  const btnConfirmar = document.createElement('button');
-  btnConfirmar.id = 'btnConfirmar';
-  btnConfirmar.type = 'button';
-  btnConfirmar.className = `btn btn-dark btn-lg mt-3${_nomeSelecionadoIntegracao ? '' : ' d-none'}`;
+  const btnConfirmar = document.createElement("button");
+  btnConfirmar.id = "btnConfirmar";
+  btnConfirmar.type = "button";
+  btnConfirmar.className = `btn btn-dark btn-lg mt-3${_nomeSelecionadoIntegracao ? "" : " d-none"}`;
   btnConfirmar.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Confirmar';
-  btnConfirmar.onclick = function() { salvarInscricao(this); };
+  btnConfirmar.onclick = function () {
+    salvarInscricao(this);
+  };
 
   col.appendChild(grid);
   col.appendChild(btnConfirmar);
@@ -355,45 +427,46 @@ function _selecionarNomeIntegracao(nome, grid) {
   _nomeSelecionadoIntegracao = nome;
 
   // Salva imediatamente como nome_integracao permanente neste navegador
-  localStorage.setItem('nome_integracao', nome);
+  localStorage.setItem("nome_integracao", nome);
 
   // Atualiza visual dos botões
-  grid.querySelectorAll('button[data-nome]').forEach((b) => {
+  grid.querySelectorAll("button[data-nome]").forEach((b) => {
     const ativo = b.dataset.nome === nome;
-    b.className = ativo ? 'btn btn-dark btn-lg' : 'btn btn-outline-dark btn-lg';
+    b.className = ativo ? "btn btn-dark btn-lg" : "btn btn-outline-dark btn-lg";
   });
 
   // Mostra o botão confirmar
-  const btnConfirmar = document.getElementById('btnConfirmar');
-  if (btnConfirmar) btnConfirmar.classList.remove('d-none');
+  const btnConfirmar = document.getElementById("btnConfirmar");
+  if (btnConfirmar) btnConfirmar.classList.remove("d-none");
 }
 
 // Chamado quando usuário clica "Usar este nome" (cenários A e B)
 function usarNomeSalvo(btn) {
-  const nomeIntegracaoAtivo = nomeIntegracao || localStorage.getItem('nome_integracao');
+  const nomeIntegracaoAtivo =
+    nomeIntegracao || localStorage.getItem("nome_integracao");
   // Cenário A: usa nome de integração
-  if (nomeIntegracaoAtivo && _confirmarModo === 'nome_salvo') {
+  if (nomeIntegracaoAtivo && _confirmarModo === "nome_salvo") {
     salvarInscricao(btn || null);
     return;
   }
   // Cenário B: usa darpe_ultimo_nome
   const nomeSalvo = localStorageService.buscarNome();
   if (!nomeSalvo) return;
-  const inputNome = document.getElementById('nome');
+  const inputNome = document.getElementById("nome");
   if (inputNome) inputNome.value = nomeSalvo;
   salvarInscricao(btn || null);
 }
 
 // Chamado quando usuário clica "Usar outro nome" (cenários A e B)
 function digitarNovoNome() {
-  _confirmarModo = 'input';
-  const cardSalvo = document.getElementById('nomeSalvoCard');
-  const inputCard = document.getElementById('inputNomeCard');
-  if (cardSalvo) cardSalvo.classList.add('d-none');
+  _confirmarModo = "input";
+  const cardSalvo = document.getElementById("nomeSalvoCard");
+  const inputCard = document.getElementById("inputNomeCard");
+  if (cardSalvo) cardSalvo.classList.add("d-none");
   if (inputCard) {
-    inputCard.classList.remove('d-none');
+    inputCard.classList.remove("d-none");
     setTimeout(() => {
-      const inputNome = document.getElementById('nome');
+      const inputNome = document.getElementById("nome");
       if (inputNome) inputNome.focus();
     }, 100);
   }
@@ -403,10 +476,11 @@ async function salvarInscricao(btnEl) {
   // Aceita o botão passado diretamente (ex: usarNomeSalvo) ou busca pelo id
   const btn = btnEl || document.getElementById("btnConfirmar");
 
-  const nomeIntegracaoAtivo = nomeIntegracao || localStorage.getItem('nome_integracao');
+  const nomeIntegracaoAtivo =
+    nomeIntegracao || localStorage.getItem("nome_integracao");
   const localTemIntegracao =
     escolha.local?.integracoes === true ||
-    String(escolha.local?.integracoes).toUpperCase() === 'TRUE';
+    String(escolha.local?.integracoes).toUpperCase() === "TRUE";
 
   let nome;
 
@@ -414,13 +488,13 @@ async function salvarInscricao(btnEl) {
   if (localTemIntegracao) {
     // Cenário C: nome escolhido da lista
     nome = _nomeSelecionadoIntegracao;
-  } else if (nomeIntegracaoAtivo && _confirmarModo !== 'input') {
+  } else if (nomeIntegracaoAtivo && _confirmarModo !== "input") {
     // Cenário A: nome de integração confirmado pelo usuário
     nome = nomeIntegracaoAtivo;
   } else {
     // Cenários A (outro nome) e B: vem do input
     const inputNome = document.getElementById("nome");
-    nome = inputNome ? inputNome.value.trim() : '';
+    nome = inputNome ? inputNome.value.trim() : "";
   }
 
   if (!nome) {
@@ -429,26 +503,30 @@ async function salvarInscricao(btnEl) {
   }
 
   // ── Processamento para usuários sem integração que digitaram o nome ──────
-  const precisaProcessar = !localTemIntegracao &&
-    (!nomeIntegracaoAtivo || _confirmarModo === 'input');
+  const precisaProcessar =
+    !localTemIntegracao && (!nomeIntegracaoAtivo || _confirmarModo === "input");
 
   if (precisaProcessar) {
     nome = localStorageService.capitalizarNome(nome);
 
     const nomeProcessado = await NomeCorrector.processar(nome);
     if (nomeProcessado === null) {
-      const inputNome = document.getElementById('nome');
-      if (inputNome) { inputNome.value = ''; inputNome.focus(); }
+      const inputNome = document.getElementById("nome");
+      if (inputNome) {
+        inputNome.value = "";
+        inputNome.focus();
+      }
       return;
     }
     nome = nomeProcessado;
     localStorageService.salvarNome(nome);
   }
 
-  const originalHTML = btn ? btn.innerHTML : '';
+  const originalHTML = btn ? btn.innerHTML : "";
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Salvando...';
+    btn.innerHTML =
+      '<span class="spinner-border spinner-border-sm me-2"></span>Salvando...';
   }
 
   const payload = {
@@ -508,7 +586,8 @@ async function excluirInscricao(id, btn) {
 
   btn.disabled = true;
   btn.className = "btn btn-sm btn-danger";
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm text-light"></span>';
+  btn.innerHTML =
+    '<span class="spinner-border spinner-border-sm text-light"></span>';
 
   try {
     const r = await inscricoesService.excluir(id, auth.token);

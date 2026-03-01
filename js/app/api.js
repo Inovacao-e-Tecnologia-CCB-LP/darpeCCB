@@ -19,10 +19,24 @@ class AppScriptApi {
     return await r.json();
   }
 
+  async create(entity, payload, password = null) {
+    return await fetch(`${this.url}?action=create&entity=${entity}`, {
+      method: "POST",
+      body: JSON.stringify({ ...payload, password }),
+    }).then((r) => r.json());
+  }
+
   async view(entity) {
     return await fetch(`${this.url}?action=view&entity=${entity}`).then((r) =>
       r.json(),
     );
+  }
+
+  async update(entity, updatedData, password) {
+    return await fetch(`${this.url}?action=update&entity=${entity}`, {
+      method: "POST",
+      body: JSON.stringify({ ...updatedData, password }),
+    }).then((r) => r.json());
   }
 
   async deleteWithToken(entity, id, delete_token) {
@@ -36,20 +50,6 @@ class AppScriptApi {
     return await fetch(`${this.url}?action=delete&entity=${entity}`, {
       method: "POST",
       body: JSON.stringify({ id, password }),
-    }).then((r) => r.json());
-  }
-
-  async create(entity, payload, password = null) {
-    return await fetch(`${this.url}?action=create&entity=${entity}`, {
-      method: "POST",
-      body: JSON.stringify({ ...payload, password }),
-    }).then((r) => r.json());
-  }
-
-  async update(entity, updatedData, password) {
-    return await fetch(`${this.url}?action=update&entity=${entity}`, {
-      method: "POST",
-      body: JSON.stringify({ ...updatedData, password }),
     }).then((r) => r.json());
   }
 }

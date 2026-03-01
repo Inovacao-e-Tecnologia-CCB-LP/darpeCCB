@@ -52,7 +52,7 @@ async function showInscritos() {
           Nenhuma inscrição encontrada
         </div>
       `;
-      return; 
+      return;
     }
 
     initMaps();
@@ -119,7 +119,7 @@ async function showInscritos() {
                           <div class="fw-semibold fs-6">${p.tipo_visita} &bull; ${formatarData(p.data)}</div>
                           <div class="small opacity-75">${p.descricao} &bull; ${formatarHorario(p.horario)}</div>
                         </div>
-                        <button class="btn btn-sm btn-outline-light flex-shrink-0"
+                        <button class="btn btn-sm btn-outline-success flex-shrink-0"
                             onclick="compartilhar(${pid})">
                             <i class="bi bi-whatsapp me-1"></i>Compartilhar
                         </button>
@@ -196,7 +196,7 @@ function compartilhar(pid) {
   mensagem += ` *${p.tipo_visita}*\n`;
   mensagem += ` ${dataFormatada}\n`;
   mensagem += ` ${formatarHorario(p.horario)}\n\n`;
-  mensagem += ` *Inscritos* (${inscritosProg.length}/${localObj.limite}):\n`;
+  mensagem += `*Inscritos(${inscritosProg.length}/${localObj.limite}):*\n`;
 
   inscritosProg.forEach((i) => {
     let instNome = i.instrumento;
