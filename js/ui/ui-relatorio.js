@@ -659,33 +659,33 @@ function gerarNomeRelatorioPDF(dados) {
 function gerarMensagemWhatsAppRelatorio(dados) {
   const linhas = [];
 
-  linhas.push("*DARPE*");
+  linhas.push("*DARPE - Lençóis Paulista*");
   linhas.push("_Relatório de Atendimento_");
   linhas.push("");
-  linhas.push("* Dados Gerais*");
+  linhas.push("> *Dados Gerais*");
   linhas.push("");
-  linhas.push(` *Nome do Responsável:* _${dados.responsavel}_`);
-  linhas.push(` *Nome do Local:* _${dados.local?.nome || "-"}_`);
-  linhas.push(` *Data:* _${formatarData(dados.programacao?.data)}_`);
+  linhas.push(`*Nome do Responsável:* _${dados.responsavel}_`);
+  linhas.push(`*Nome do Local:* _${dados.local?.nome || "-"}_`);
+  linhas.push(`*Data:* _${formatarData(dados.programacao?.data)}_`);
   linhas.push(
-    ` *Horário:* _${dados.programacao?.horario?.replace(/'/g, "") || "-"}_`,
+    `*Horário:* _${dados.programacao?.horario?.replace(/'/g, "") || "-"}_`,
   );
   linhas.push(
-    ` *Tipo de Visita:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
+    `*Tipo de Visita:* _${dados.programacao?.tipo_visita} – ${dados.programacao?.descricao}_`,
   );
   if (dados.qtdInternos > 0) {
-    linhas.push(` *Qtde. Internos:* _${dados.qtdInternos}_`);
+    linhas.push(`*Qtde. Internos:* _${dados.qtdInternos}_`);
   }
-  linhas.push(` *Qtde. Músicos:* _${dados.qtdMusicos}_`);
+  linhas.push(`*Qtde. Músicos:* _${dados.qtdMusicos}_`);
   if (dados.evangelizacao?.palavra) {
-    linhas.push(` *Palavra:* _${dados.evangelizacao.palavra}_`);
+    linhas.push(`*Palavra:* _${dados.evangelizacao.palavra}_`);
   }
 
   linhas.push("");
 
   //  OBSERVAÇÕES
   if (dados.observacoes?.trim()) {
-    linhas.push("* Observações*");
+    linhas.push("> *Observações*");
     linhas.push("");
     linhas.push(`${dados.observacoes}`);
   }
@@ -694,7 +694,7 @@ function gerarMensagemWhatsAppRelatorio(dados) {
 
   //  musicos
   if (dados.musicos?.length) {
-    linhas.push("* Nome/Instrumento dos Músicos*");
+    linhas.push("> *Nome/Instrumento dos Músicos*");
     linhas.push("");
     dados.musicos.forEach((c) => {
       linhas.push(

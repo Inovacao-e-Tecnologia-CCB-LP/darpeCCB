@@ -96,7 +96,7 @@ function renderCardsLocais(locais) {
             <i class="bi bi-geo-alt-fill"></i>
             <span>${l.nome}</span>
           </div>
-          <span class="item-card-badge">${l.limite} vagas</span>
+          <span class="item-card-badge">Limite: ${l.limite}</span>
         </div>
         <div class="item-card-body">
           <div class="card-info-row">
@@ -344,7 +344,6 @@ async function editarLocal(id, btn) {
   const textoOriginal = btn.innerHTML;
 
   try {
-    desabilitarBotaoLocal();
     btn.disabled = true;
     btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
@@ -370,13 +369,11 @@ async function editarLocal(id, btn) {
       if (!salvou) {
         btn.disabled = false;
         btn.innerHTML = textoOriginal;
-        habilitarBotaoLocal();
       }
     }, { once: true });
 
     modal.show();
   } catch (err) {
-    habilitarBotaoLocal();
     console.error(err);
     abrirModalAviso("Erro", "Erro ao carregar local.");
   } finally {
