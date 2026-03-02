@@ -5,6 +5,7 @@
 let _calMeses = [];
 let _calIdx = 0;
 let _calDados = [];
+let _calModoSomenteLeitura = false;
 
 /* =========================
    PALETA DE CORES DO CALENDÁRIO
@@ -150,9 +151,19 @@ function _getCorLocal(localId) {
    ABRIR TELA PROGRAMAÇÕES
 ========================= */
 async function abrirTelaProgramacoes() {
+  _calModoSomenteLeitura = false;
   setTitle("Programações");
   conteudo.innerHTML = Ui.PainelProgramacoes();
   carregarProgramacoes(true);
+}
+
+async function abrirTelaCalendarioPublico() {
+  setTitle("Calendário");
+  conteudo.innerHTML = Ui.PainelProgramacoes();
+  _calModoSomenteLeitura = true;
+  await carregarProgramacoes(true);
+  const btnNova = document.getElementById("novaProgramacaoBtn"); // Esconde botão Nova Programação
+  if (btnNova) btnNova.remove();
 }
 
 /* =========================
@@ -263,6 +274,8 @@ function _renderCalendario() {
 
       ${_renderLegenda()}
 
+      ${_calModoSomenteLeitura ? _renderAcoesPublico() : ""}
+
     </div>
   `;
 }
@@ -294,7 +307,13 @@ function _renderGrade(ano, mes, porDia) {
     const diaSemana = (primeiroDia + dia - 1) % 7;
     const fds = diaSemana === 0 || diaSemana === 6 ? "cal-fds" : "";
     const hojeClass = ehHoje(dia) ? "cal-hoje" : "";
-    const cursor = "cal-clicavel";
+    let cursor = "";
+
+    if (temEvento) {
+      cursor = "cal-clicavel";
+    } else if (!_calModoSomenteLeitura) {
+      cursor = "cal-clicavel";
+    }
 
     // Cor da célula: cor do primeiro local do dia;
     // se tiver múltiplos locais distintos, fundo neutro
@@ -311,23 +330,57 @@ function _renderGrade(ano, mes, porDia) {
 
     // Pílulas: bolinhas no mobile, barras com nome no desktop
     let pilulasHtml = "";
+
     if (temEvento) {
       const MAX = 3;
+
       eventos.slice(0, MAX).forEach((ev) => {
         const cor = _getCorLocal(ev.local_id);
         const local = _getLocalById(ev.local_id);
         const nome = local?.nome || "Local";
-        pilulasHtml += `<span class="cal-ev-pill" style="background:${cor.dot}" data-nome="${nome}"></span>`;
+        const horario = formatarHorario(ev.horario) || "-";
+        const tipo = ev.tipo_visita || "-";
+
+        if (_calModoSomenteLeitura) {
+          // Público
+          pilulasHtml += `
+    <div class="cal-ev-publico-wrapper">
+      <span class="cal-ev-pill"
+        style="background:${cor.dot}">
+      </span>
+
+      <div class="cal-ev-publico">
+        <div class="cal-ev-nome">${nome}</div>
+        <div class="cal-ev-info">
+          ${horario} • ${tipo}
+        </div>
+      </div>
+    </div>
+  `;
+        } else {
+          // Admin
+          pilulasHtml += `
+        <span class="cal-ev-pill"
+          style="background:${cor.dot}"
+          data-nome="${nome}">
+        </span>
+      `;
+        }
       });
+
       if (eventos.length > MAX) {
         pilulasHtml += `<span class="cal-ev-mais">+${eventos.length - MAX}</span>`;
       }
     }
 
     const enc = encodeURIComponent(JSON.stringify(eventos));
-    const click = temEvento
-      ? `onclick="_abrirDetalhesDia(${dia}, decodeURIComponent('${enc}'))"`
-      : `onclick="_novaProgramacaoDoCalendario(${dia})"`;
+    let click = "";
+
+    if (temEvento) {
+      click = `onclick="_abrirDetalhesDia(${dia}, decodeURIComponent('${enc}'))"`;
+    } else if (!_calModoSomenteLeitura) {
+      click = `onclick="_novaProgramacaoDoCalendario(${dia})"`;
+    }
 
     html += `
       <div class="cal-cell ${fds} ${hojeClass} ${temEvento ? "cal-tem-evento" : ""} ${cursor}"
@@ -376,6 +429,34 @@ function _renderMiniNav() {
     })
     .join("");
   return `<div class="cal-pills">${pills}</div>`;
+}
+
+function _renderAcoesPublico() {
+  return `
+    <div class="mt-4 cal-acoes-publico no-print">
+      <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+
+        <button class="btn btn-primary w-100 w-md-auto"
+          onclick="_baixarImagemCalendario()">
+          <i class="bi bi-image me-1"></i>
+          Baixar imagem
+        </button>
+
+        <button class="btn btn-secondary w-100 w-md-auto"
+          onclick="_baixarPdfCalendario()">
+          <i class="bi bi-file-earmark-pdf me-1"></i>
+          Baixar PDF
+        </button>
+
+        <button class="btn btn-success w-100 w-md-auto"
+          onclick="_compartilharWhatsapp()">
+          <i class="bi bi-whatsapp me-1"></i>
+          Compartilhar
+        </button>
+
+      </div>
+    </div>
+  `;
 }
 
 /* =========================
@@ -468,22 +549,21 @@ function _abrirDetalhesDia(dia, eventosJson) {
         </div>
         <div class="cal-det-infos">
           <div class="cal-det-row">
-            <i class="bi bi-${tipoIcon}" style="color:${cor.dot}"></i>
-            <span>${tipo}</span>
-          </div>
-          <div class="cal-det-row">
-            <i class="bi bi-calendar-date-fill" style="color:${cor.dot}"></i>
-            <span>${dataProg}</span>
+            <i class="bi bi-geo-alt-fill me-1" style="color:${cor.dot}"></i>
+            <span>${local?.endereco ?? "Endereço não informado"}</span>
           </div>
           <div class="cal-det-row">
             <i class="bi bi-clock-fill" style="color:${cor.dot}"></i>
             <span>${formatarHorario(p.horario) || "-"}</span>
           </div>
           <div class="cal-det-row">
-            <i class="bi bi-calendar-week-fill" style="color:${cor.dot}"></i>
-            <span>${p.descricao || "-"}</span>
-          </div>
+            <i class="bi bi-${tipoIcon}" style="color:${cor.dot}"></i>
+            <span>${tipo}</span>
         </div>
+      </div>
+      ${
+        !_calModoSomenteLeitura
+          ? `
         <button class="btn btn-outline-primary btn-sm w-100 mt-2"
           onclick="_editarDoCalendario(${p.id})">
           <i class="bi bi-pencil me-1"></i>Editar
@@ -491,20 +571,23 @@ function _abrirDetalhesDia(dia, eventosJson) {
         <button class="btn btn-outline-danger btn-sm w-100 mt-3"
           onclick="_excluirDoCalendario(${p.id}, this)">
           <i class="bi bi-trash me-1"></i>Excluir
-        </button>
+        </button>`
+          : ""
+      }
       </div>`;
     })
     .join("");
 
-  const botaoNovo = `
+  const botaoNovo = !_calModoSomenteLeitura
+    ? `
   <div class="text-center mt-3">
     <button class="btn btn-dark btn-sm w-100 mt-2"
       onclick="_novaProgramacaoDoDetalhe(${dia})">
       <i class="bi bi-plus-circle"></i>
       Nova Programação
     </button>
-  </div>
-`;
+  </div>`
+    : "";
 
   const eventosHtml = cards + botaoNovo;
 
@@ -524,6 +607,59 @@ function _novaProgramacaoDoDetalhe(dia) {
   _fecharModalEExecutar("modalCalDetalhe", () => {
     _novaProgramacaoDoCalendario(dia);
   });
+}
+
+async function _baixarImagemCalendario() {
+  const elemento = document.querySelector(".cal-wrapper");
+
+  elemento.classList.add("exportando");
+
+  const canvas = await _capturarCalendario();
+
+  elemento.classList.remove("exportando");
+
+  const link = document.createElement("a");
+  link.download = "calendarioMensalDARPE.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+async function _baixarPdfCalendario() {
+  const elemento = document.querySelector(".cal-wrapper");
+
+  elemento.classList.add("exportando");
+
+  const canvas = await _capturarCalendario();
+
+  elemento.classList.remove("exportando");
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const largura = 210;
+  const altura = (canvas.height * largura) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 0, 10, largura, altura);
+  pdf.save("calendarioMensalDARPE.pdf");
+}
+
+function _compartilharWhatsapp() {
+  if (!_calMeses.length) return;
+
+  const { ano, mes } = _calMeses[_calIdx];
+
+  const nomeMes = new Date(ano, mes, 1).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const mensagem = `Calendário DARPE(Lençóis Paulista) - ${_capitalizar(nomeMes)}`;
+
+  const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+
+  window.open(url, "_blank");
 }
 
 /* =========================
@@ -626,8 +762,8 @@ async function salvarProgramacao() {
     abrirModalAviso(
       "Sucesso",
       payload.id
-        ? "Programação editada com sucesso!"
-        : "Programação criada com sucesso!",
+        ? "Programação editada com sucesso"
+        : "Programação criada com sucesso",
     );
 
     await carregarProgramacoes();
@@ -635,7 +771,7 @@ async function salvarProgramacao() {
     if (err?.name === "AbortError") return;
 
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar programação.");
+    abrirModalAviso("Erro", "Erro ao salvar programação");
   } finally {
     _liberarModal("modalProgramacao");
     btn.innerHTML = textoOriginal;
@@ -664,11 +800,11 @@ function excluirProgramacao(id, btnTrash) {
         abrirModalAviso("Aviso", r.error);
         return;
       }
-      abrirModalAviso("Sucesso", "Programação excluída com sucesso!");
+      abrirModalAviso("Sucesso", "Programação excluída com sucesso");
       await carregarProgramacoes();
     } catch (err) {
       if (err?.name === "AbortError") return;
-      abrirModalAviso("Erro", "Erro ao excluir programação.");
+      abrirModalAviso("Erro", "Erro ao excluir programação");
     } finally {
       _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
@@ -695,7 +831,7 @@ function montarPayloadProgramacao() {
   if (!local_id || !tipo_visita || !data_programacao || !horario) {
     mostrarErroCampo(
       "erroValidacaoCamposProgramacao",
-      "Preencha todos os campos corretamente.",
+      "Preencha todos os campos corretamente",
     );
 
     return null;
@@ -709,7 +845,7 @@ function montarPayloadProgramacao() {
   if (dataSelecionada < hoje) {
     mostrarErroCampo(
       "erroValidacaoCamposProgramacao",
-      "Não é permitido cadastrar programação em data anterior à atual.",
+      "Não é permitido cadastrar programação em data anterior à atual",
     );
     return null;
   }
@@ -786,6 +922,21 @@ function _fecharModalEExecutar(modalId, callback) {
 
 function _parseDataProgramacao(data) {
   return new Date(data + "T12:00:00");
+}
+
+async function _capturarCalendario() {
+  const elemento = document.querySelector(".cal-wrapper");
+
+  elemento.classList.add("exportando");
+
+  const canvas = await html2canvas(elemento, {
+    scale: 2,
+    backgroundColor: "#ffffff",
+    ignoreElements: (el) => el.classList?.contains("no-print"),
+  });
+
+  elemento.classList.remove("exportando");
+  return canvas;
 }
 
 function _capitalizar(str) {

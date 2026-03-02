@@ -94,6 +94,10 @@ function renderCardsIntegracoes(grupos) {
             onclick="abrirModalEditarIntegracao(${idLocal})">
             <i class="bi bi-pencil me-1"></i>Editar
           </button>
+          <button class="btn btn-sm btn-outline-danger ms-2"
+            onclick="excluirIntegracao(${idLocal}, this)">
+            <i class="bi bi-trash-fill me-1"></i>Excluir
+          </button>
         </div>
         <div class="d-flex flex-column gap-2">`;
 
@@ -215,7 +219,7 @@ async function adicionarNomeIntegracao() {
 
   if (nomesTemporarios.includes(nome)) {
     document.getElementById("erroIntegracaoNomes").textContent =
-      "Este nome já foi adicionado.";
+      "Este nome já foi adicionado";
     document.getElementById("erroIntegracaoNomes").classList.remove("d-none");
     return;
   }
@@ -298,7 +302,7 @@ async function salvarNomesNaIntegracao(idLocal) {
   erroNomes.classList.add("d-none");
 
   if (!nomesTemporarios.length) {
-    erroNomes.textContent = "Adicione pelo menos um nome.";
+    erroNomes.textContent = "Adicione pelo menos um nome";
     erroNomes.classList.remove("d-none");
     return;
   }
@@ -326,11 +330,11 @@ async function salvarNomesNaIntegracao(idLocal) {
       document.getElementById("modalIntegracao"),
     ).hide();
 
-    abrirModalAviso("Sucesso", "Nomes adicionados com sucesso!");
+    abrirModalAviso("Sucesso", "Nomes adicionados com sucesso");
     await carregarIntegracoes();
   } catch (err) {
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar nomes.");
+    abrirModalAviso("Erro", "Erro ao salvar nomes");
   } finally {
     _liberarModal("modalIntegracao");
     btnSalvar.innerHTML = textoOriginal;
@@ -354,13 +358,13 @@ async function salvarIntegracao() {
   );
 
   if (!localId) {
-    erroLocal.textContent = "Selecione um local.";
+    erroLocal.textContent = "Selecione um local";
     erroLocal.classList.remove("d-none");
     return;
   }
 
   if (!nomesTemporarios.length) {
-    erroNomes.textContent = "Adicione pelo menos um nome.";
+    erroNomes.textContent = "Adicione pelo menos um nome";
     erroNomes.classList.remove("d-none");
     return;
   }
@@ -408,12 +412,12 @@ async function salvarIntegracao() {
       document.getElementById("modalIntegracao"),
     ).hide();
 
-    abrirModalAviso("Sucesso", "Integração criada com sucesso!");
+    abrirModalAviso("Sucesso", "Integração criada com sucesso");
     await carregarIntegracoes();
   } catch (err) {
     if (err?.name === "AbortError") return;
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar integração.");
+    abrirModalAviso("Erro", "Erro ao salvar integração");
   } finally {
     _liberarModal("modalIntegracao");
     btnSalvar.innerHTML = textoOriginal;
@@ -425,9 +429,9 @@ async function salvarIntegracao() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function excluirNomeIntegracao(id, idLocal, btnTrash) {
-  document.getElementById("confirmTitle").innerText = "Remover Nome";
+  document.getElementById("confirmTitle").innerText = "Excluir";
   document.getElementById("confirmMessage").innerText =
-    "Deseja realmente remover este nome da integração?";
+    "Deseja realmente excluir este nome da integração?";
 
   const btnOk = document.getElementById("confirmOk");
   btnOk.onclick = null;
@@ -438,7 +442,7 @@ function excluirNomeIntegracao(id, idLocal, btnTrash) {
 
     _travarModal("confirmModal");
     try {
-      btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Removendo`;
+      btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Excluindo`;
 
       const signal = _getModalSignal("confirmModal");
       const r = await integracoesService.excluir(id, senhaDigitada, signal);
@@ -463,16 +467,77 @@ function excluirNomeIntegracao(id, idLocal, btnTrash) {
         );
       }
 
-      abrirModalAviso("Sucesso", "Nome removido com sucesso!");
+      abrirModalAviso("Sucesso", "Nome excluído com sucesso");
       renderizarIntegracoes(dataStore.nomes_integracao);
     } catch (err) {
       if (err?.name === "AbortError") return;
       console.error(err);
-      abrirModalAviso("Erro", "Erro ao remover nome.");
+      abrirModalAviso("Erro", "Erro ao excluir nome");
     } finally {
       _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
       btnTrash.innerHTML = textoTrash;
+      bootstrap.Modal.getInstance(
+        document.getElementById("confirmModal"),
+      ).hide();
+    }
+  };
+
+  new bootstrap.Modal(document.getElementById("confirmModal")).show();
+}
+
+function excluirIntegracao(idLocal, btnTrash) {
+  document.getElementById("confirmTitle").innerText = "Excluir";
+  document.getElementById("confirmMessage").innerText =
+    "Deseja excluir TODOS os nomes desta integração?";
+
+  const btnOk = document.getElementById("confirmOk");
+  btnOk.onclick = null;
+
+  btnOk.onclick = async () => {
+    const textoOk = btnOk.innerHTML;
+    const textoTrash = btnTrash.innerHTML;
+
+    _travarModal("confirmModal");
+
+    try {
+      btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Excluindo`;
+      btnTrash.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+      btnTrash.disabled = true;
+
+      const signal = _getModalSignal("confirmModal");
+
+      const r = await integracoesService.excluirPorLocal(
+        idLocal,
+        senhaDigitada,
+        signal,
+      );
+
+      if (signal?.aborted) return;
+
+      if (r?.error) {
+        abrirModalAviso("Erro", r.error);
+        return;
+      }
+
+      await locaisService.atualizar(
+        { id: idLocal, integracoes: "FALSE" },
+        senhaDigitada,
+        signal,
+      );
+
+      abrirModalAviso("Sucesso", "Integração excluída com sucesso");
+      await carregarIntegracoes();
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+      console.error(err);
+      abrirModalAviso("Erro", "Erro ao excluir integração");
+    } finally {
+      _liberarModal("confirmModal");
+      btnOk.innerHTML = textoOk;
+      btnTrash.innerHTML = textoTrash;
+      btnTrash.disabled = false;
+
       bootstrap.Modal.getInstance(
         document.getElementById("confirmModal"),
       ).hide();

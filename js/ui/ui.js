@@ -43,7 +43,7 @@ function abrirMapa(localId) {
   const localObj = locaisMap[localId];
 
   if (!localObj) {
-    abrirModalAviso("Erro", "Endereço não encontrado.");
+    abrirModalAviso("Erro", "Endereço não encontrado");
     return;
   }
 
@@ -132,12 +132,10 @@ function travarUI() {
   backButton.classList.add("ui-locked");
 
   // Trava todos os botões de ação visíveis no #conteudo
-  document
-    .querySelectorAll(_BTN_ACAO_SELETORES)
-    .forEach((b) => {
-      b.setAttribute("disabled", "");
-      b.classList.add("ui-locked");
-    });
+  document.querySelectorAll(_BTN_ACAO_SELETORES).forEach((b) => {
+    b.setAttribute("disabled", "");
+    b.classList.add("ui-locked");
+  });
 }
 
 function liberarUI() {
@@ -150,12 +148,10 @@ function liberarUI() {
   backButton.classList.remove("ui-locked");
 
   // Libera todos os botões marcados
-  document
-    .querySelectorAll(".ui-locked")
-    .forEach((b) => {
-      b.removeAttribute("disabled");
-      b.classList.remove("ui-locked");
-    });
+  document.querySelectorAll(".ui-locked").forEach((b) => {
+    b.removeAttribute("disabled");
+    b.classList.remove("ui-locked");
+  });
 }
 
 /**

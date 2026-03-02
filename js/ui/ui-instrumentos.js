@@ -275,7 +275,7 @@ function montarPayloadInstrumento() {
   if (!nome || !tipo) {
     mostrarErroCampo(
       "erroValidacaoCamposInstrumento",
-      "Preencha todos os campos corretamente.",
+      "Preencha todos os campos corretamente",
     );
     return null;
   }
@@ -350,15 +350,15 @@ async function salvarInstrumento() {
     abrirModalAviso(
       "Sucesso",
       payload.id
-        ? "Instrumento editado com sucesso!"
-        : "Instrumento criado com sucesso!",
+        ? "Instrumento editado com sucesso"
+        : "Instrumento criado com sucesso",
     );
 
     await reloadInstrumentos();
   } catch (err) {
     if (err?.name === "AbortError") return;
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar instrumento.");
+    abrirModalAviso("Erro", "Erro ao salvar instrumento");
   } finally {
     _liberarModal("modalInstrumento");
     btn.innerHTML = textoOriginal;
@@ -387,7 +387,7 @@ async function editarInstrumento(id, btnEditar) {
     );
 
     if (!instrumento) {
-      abrirModalAviso("Erro", "Instrumento não encontrado.");
+      abrirModalAviso("Erro", "Instrumento não encontrado");
       return;
     }
 
@@ -399,7 +399,7 @@ async function editarInstrumento(id, btnEditar) {
     new bootstrap.Modal(document.getElementById("modalInstrumento")).show();
   } catch (err) {
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao carregar instrumento.");
+    abrirModalAviso("Erro", "Erro ao carregar instrumento");
   } finally {
     btnEditar.disabled = false;
     btnEditar.innerHTML = textoOriginal;
@@ -435,7 +435,7 @@ function excluirInstrumento(id, btnTrash) {
         return;
       }
 
-      abrirModalAviso("Sucesso", "Instrumento excluído com sucesso!");
+      abrirModalAviso("Sucesso", "Instrumento excluído com sucesso");
       await reloadInstrumentos();
     } catch (err) {
       if (err?.name === "AbortError") return;

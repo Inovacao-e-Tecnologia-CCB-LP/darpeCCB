@@ -31,7 +31,7 @@ function initMaps() {
 }
 
 async function showInscritos() {
-  setTitle("Visualizar Inscrições");
+  setTitle("Inscrições");
 
   conteudo.innerHTML = `
         <div class="spinner-border text-dark" role="status">
@@ -177,13 +177,13 @@ async function showInscritos() {
 function compartilhar(pid) {
   const p = programacaoMap[pid];
   if (!p) {
-    abrirModalAviso("Erro", "Programação não encontrada.");
+    abrirModalAviso("Erro", "Programação não encontrada");
     return;
   }
 
   const localObj = locaisMap[p.local_id];
   if (!localObj) {
-    abrirModalAviso("Erro", "Local não encontrado.");
+    abrirModalAviso("Erro", "Local não encontrado");
     return;
   }
 

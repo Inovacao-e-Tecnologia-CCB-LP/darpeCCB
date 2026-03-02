@@ -244,7 +244,7 @@ function carregarProgramacoesRelatorio(localId) {
   if (!programacoes.length) {
     lista.innerHTML = UiRelatorios.alerta(
       "warning",
-      "Nenhuma programação com inscritos para este local.",
+      "Nenhuma programação com inscritos para este local",
     );
     return;
   }
@@ -447,7 +447,7 @@ function montarDadosRelatorio() {
   if (!localId || !programacaoId || !form.responsavel) {
     abrirModalAviso(
       "Dados obrigatórios",
-      "Selecione o local, programação e informe o responsável.",
+      "Selecione o local, programação e informe o responsável",
     );
     return null;
   }
@@ -619,7 +619,7 @@ async function gerarPDF() {
   doc.setFontSize(FONT_TEXTO);
 
   if (!dados.musicos.length) {
-    doc.text("Nenhum músico inscrito.", MARGEM_ESQ, y);
+    doc.text("Nenhum músico inscrito", MARGEM_ESQ, y);
   } else {
     dados.musicos.forEach((c) => {
       let instNome = c.instrumento;
