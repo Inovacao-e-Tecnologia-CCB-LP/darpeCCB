@@ -11,14 +11,14 @@
  */
 
 class IntegracoesService {
-  entity = 'nomes_integracao';
+  entity = "nomes_integracao";
 
   // ─── helpers internos ──────────────────────────────────────────────────────
 
   /** URL base limpa (sem query-string / hash) */
   _baseUrl() {
     const { origin, pathname } = window.location;
-    return origin + pathname.replace(/\/+$/, '');
+    return origin + pathname.replace(/\/+$/, "");
   }
 
   /** https://dominio/?nome=João%20Silva */
@@ -45,10 +45,14 @@ class IntegracoesService {
    */
   async criar(payload, password) {
     // 1. Salvar nome + id_local
-    const r = await appScriptApi.create(this.entity, {
-      nome: payload.nome,
-      id_local: payload.id_local,
-    }, password);
+    const r = await appScriptApi.create(
+      this.entity,
+      {
+        nome: payload.nome,
+        id_local: payload.id_local,
+      },
+      password,
+    );
 
     if (r?.error) return r;
 
@@ -60,7 +64,7 @@ class IntegracoesService {
       // Não bloqueia o fluxo principal em caso de falha aqui
       appScriptApi
         .update(this.entity, { id, link_usuario_permanente: link }, password)
-        .catch((e) => console.warn('Aviso ao salvar link permanente:', e));
+        .catch((e) => console.warn("Aviso ao salvar link permanente:", e));
     }
 
     return { ...r, link_usuario_permanente: link };
@@ -69,6 +73,20 @@ class IntegracoesService {
   /** Remove um registro por id */
   async excluir(id, password) {
     return await appScriptApi.deleteWithPassword(this.entity, id, password);
+  }
+
+  /**
+   * Remove todos os nomes vinculados a um id_local.
+   * Backend: excluirNomeIntegracao (via action=delete)
+   */
+  async excluirPorLocal(idLocal, password) {
+    return await fetch(
+      `${appScriptApi.url}?action=delete&entity=${this.entity}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ id_local: idLocal, password }),
+      },
+    ).then((r) => r.json());
   }
 
   // ─── Link Temporário ───────────────────────────────────────────────────────
@@ -82,17 +100,20 @@ class IntegracoesService {
 
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Integração – ' + nome, url: link });
+        await navigator.share({ title: "Integração – " + nome, url: link });
       } else {
         await navigator.clipboard.writeText(link);
-        abrirModalAviso('Link copiado!', `O link foi copiado para a área de transferência.\n\n${link}`);
+        abrirModalAviso(
+          "Link copiado!",
+          `O link foi copiado para a área de transferência.\n\n${link}`,
+        );
       }
     } catch (err) {
       // Usuário cancelou o share ou clipboard bloqueado
-      if (err?.name !== 'AbortError') {
-        console.warn('compartilhar:', err);
+      if (err?.name !== "AbortError") {
+        console.warn("compartilhar:", err);
         // Fallback final: prompt
-        window.prompt('Copie o link abaixo:', link);
+        window.prompt("Copie o link abaixo:", link);
       }
     }
   }
@@ -107,17 +128,20 @@ class IntegracoesService {
    */
   capturarNomeDaUrl() {
     const params = new URLSearchParams(window.location.search);
-    const nomeRaw = params.get('nome');
+    const nomeRaw = params.get("nome");
 
     if (!nomeRaw) return null;
 
     // Validar expiração (link temporário)
-    const expRaw = params.get('exp');
+    const expRaw = params.get("exp");
     if (expRaw !== null) {
       const exp = Number(expRaw);
       if (isNaN(exp) || Date.now() > exp) {
         setTimeout(() => {
-          abrirModalAviso('Link expirado', 'Este link expirou. Solicite um novo link ao responsável pela integração.');
+          abrirModalAviso(
+            "Link expirado",
+            "Este link expirou. Solicite um novo link ao responsável pela integração.",
+          );
         }, 500);
         return null;
       }
@@ -128,7 +152,7 @@ class IntegracoesService {
     // Salva o nome do link como nome permanente de integração.
     // NÃO apaga inscricoes_autorizadas nem darpe_ultimo_nome —
     // apenas grava/atualiza a identidade de integração deste navegador.
-    localStorage.setItem('nome_integracao', nome);
+    localStorage.setItem("nome_integracao", nome);
 
     return nome;
   }

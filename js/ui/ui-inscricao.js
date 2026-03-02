@@ -1,5 +1,5 @@
 async function showEscolherLocal() {
-  setTitle("Escolha o local");
+  setTitle("Selecione o local");
 
   if (!dataStore.locais || dataStore.locais.length === 0) {
     conteudo.innerHTML = `
@@ -101,7 +101,7 @@ async function showEscolherLocal() {
 }
 
 function showEscolherData() {
-  setTitle("Escolha a data");
+  setTitle("Selecione a data");
 
   const programacoesFiltradas = dataStore.programacao
     .filter((p) => p.local_id == escolha.local.id)
@@ -147,7 +147,7 @@ function showEscolherData() {
 }
 
 function showEscolherInstrumento() {
-  setTitle("Escolha o instrumento");
+  setTitle("Selecione o instrumento");
 
   const local = escolha.local;
 
@@ -258,7 +258,7 @@ let _confirmarModo = null;
 let _nomeSelecionadoIntegracao = null;
 
 async function showConfirmar() {
-  setTitle("Confirmar presença");
+  setTitle("Digite o nome");
   _confirmarModo = null;
   _nomeSelecionadoIntegracao = null;
 
@@ -498,7 +498,7 @@ async function salvarInscricao(btnEl) {
   }
 
   if (!nome) {
-    abrirModalAviso("Aviso", "Informe o seu nome.");
+    abrirModalAviso("Aviso", "Informe o seu nome");
     return;
   }
 
@@ -551,11 +551,11 @@ async function salvarInscricao(btnEl) {
       localStorageService.salvarAutorizacao(r.id, r.delete_token);
     }
 
-    abrirModalAviso("Sucesso", "Inscrição confirmada! Deus abençoe.");
+    abrirModalAviso("Sucesso", "Inscrição confirmada! Deus abençoe");
     resetAndGoHome();
   } catch (e) {
     console.error(e);
-    abrirModalAviso("Erro", "Erro ao salvar inscrição.");
+    abrirModalAviso("Erro", "Erro ao salvar inscrição");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -570,7 +570,7 @@ async function excluirInscricao(id, btn) {
   if (!auth) {
     abrirModalAviso(
       "Erro",
-      "Você não tem permissão para excluir esta inscrição.",
+      "Você não tem permissão para excluir esta inscrição",
     );
     return;
   }
@@ -595,7 +595,7 @@ async function excluirInscricao(id, btn) {
     if (!r?.success) throw r;
 
     localStorageService.removerAutorizacao(id);
-    abrirModalAviso("Sucesso", "Inscrição excluída com sucesso!");
+    abrirModalAviso("Sucesso", "Inscrição excluída com sucesso");
     showInscritos();
   } catch (e) {
     console.error(e);

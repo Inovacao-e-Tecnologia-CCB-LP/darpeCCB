@@ -46,22 +46,29 @@ async function carregarLocais(firstTime = false) {
 function _parseInstrumentosPermitidos(local) {
   if (!local.instrumentos_permitidos) return null;
   try {
-    const parsed = typeof local.instrumentos_permitidos === 'string'
-      ? JSON.parse(local.instrumentos_permitidos)
-      : local.instrumentos_permitidos;
+    const parsed =
+      typeof local.instrumentos_permitidos === "string"
+        ? JSON.parse(local.instrumentos_permitidos)
+        : local.instrumentos_permitidos;
     return Array.isArray(parsed) && parsed.length ? parsed.map(Number) : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 // Retorna string com nomes dos instrumentos específicos ou null
 function _resumoInstrumentosEspecificos(local) {
   const ids = _parseInstrumentosPermitidos(local);
   if (!ids) return null;
-  const nomes = ids.map(id => {
-    const inst = (dataStore.instrumentos || []).find(i => Number(i.id) === Number(id));
-    return inst ? inst.nome : null;
-  }).filter(Boolean);
-  return nomes.length ? nomes.join(', ') : null;
+  const nomes = ids
+    .map((id) => {
+      const inst = (dataStore.instrumentos || []).find(
+        (i) => Number(i.id) === Number(id),
+      );
+      return inst ? inst.nome : null;
+    })
+    .filter(Boolean);
+  return nomes.length ? nomes.join(", ") : null;
 }
 
 function renderTabelaLocais(locais) {
@@ -85,9 +92,12 @@ function renderCardsLocais(locais) {
       ? `<div class="card-info-row">
            <i class="bi bi-music-note-list"></i>
            <span class="text-muted small">Específicos:</span>
-           <div class="d-flex flex-wrap gap-1 ms-1">${resumo.split(', ').map(n => `<span class="badge-instrumento">${n}</span>`).join('')}</div>
+           <div class="d-flex flex-wrap gap-1 ms-1">${resumo
+             .split(", ")
+             .map((n) => `<span class="badge-instrumento">${n}</span>`)
+             .join("")}</div>
          </div>`
-      : '';
+      : "";
 
     html += `
       <div class="item-card">
@@ -101,7 +111,7 @@ function renderCardsLocais(locais) {
         <div class="item-card-body">
           <div class="card-info-row">
             <i class="bi bi-map"></i>
-            <span>${l.endereco || 'Endereço não informado'}</span>
+            <span>${l.endereco || "Endereço não informado"}</span>
           </div>
           <div class="card-info-row">
             <i class="bi bi-music-note-beamed"></i>
@@ -130,44 +140,48 @@ function renderCardsLocais(locais) {
 
 function abrirModalInstrumentosEspecificos() {
   const instrumentos = dataStore.instrumentos || [];
-  const container = document.getElementById('listaInstrumentosEspecificos');
+  const container = document.getElementById("listaInstrumentosEspecificos");
   if (!container) return;
 
-  container.innerHTML = '';
+  container.innerHTML = "";
 
   if (!instrumentos.length) {
     container.innerHTML = `<span class="text-muted small">Nenhum instrumento cadastrado.</span>`;
   } else {
     // Agrupa por tipo para melhor visualização
-    const tipos = [...new Set(instrumentos.map(i => i.tipo))];
+    const tipos = [...new Set(instrumentos.map((i) => i.tipo))];
 
-    tipos.forEach(tipo => {
-      const grupo = document.createElement('div');
-      grupo.className = 'w-100';
+    tipos.forEach((tipo) => {
+      const grupo = document.createElement("div");
+      grupo.className = "w-100";
       grupo.innerHTML = `<p class="fw-semibold mb-2 text-capitalize">${_formatarTipo(tipo)}</p>`;
 
-      const linha = document.createElement('div');
-      linha.className = 'd-flex flex-wrap gap-2 mb-3';
+      const linha = document.createElement("div");
+      linha.className = "d-flex flex-wrap gap-2 mb-3";
 
-      instrumentos.filter(i => i.tipo === tipo).forEach(inst => {
-        const checked = _instrumentosEspecificosTemp.includes(Number(inst.id));
-        const label = document.createElement('label');
-        label.className = `btn btn-sm ${checked ? 'btn-dark' : 'btn-outline-dark'} instrumento-esp-btn`;
-        label.style.cursor = 'pointer';
-        label.innerHTML = `
+      instrumentos
+        .filter((i) => i.tipo === tipo)
+        .forEach((inst) => {
+          const checked = _instrumentosEspecificosTemp.includes(
+            Number(inst.id),
+          );
+          const label = document.createElement("label");
+          label.className = `btn btn-sm ${checked ? "btn-dark" : "btn-outline-dark"} instrumento-esp-btn`;
+          label.style.cursor = "pointer";
+          label.innerHTML = `
           <input type="checkbox" class="d-none instrumento-esp-check"
-            value="${inst.id}" ${checked ? 'checked' : ''}>
+            value="${inst.id}" ${checked ? "checked" : ""}>
           ${inst.nome}
         `;
-        label.addEventListener('click', function(e) {
-          e.preventDefault();
-          const cb = this.querySelector('input');
-          cb.checked = !cb.checked;
-          this.classList.toggle('btn-dark', cb.checked);
-          this.classList.toggle('btn-outline-dark', !cb.checked);
+          label.addEventListener("click", function (e) {
+            e.preventDefault();
+            const cb = this.querySelector("input");
+            cb.checked = !cb.checked;
+            this.classList.toggle("btn-dark", cb.checked);
+            this.classList.toggle("btn-outline-dark", !cb.checked);
+          });
+          linha.appendChild(label);
         });
-        linha.appendChild(label);
-      });
 
       grupo.appendChild(linha);
       container.appendChild(grupo);
@@ -176,38 +190,42 @@ function abrirModalInstrumentosEspecificos() {
 
   // Abre como modal aninhado (sobre o modal do local)
   bootstrap.Modal.getOrCreateInstance(
-    document.getElementById('modalInstrumentosEspecificos')
+    document.getElementById("modalInstrumentosEspecificos"),
   ).show();
 }
 
 function confirmarInstrumentosEspecificos() {
-  const checks = document.querySelectorAll('.instrumento-esp-check:checked');
-  _instrumentosEspecificosTemp = Array.from(checks).map(c => Number(c.value));
+  const checks = document.querySelectorAll(".instrumento-esp-check:checked");
+  _instrumentosEspecificosTemp = Array.from(checks).map((c) => Number(c.value));
 
   _atualizarResumoInstrumentosEspecificos();
 
   bootstrap.Modal.getInstance(
-    document.getElementById('modalInstrumentosEspecificos')
+    document.getElementById("modalInstrumentosEspecificos"),
   ).hide();
 }
 
 function _atualizarResumoInstrumentosEspecificos() {
-  const span = document.getElementById('resumoInstrumentosEspecificos');
+  const span = document.getElementById("resumoInstrumentosEspecificos");
   if (!span) return;
 
   if (!_instrumentosEspecificosTemp.length) {
-    span.textContent = 'Nenhum instrumento específico selecionado';
-    span.className = 'text-muted small fst-italic';
+    span.textContent = "Nenhum instrumento específico selecionado";
+    span.className = "text-muted small fst-italic";
     return;
   }
 
-  const nomes = _instrumentosEspecificosTemp.map(id => {
-    const inst = (dataStore.instrumentos || []).find(i => Number(i.id) === id);
-    return inst ? inst.nome : null;
-  }).filter(Boolean);
+  const nomes = _instrumentosEspecificosTemp
+    .map((id) => {
+      const inst = (dataStore.instrumentos || []).find(
+        (i) => Number(i.id) === id,
+      );
+      return inst ? inst.nome : null;
+    })
+    .filter(Boolean);
 
-  span.textContent = nomes.join(', ');
-  span.className = 'text-dark small fw-semibold';
+  span.textContent = nomes.join(", ");
+  span.className = "text-dark small fw-semibold";
 }
 
 /* =========================
@@ -219,17 +237,30 @@ function montarPayloadLocal() {
   const nome = document.getElementById("localNome").value.trim();
   const limite = document.getElementById("localLimite").value;
   const endereco = document.getElementById("localEndereco").value.trim();
-  const permiteCordas = document.querySelector('input[name="permiteCordas"]:checked')?.value;
-  const permiteSopros = document.querySelector('input[name="permiteSopros"]:checked')?.value;
+  const permiteCordas = document.querySelector(
+    'input[name="permiteCordas"]:checked',
+  )?.value;
+  const permiteSopros = document.querySelector(
+    'input[name="permiteSopros"]:checked',
+  )?.value;
 
-  if (!nome || !limite || !endereco || permiteCordas === undefined || permiteSopros === undefined) {
-    mostrarErroCampo("erroValidacaoCamposLocal", "Preencha todos os campos corretamente.");
+  if (
+    !nome ||
+    !limite ||
+    !endereco ||
+    permiteCordas === undefined ||
+    permiteSopros === undefined
+  ) {
+    mostrarErroCampo(
+      "erroValidacaoCamposLocal",
+      "Preencha todos os campos corretamente",
+    );
     return null;
   }
 
   const instrumentos_permitidos = _instrumentosEspecificosTemp.length
     ? JSON.stringify(_instrumentosEspecificosTemp)
-    : '';
+    : "";
 
   return {
     id: id ? Number(id) : null,
@@ -248,8 +279,12 @@ function preencherFormularioLocal(local) {
   document.getElementById("localLimite").value = local.limite;
   document.getElementById("localEndereco").value = local.endereco || "";
 
-  document.querySelector(`input[name="permiteCordas"][value="${local.permite_cordas}"]`).checked = true;
-  document.querySelector(`input[name="permiteSopros"][value="${local.permite_sopros}"]`).checked = true;
+  document.querySelector(
+    `input[name="permiteCordas"][value="${local.permite_cordas}"]`,
+  ).checked = true;
+  document.querySelector(
+    `input[name="permiteSopros"][value="${local.permite_sopros}"]`,
+  ).checked = true;
 
   // Carrega instrumentos específicos no estado temporário
   _instrumentosEspecificosTemp = _parseInstrumentosPermitidos(local) || [];
@@ -280,7 +315,10 @@ function limparFormularioLocal() {
   document.getElementById("localNome").value = "";
   document.getElementById("localLimite").value = "";
   document.getElementById("localEndereco").value = "";
-  document.querySelectorAll('input[name="permiteCordas"], input[name="permiteSopros"]')
+  document
+    .querySelectorAll(
+      'input[name="permiteCordas"], input[name="permiteSopros"]',
+    )
     .forEach((r) => (r.checked = false));
 }
 
@@ -309,7 +347,7 @@ async function salvarLocal() {
     } else {
       r = await locaisService.criar(payload, senhaDigitada, signal);
       // Atribui cor aleatória ao novo local imediatamente
-      if (r && !r.error && r.id && typeof _getCorLocal === 'function') {
+      if (r && !r.error && r.id && typeof _getCorLocal === "function") {
         _getCorLocal(r.id);
       }
     }
@@ -322,12 +360,15 @@ async function salvarLocal() {
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalLocal")).hide();
-    abrirModalAviso("Sucesso", payload.id ? "Local editado com sucesso!" : "Local criado com sucesso!");
+    abrirModalAviso(
+      "Sucesso",
+      payload.id ? "Local editado com sucesso" : "Local criado com sucesso",
+    );
     await reloadLocais();
   } catch (err) {
     if (err?.name === "AbortError") return;
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar local.");
+    abrirModalAviso("Erro", "Erro ao salvar local");
   } finally {
     _liberarModal("modalLocal");
     btn.innerHTML = textoOriginal;
@@ -351,7 +392,7 @@ async function editarLocal(id, btn) {
     const local = (locais || []).find((l) => Number(l.id) === Number(id));
 
     if (!local) {
-      abrirModalAviso("Erro", "Local não encontrado.");
+      abrirModalAviso("Erro", "Local não encontrado");
       return;
     }
 
@@ -365,17 +406,21 @@ async function editarLocal(id, btn) {
     const modalEl = document.getElementById("modalLocal");
     const modal = new bootstrap.Modal(modalEl);
 
-    modalEl.addEventListener("hidden.bs.modal", () => {
-      if (!salvou) {
-        btn.disabled = false;
-        btn.innerHTML = textoOriginal;
-      }
-    }, { once: true });
+    modalEl.addEventListener(
+      "hidden.bs.modal",
+      () => {
+        if (!salvou) {
+          btn.disabled = false;
+          btn.innerHTML = textoOriginal;
+        }
+      },
+      { once: true },
+    );
 
     modal.show();
   } catch (err) {
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao carregar local.");
+    abrirModalAviso("Erro", "Erro ao carregar local");
   } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
@@ -388,7 +433,8 @@ async function editarLocal(id, btn) {
 
 function excluirLocal(id, btnTrash) {
   document.getElementById("confirmTitle").innerText = "Excluir Local";
-  document.getElementById("confirmMessage").innerText = "Deseja realmente excluir este local?";
+  document.getElementById("confirmMessage").innerText =
+    "Deseja realmente excluir este local?";
 
   const btnOk = document.getElementById("confirmOk");
   btnOk.onclick = async () => {
@@ -403,19 +449,24 @@ function excluirLocal(id, btnTrash) {
       const r = await locaisService.excluir(id, senhaDigitada, signal);
 
       if (signal.aborted) return;
-      if (r?.error) { abrirModalAviso("Aviso", r.error); return; }
+      if (r?.error) {
+        abrirModalAviso("Aviso", r.error);
+        return;
+      }
 
-      abrirModalAviso("Sucesso", "Local excluído com sucesso!");
+      abrirModalAviso("Sucesso", "Local excluído com sucesso");
       await reloadLocais();
     } catch (err) {
       if (err?.name === "AbortError") return;
       console.error(err);
-      abrirModalAviso("Erro", "Erro ao excluir local.");
+      abrirModalAviso("Erro", "Erro ao excluir local");
     } finally {
       _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
       btnTrash.innerHTML = textoTrash;
-      bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
+      bootstrap.Modal.getInstance(
+        document.getElementById("confirmModal"),
+      ).hide();
     }
   };
 
@@ -427,8 +478,12 @@ function excluirLocal(id, btnTrash) {
 ========================= */
 
 // Delegados ao sistema central travarUI/liberarUI
-function desabilitarBotaoLocal() { travarUI(); }
-function habilitarBotaoLocal()   { liberarUI(); }
+function desabilitarBotaoLocal() {
+  travarUI();
+}
+function habilitarBotaoLocal() {
+  liberarUI();
+}
 
 function limparErrosCamposLocal() {
   limparErroCampo("erroLocalNome");

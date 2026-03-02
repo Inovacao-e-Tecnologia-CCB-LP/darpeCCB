@@ -140,7 +140,7 @@ function montarPayloadRegra() {
   if (!localId || !tipo || !horario) {
     mostrarErroCampo(
       "erroValidacaoCamposRegra",
-      "Preencha todos os campos corretamente.",
+      "Preencha todos os campos corretamente",
     );
     return null;
   }
@@ -269,14 +269,14 @@ async function salvarRegra() {
     bootstrap.Modal.getInstance(document.getElementById("modalRegra")).hide();
 
     const msg = payload.id
-      ? "Regra editada com sucesso!"
-      : "Regra criada com sucesso!";
+      ? "Regra editada com sucesso"
+      : "Regra criada com sucesso";
     abrirModalAviso("Sucesso", msg);
     await reloadRegras();
   } catch (err) {
     if (err?.name === "AbortError") return;
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao salvar regra.");
+    abrirModalAviso("Erro", "Erro ao salvar regra");
   } finally {
     _liberarModal("modalRegra");
     btn.innerHTML = textoOriginal;
@@ -303,7 +303,7 @@ async function editarRegra(id, btn) {
     const regra = (regras || []).find((r) => Number(r.id) === Number(id));
 
     if (!regra) {
-      abrirModalAviso("Erro", "Regra não encontrada.");
+      abrirModalAviso("Erro", "Regra não encontrada");
       return;
     }
 
@@ -333,7 +333,7 @@ async function editarRegra(id, btn) {
     modal.show();
   } catch (err) {
     console.error(err);
-    abrirModalAviso("Erro", "Erro ao carregar regra.");
+    abrirModalAviso("Erro", "Erro ao carregar regra");
   } finally {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
@@ -368,12 +368,12 @@ function excluirRegra(id, btnTrash) {
         return;
       }
 
-      abrirModalAviso("Sucesso", "Regra excluída com sucesso!");
+      abrirModalAviso("Sucesso", "Regra excluída com sucesso");
       await reloadRegras();
     } catch (err) {
       if (err?.name === "AbortError") return;
       console.error(err);
-      abrirModalAviso("Erro", "Erro ao excluir regra.");
+      abrirModalAviso("Erro", "Erro ao excluir regra");
     } finally {
       _liberarModal("confirmModal");
       btnOk.innerHTML = textoOk;
