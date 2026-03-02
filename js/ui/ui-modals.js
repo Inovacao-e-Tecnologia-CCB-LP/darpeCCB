@@ -6,7 +6,6 @@ let mapaLocalId = null;
    Ao cancelar/fechar durante carregamento, o fetch
    em andamento é abortado via signal.
 ================================================ */
-
 const _modalAborts = {};
 
 /**
@@ -37,7 +36,6 @@ function _abortarModal(modalId) {
      EXCETO o btn-close e o btn de Cancelar
    - Libera: restaura todos
 ================================================ */
-
 function _travarModal(modalId) {
   const modalEl = document.getElementById(modalId);
   if (!modalEl) return;
@@ -68,7 +66,6 @@ function _liberarModal(modalId) {
    Aguarda qualquer modal que esteja aberto ou em
    processo de fechamento antes de abrir outro.
 ================================================ */
-
 function _aguardarFechamentoModal() {
   return new Promise((resolve) => {
     const abertos = document.querySelectorAll(
@@ -95,7 +92,6 @@ function _aguardarFechamentoModal() {
 /* ================================================
    MODAL DE AVISO
 ================================================ */
-
 async function abrirModalAviso(titulo, mensagem) {
   await _aguardarFechamentoModal();
 
@@ -114,11 +110,9 @@ async function abrirModalAviso(titulo, mensagem) {
   });
 }
 
-
 /* ================================================
    MODAL DE CONFIRMAÇÃO (retorna Promise<boolean>)
 ================================================ */
-
 function abrirModalConfirmacao(mensagem, textoBotao = "Confirmar") {
   return new Promise(async (resolve) => {
     await _aguardarFechamentoModal();
@@ -152,11 +146,9 @@ function abrirModalConfirmacao(mensagem, textoBotao = "Confirmar") {
   });
 }
 
-
 /* ================================================
    MODAL DE MAPA / ENDEREÇO
 ================================================ */
-
 async function abrirModalMapa(localId) {
   await _aguardarFechamentoModal();
 
@@ -168,13 +160,11 @@ async function abrirModalMapa(localId) {
   bootstrap.Modal.getOrCreateInstance(modalEl).show();
 }
 
-
 /* ================================================
    REGISTRA CANCELAMENTO EM TODOS OS MODAIS
    Ao clicar em Cancelar ou fechar (X) qualquer
    modal que esteja em loading → aborta operação.
 ================================================ */
-
 document.addEventListener("DOMContentLoaded", () => {
   // Nota: modalCorrecaoNome é excluído desta lista propositalmente.
   // Ele usa um sistema próprio de Promise (nome-corrector.js) que escuta
@@ -206,7 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 /* ================================================
    ENTER KEY — dispara o botão de ação principal
    de qualquer modal aberto (exceto modais de aviso
@@ -214,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
    Regra: o botão de ação é o ÚLTIMO .btn não-secundário
    do .modal-footer que esteja visível e habilitado.
 ================================================ */
-
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Enter') return;
 

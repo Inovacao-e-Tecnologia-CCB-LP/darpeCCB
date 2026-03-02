@@ -291,7 +291,7 @@ function carregarMusicosRelatorio(programacaoId) {
   if (!inscritosProg.length) {
     container.innerHTML = `
       <div class="text-muted fst-italic text-center">
-        Nenhum músico nesta programação.
+        Nenhum músico nesta programação
       </div>
     `;
     return;

@@ -4,7 +4,7 @@ async function showEscolherLocal() {
   if (!dataStore.locais || dataStore.locais.length === 0) {
     conteudo.innerHTML = `
         <div class="alert alert-secondary text-center">
-        Nenhum local encontrado.
+        Nenhum local encontrado
         </div>
       `;
     return;
@@ -63,7 +63,7 @@ async function showEscolherLocal() {
   if (locaisExibidos.length === 0) {
     conteudo.innerHTML = `
       <div class="alert alert-secondary text-center">
-        Nenhum local disponível no momento.
+        Nenhum local disponível no momento
       </div>
     `;
     return;
@@ -119,7 +119,7 @@ function showEscolherData() {
   if (programacoesFiltradas.length === 0) {
     conteudo.innerHTML = `
         <div class="alert alert-secondary text-center">
-          Nenhuma data disponível para este local.
+          Nenhuma data disponível para este local
         </div>
       `;
     return;
@@ -371,7 +371,7 @@ async function _showListaNomesIntegracao() {
   if (!nomes.length) {
     conteudo.innerHTML = `
       <div class="alert alert-warning text-center col-md-6 mx-auto">
-        Nenhum nome cadastrado para este local de integração.
+        Nenhum nome cadastrado para este local de integração
       </div>`;
     return;
   }
