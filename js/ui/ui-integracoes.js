@@ -240,7 +240,7 @@ function _renderListaTemporaria() {
   if (!nomesTemporarios.length) {
     container.innerHTML = `
       <div class="text-muted text-center fst-italic py-2">
-        Nenhum nome adicionado.
+        Nenhum nome adicionado
       </div>
     `;
     return;

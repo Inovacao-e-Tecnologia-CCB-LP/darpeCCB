@@ -146,7 +146,7 @@ function abrirModalInstrumentosEspecificos() {
   container.innerHTML = "";
 
   if (!instrumentos.length) {
-    container.innerHTML = `<span class="text-muted small">Nenhum instrumento cadastrado.</span>`;
+    container.innerHTML = `<span class="text-muted small">Nenhum instrumento cadastrado</span>`;
   } else {
     // Agrupa por tipo para melhor visualização
     const tipos = [...new Set(instrumentos.map((i) => i.tipo))];

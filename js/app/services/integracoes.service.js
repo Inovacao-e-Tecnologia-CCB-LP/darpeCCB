@@ -104,8 +104,8 @@ class IntegracoesService {
       } else {
         await navigator.clipboard.writeText(link);
         abrirModalAviso(
-          "Link copiado!",
-          `O link foi copiado para a área de transferência.\n\n${link}`,
+          "Sucesso",
+          `O link foi copiado para a área de transferência\n\n${link}`,
         );
       }
     } catch (err) {
@@ -139,8 +139,8 @@ class IntegracoesService {
       if (isNaN(exp) || Date.now() > exp) {
         setTimeout(() => {
           abrirModalAviso(
-            "Link expirado",
-            "Este link expirou. Solicite um novo link ao responsável pela integração.",
+            "Aviso",
+            "Link expirado, solicite um novo ao responsável pela integração",
           );
         }, 500);
         return null;
