@@ -17,6 +17,10 @@ class InscricoesService {
 		return await appScriptApi.deleteWithToken(this.entity, id, delete_token);
 	}
 
+	async excluirAdmin(id) {
+		return await appScriptApi.delete(this.entity, id, true);
+	}
+
 	/* =========================
      ESTRUTURA
   ========================= */

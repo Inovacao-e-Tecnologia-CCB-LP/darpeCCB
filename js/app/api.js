@@ -37,6 +37,16 @@ class AppScriptApi {
 		}).then((r) => r.json());
 	}
 
+	async delete(entity, id, admin = false) {
+		return await fetch(
+			`${this.url}?action=${admin ? 'admin_delete' : 'delete'}&entity=${entity}`,
+			{
+				method: 'POST',
+				body: JSON.stringify({ id }),
+			},
+		).then((r) => r.json());
+	}
+
 	async deleteWithToken(entity, id, delete_token) {
 		return await fetch(`${this.url}?action=delete&entity=${entity}`, {
 			method: 'POST',
