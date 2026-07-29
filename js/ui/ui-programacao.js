@@ -322,8 +322,12 @@ function _renderGrade(ano, mes, porDia) {
 	const primeiroDia = new Date(ano, mes, 1).getDay();
 	const totalDias = new Date(ano, mes + 1, 0).getDate();
 	const hoje = new Date();
+	hoje.setHours(0, 0, 0, 0);
+
 	const ehHoje = (d) =>
 		hoje.getFullYear() === ano && hoje.getMonth() === mes && hoje.getDate() === d;
+
+	const ehPassado = (d) => new Date(ano, mes, d).getTime() < hoje.getTime();
 
 	let html = `<div class="cal-grid">`;
 
@@ -342,11 +346,14 @@ function _renderGrade(ano, mes, porDia) {
 		const diaSemana = (primeiroDia + dia - 1) % 7;
 		const fds = diaSemana === 0 || diaSemana === 6 ? 'cal-fds' : '';
 		const hojeClass = ehHoje(dia) ? 'cal-hoje' : '';
-		let cursor = '';
 
+		const bloqueado = ehPassado(dia) && !temEvento;
+		const passadoClass = bloqueado ? 'cal-dia-passado' : '';
+
+		let cursor = '';
 		if (temEvento) {
 			cursor = 'cal-clicavel';
-		} else if (!_calModoSomenteLeitura) {
+		} else if (!_calModoSomenteLeitura && !bloqueado) {
 			cursor = 'cal-clicavel';
 		}
 
@@ -414,12 +421,12 @@ function _renderGrade(ano, mes, porDia) {
 
 		if (temEvento) {
 			click = `onclick="_abrirDetalhesDia(${dia}, decodeURIComponent('${enc}'))"`;
-		} else if (!_calModoSomenteLeitura) {
+		} else if (!_calModoSomenteLeitura && !bloqueado) {
 			click = `onclick="_novaProgramacaoDoCalendario(${dia})"`;
 		}
 
 		html += `
-      <div class="cal-cell ${fds} ${hojeClass} ${temEvento ? 'cal-tem-evento' : ''} ${cursor}"
+      <div class="cal-cell ${fds} ${hojeClass} ${passadoClass} ${temEvento ? 'cal-tem-evento' : ''} ${cursor}"
         style="${estiloCelula}" ${click}>
         <span class="cal-num">${dia}</span>
         <div class="cal-ev-pills">${pilulasHtml}</div>
