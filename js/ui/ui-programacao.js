@@ -785,20 +785,45 @@ async function _baixarPdfCalendario() {
 	const elemento = document.querySelector('.cal-wrapper');
 
 	elemento.classList.add('exportando');
-
 	const canvas = await _capturarCalendario();
-
 	elemento.classList.remove('exportando');
 
 	const imgData = canvas.toDataURL('image/png');
 
+	// Escolhe a orientação com base na proporção do calendário capturado
+	const isPaisagem = canvas.width > canvas.height;
+	const orientacao = isPaisagem ? 'l' : 'p';
+
 	const { jsPDF } = window.jspdf;
-	const pdf = new jsPDF('p', 'mm', 'a4');
+	const pdf = new jsPDF(orientacao, 'mm', 'a4');
 
-	const largura = 210;
-	const altura = (canvas.height * largura) / canvas.width;
+	const pageWidth = pdf.internal.pageSize.getWidth();
+	const pageHeight = pdf.internal.pageSize.getHeight();
 
-	pdf.addImage(imgData, 'PNG', 0, 10, largura, altura);
+	const margem = 10; // mm de margem em cada lado
+	const maxWidth = pageWidth - margem * 2;
+	const maxHeight = pageHeight - margem * 2;
+
+	const imgRatio = canvas.width / canvas.height;
+	const maxRatio = maxWidth / maxHeight;
+
+	let finalWidth, finalHeight;
+
+	if (imgRatio > maxRatio) {
+		// Imagem mais "larga" que a área disponível -> limita pela largura
+		finalWidth = maxWidth;
+		finalHeight = maxWidth / imgRatio;
+	} else {
+		// Imagem mais "alta" -> limita pela altura
+		finalHeight = maxHeight;
+		finalWidth = maxHeight * imgRatio;
+	}
+
+	// Centraliza na página
+	const x = (pageWidth - finalWidth) / 2;
+	const y = (pageHeight - finalHeight) / 2;
+
+	pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
 	pdf.save('calendarioMensalDARPE.pdf');
 }
 
