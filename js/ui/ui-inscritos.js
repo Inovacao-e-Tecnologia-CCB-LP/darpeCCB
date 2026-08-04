@@ -9,6 +9,30 @@ function renderAccordionInscritos(grupos, adminMode = false) {
 	let html = '<div class="accordion" id="accordionInscritos">';
 	let index = 0;
 
+	const hoje = new Date();
+	hoje.setHours(0, 0, 0, 0);
+	let indiceMaisProximo = 0;
+	let menorDiferenca = Infinity;
+	let contadorTemp = 0;
+
+	Object.entries(grupos).forEach(([, programacoes]) => {
+		const pidsValidos = Object.keys(programacoes).filter((pid) => programacaoMap[pid]);
+		if (!pidsValidos.length) return;
+
+		pidsValidos.forEach((pid) => {
+			const p = programacaoMap[pid];
+			if (!p?.data) return;
+			const dataP = new Date(p.data + 'T00:00:00');
+			const diff = dataP.getTime() - hoje.getTime();
+			if (diff >= 0 && diff < menorDiferenca) {
+				menorDiferenca = diff;
+				indiceMaisProximo = contadorTemp;
+			}
+		});
+
+		contadorTemp++;
+	});
+
 	Object.entries(grupos).forEach(([local, programacoes]) => {
 		const pidsValidos = Object.keys(programacoes).filter((pid) => programacaoMap[pid]);
 		if (!pidsValidos.length) return;
@@ -16,20 +40,28 @@ function renderAccordionInscritos(grupos, adminMode = false) {
 		const pRef = programacaoMap[pidsValidos[0]];
 		const localObj = locaisMap[pRef.local_id];
 
+		const totalInscritosLocal = pidsValidos.reduce(
+			(soma, pid) => soma + (programacoes[pid]?.length || 0),
+			0,
+		);
+
+		const ehMaisProximo = currentIndex === indiceMaisProximo;
+
 		html += `
 		<div class="accordion-item border-dark">
 			<h2 class="accordion-header">
 				<button
-					class="accordion-button collapsed bg-dark text-white"
+					class="accordion-button ${ehMaisProximo ? '' : 'collapsed'} bg-dark text-white"
 					data-bs-toggle="collapse"
 					data-bs-target="#collapse-${currentIndex}">
 					${local}
+					<span class="badge bg-light text-dark ms-2">${totalInscritosLocal} inscrito${totalInscritosLocal !== 1 ? 's' : ''}</span>
 				</button>
 			</h2>
 
 			<div
 				id="collapse-${currentIndex}"
-				class="accordion-collapse collapse"
+				class="accordion-collapse collapse ${ehMaisProximo ? 'show' : ''}"
 				data-bs-parent="#accordionInscritos">
 				${
 					!adminMode
@@ -67,14 +99,23 @@ function renderAccordionInscritos(grupos, adminMode = false) {
 					${
 						!adminMode
 							? `
-						<button
-							class="btn btn-sm btn-success flex-shrink-0"
-							onclick="compartilhar(${pid})">
-							<i class="bi bi-whatsapp"></i>
-							<span class="d-none d-md-inline ms-1">
-								Compartilhar
-							</span>
-						</button>
+						<div class="d-flex gap-2 flex-shrink-0">
+							<button
+								class="btn btn-sm btn-outline-light"
+								onclick="copiarMensagemProgramacao(${pid})"
+								title="Copiar Mensagem">
+								<i class="bi bi-clipboard"></i>
+								<span class="d-none d-md-inline ms-1">Copiar Mensagem</span>
+							</button>
+							<button
+								class="btn btn-sm btn-success"
+								onclick="compartilhar(${pid})">
+								<i class="bi bi-whatsapp"></i>
+								<span class="d-none d-md-inline ms-1">
+									Compartilhar
+								</span>
+							</button>
+						</div>
 					`
 							: ''
 					}
@@ -403,27 +444,18 @@ async function excluirInscricaoAdmin(id, btn) {
    COMPARTILHAR MENSAGEM WHATSAPP
 ========================= */
 
-function compartilhar(pid) {
-	const { tiposVisitaMap } = estruturaInscritos;
-
-	const { locaisMap, programacaoMap, instrumentosMap, inscritosPorProgramacao } =
+function _montarMensagemProgramacao(pid) {
+	const { tiposVisitaMap, locaisMap, programacaoMap, instrumentosMap, inscritosPorProgramacao } =
 		estruturaInscritos;
 
 	const p = programacaoMap[pid];
-	if (!p) {
-		abrirModalAviso('Erro', 'Programação não encontrada');
-		return;
-	}
+	if (!p) return null;
 
 	const localObj = locaisMap[p.local_id];
-	if (!localObj) {
-		abrirModalAviso('Erro', 'Local não encontrado');
-		return;
-	}
+	if (!localObj) return null;
 
 	const inscritosProg = inscritosPorProgramacao[pid] || [];
 	const dataFormatada = formatarData(p.data);
-
 	const tipo = tiposVisitaMap[p.tipo_visita_id];
 	const nomeTipo = tipo?.nome || 'Tipo não encontrado';
 
@@ -436,11 +468,41 @@ function compartilhar(pid) {
 
 	inscritosProg.forEach((i) => {
 		const instNome = instrumentosService.obterNomeInstrumento(i, instrumentosMap);
-
 		mensagem += `• ${i.nome} _(${instNome})_\n`;
 	});
 
-	mensagem = encodeURIComponent(mensagem);
+	return mensagem;
+}
 
-	window.open(`https://wa.me/?text=${mensagem}`, '_blank', 'noopener,noreferrer');
+function compartilhar(pid) {
+	const mensagem = _montarMensagemProgramacao(pid);
+
+	if (!mensagem) {
+		abrirModalAviso('Erro', 'Programação ou local não encontrado');
+		return;
+	}
+
+	window.open(
+		`https://wa.me/?text=${encodeURIComponent(mensagem)}`,
+		'_blank',
+		'noopener,noreferrer',
+	);
+}
+
+// ── NOVO ──
+async function copiarMensagemProgramacao(pid) {
+	const mensagem = _montarMensagemProgramacao(pid);
+
+	if (!mensagem) {
+		abrirModalAviso('Erro', 'Programação ou local não encontrado');
+		return;
+	}
+
+	try {
+		await navigator.clipboard.writeText(mensagem);
+		mostrarToast('Mensagem copiada!');
+	} catch (err) {
+		console.error(err);
+		abrirModalAviso('Erro', 'Não foi possível copiar a mensagem');
+	}
 }

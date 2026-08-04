@@ -94,19 +94,28 @@ async function showEscolherLocal() {
 	conteudo.appendChild(g);
 }
 
-function showEscolherData() {
+async function showEscolherData() {
 	setTitle('Selecione a data');
+	mostrarLoading('conteudo');
+
+	// Conta quantos já se inscreveram em cada programação
+	let inscritosPorProgramacao = {};
+	try {
+		const inscritos = await inscricoesService.listar();
+		(inscritos || []).forEach((i) => {
+			inscritosPorProgramacao[i.programacao_id] =
+				(inscritosPorProgramacao[i.programacao_id] || 0) + 1;
+		});
+	} catch (err) {
+		console.warn('Não foi possível carregar vagas:', err);
+	}
 
 	const programacoesFiltradas = dataStore.programacao
 		.filter((p) => p.local_id == escolha.local.id)
 		.sort((a, b) => {
 			const dataA = new Date(a.data);
 			const dataB = new Date(b.data);
-
-			if (dataA.getTime() !== dataB.getTime()) {
-				return dataA - dataB;
-			}
-
+			if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
 			return a.horario.localeCompare(b.horario);
 		});
 
@@ -132,21 +141,35 @@ function showEscolherData() {
 		};
 
 		const tipo = dataStore.tipos_visita?.find((t) => t.id == p.tipo_visita_id);
-
 		const nomeTipo = tipo?.nome || 'Tipo não encontrado';
-
 		const icone = iconesTipoVisita[nomeTipo] || 'bi bi-calendar-event';
+		const qtdInscritos = inscritosPorProgramacao[p.id] || 0;
+		const limite = Number(escolha.local.limite) || 0;
+		const vagasRestantes = limite - qtdInscritos;
+		const lotado = limite > 0 && vagasRestantes <= 0;
+
+		const badgeVagas = lotado
+			? `<span class="badge bg-danger ms-2">Lotado</span>`
+			: limite > 0
+				? `<span class="badge bg-secondary ms-2">${vagasRestantes} vaga${vagasRestantes !== 1 ? 's' : ''}</span>`
+				: '';
 
 		btn.innerHTML = `
 			<i class="${icone}"></i>
 			<span>
-				<strong>${nomeTipo} &bull; ${formatarData(p.data)} </strong><br>
+				<strong>${nomeTipo} &bull; ${formatarData(p.data)} ${badgeVagas}</strong><br>
 				<small class="text-muted">${p.descricao} &bull; ${formatarHorario(p.horario)}</small>
 			</span>
 		`;
 
 		btn.style.alignItems = 'flex-start';
-		btn.onclick = () => selecionarData(p);
+
+		if (lotado) {
+			btn.disabled = true;
+			btn.classList.add('opacity-50');
+		} else {
+			btn.onclick = () => selecionarData(p);
+		}
 
 		g.appendChild(btn);
 	});

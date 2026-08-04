@@ -81,6 +81,41 @@ function mostrarLoading(containerId) {
   `;
 }
 
+function mostrarToast(mensagem) {
+	const toastExistente = document.getElementById('toastCopiado');
+	if (toastExistente) toastExistente.remove();
+
+	const toast = document.createElement('div');
+	toast.id = 'toastCopiado';
+	toast.className = 'toast-copiado';
+	toast.innerHTML = `<i class="bi bi-check2-circle me-2"></i>${mensagem}`;
+	document.body.appendChild(toast);
+
+	requestAnimationFrame(() => toast.classList.add('show'));
+
+	setTimeout(() => {
+		toast.classList.remove('show');
+		setTimeout(() => toast.remove(), 300);
+	}, 2000);
+}
+
+function copiarTexto(container = document) {
+	container.querySelectorAll('.copy-text').forEach((el) => {
+		el.addEventListener('click', () => {
+			const text = el.cloneNode(true);
+			text.querySelectorAll('i').forEach((i) => i.remove());
+			const valor = text.textContent.trim();
+			if (!valor) return;
+
+			navigator.clipboard.writeText(valor).then(() => {
+				mostrarToast('Endereço copiado!'); // ← NOVO
+				const localId = el.getAttribute('data-localid');
+				abrirModalMapa(localId);
+			});
+		});
+	});
+}
+
 // getTipoRadioSelecionado e marcarTipoRadio foram migrados para
 // ui-instrumentos.js como parte do sistema de tipos dinâmicos.
 

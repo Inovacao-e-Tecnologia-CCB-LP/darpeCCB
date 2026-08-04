@@ -731,3 +731,18 @@ function enviarWhatsAppRelatorio() {
 
 	window.open(`https://wa.me/?text=${mensagem}`, '_blank', 'noopener,noreferrer');
 }
+
+function copiarMensagemRelatorio() {
+	const dados = montarDadosRelatorio();
+	if (!dados) return;
+
+	const mensagem = decodeURIComponent(gerarMensagemWhatsAppRelatorio(dados));
+
+	navigator.clipboard
+		.writeText(mensagem)
+		.then(() => mostrarToast('Mensagem copiada!'))
+		.catch((err) => {
+			console.error(err);
+			abrirModalAviso('Erro', 'Não foi possível copiar a mensagem');
+		});
+}
