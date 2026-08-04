@@ -2142,3 +2142,49 @@ header .container {
 .obs-card i {
 	flex-shrink: 0;
 }
+
+.toast-copiado {
+	position: fixed;
+	bottom: 1.5rem;
+	left: 50%;
+	transform: translateX(-50%) translateY(20px);
+	background: #212529;
+	color: #fff;
+	padding: 0.65rem 1.25rem;
+	border-radius: 2rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	z-index: 2000;
+	opacity: 0;
+	transition:
+		opacity 0.3s ease,
+		transform 0.3s ease;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	pointer-events: none;
+}
+.toast-copiado.show {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
+.btn-voltar-hoje {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	background: #fff;
+	color: #212529;
+	border: 1.5px solid #212529;
+	border-radius: 2rem;
+	padding: 0.35rem 1rem;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		color 0.15s ease;
+	margin-bottom: 1.5rem;
+}
+.btn-voltar-hoje:hover {
+	background: #212529;
+	color: #fff;
+}

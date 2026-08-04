@@ -265,6 +265,7 @@ function _construirMeses(programacao) {
 /* =========================
     RENDERS
 ========================= */
+
 function _renderCalendario() {
 	const container = document.getElementById('listaProgramacoes');
 	if (!_calMeses.length) return;
