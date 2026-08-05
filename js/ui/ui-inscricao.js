@@ -97,89 +97,94 @@ async function showEscolherLocal() {
 async function showEscolherData() {
 	setTitle('Selecione a data');
 	mostrarLoading('conteudo');
+	travarUI();
 
-	// Conta quantos já se inscreveram em cada programação
-	let inscritosPorProgramacao = {};
 	try {
-		const inscritos = await inscricoesService.listar();
-		(inscritos || []).forEach((i) => {
-			inscritosPorProgramacao[i.programacao_id] =
-				(inscritosPorProgramacao[i.programacao_id] || 0) + 1;
-		});
-	} catch (err) {
-		console.warn('Não foi possível carregar vagas:', err);
-	}
-
-	const programacoesFiltradas = dataStore.programacao
-		.filter((p) => p.local_id == escolha.local.id)
-		.sort((a, b) => {
-			const dataA = new Date(a.data);
-			const dataB = new Date(b.data);
-			if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
-			return a.horario.localeCompare(b.horario);
-		});
-
-	if (programacoesFiltradas.length === 0) {
-		conteudo.innerHTML = `
-			<div class="alert alert-secondary text-center">
-				Nenhuma data disponível para este local
-			</div>
-		`;
-		return;
-	}
-
-	const g = document.createElement('div');
-	g.className = 'grade-escolha mb-4';
-
-	programacoesFiltradas.forEach((p) => {
-		const btn = document.createElement('button');
-		btn.className = 'btn btn-outline-dark';
-
-		const iconesTipoVisita = {
-			Evangelização: 'bi bi-book',
-			Música: 'bi bi-music-note-beamed',
-		};
-
-		const tipo = dataStore.tipos_visita?.find((t) => t.id == p.tipo_visita_id);
-		const nomeTipo = tipo?.nome || 'Tipo não encontrado';
-		const icone = iconesTipoVisita[nomeTipo] || 'bi bi-calendar-event';
-		const qtdInscritos = inscritosPorProgramacao[p.id] || 0;
-		const limite = Number(escolha.local.limite) || 0;
-		const vagasRestantes = limite - qtdInscritos;
-		const lotado = limite > 0 && vagasRestantes <= 0;
-
-		const badgeVagas = lotado
-			? `<span class="badge bg-danger ms-2">Lotado</span>`
-			: limite > 0
-				? `<span class="badge bg-secondary ms-2">${vagasRestantes} vaga${vagasRestantes !== 1 ? 's' : ''}</span>`
-				: '';
-
-		btn.innerHTML = `
-			<i class="${icone}"></i>
-			<span>
-				<strong>${nomeTipo} &bull; ${formatarData(p.data)} ${badgeVagas}</strong><br>
-				<small class="text-muted">${p.descricao} &bull; ${formatarHorario(p.horario)}</small>
-			</span>
-		`;
-
-		btn.style.alignItems = 'flex-start';
-
-		if (lotado) {
-			btn.disabled = true;
-			btn.classList.add('opacity-50');
-		} else {
-			btn.onclick = () => selecionarData(p);
+		// Conta quantos já se inscreveram em cada programação
+		let inscritosPorProgramacao = {};
+		try {
+			const inscritos = await inscricoesService.listar();
+			(inscritos || []).forEach((i) => {
+				inscritosPorProgramacao[i.programacao_id] =
+					(inscritosPorProgramacao[i.programacao_id] || 0) + 1;
+			});
+		} catch (err) {
+			console.warn('Não foi possível carregar vagas:', err);
 		}
 
-		g.appendChild(btn);
-	});
+		const programacoesFiltradas = dataStore.programacao
+			.filter((p) => p.local_id == escolha.local.id)
+			.sort((a, b) => {
+				const dataA = new Date(a.data);
+				const dataB = new Date(b.data);
+				if (dataA.getTime() !== dataB.getTime()) return dataA - dataB;
+				return a.horario.localeCompare(b.horario);
+			});
 
-	const wrapper = document.createElement('div');
-	wrapper.innerHTML = Ui.ModalObservacao();
-	g.appendChild(wrapper.firstElementChild);
+		if (programacoesFiltradas.length === 0) {
+			conteudo.innerHTML = `
+				<div class="alert alert-secondary text-center">
+					Nenhuma data disponível para este local
+				</div>
+			`;
+			return;
+		}
 
-	conteudo.innerHTML = '';
-	conteudo.appendChild(g);
+		const g = document.createElement('div');
+		g.className = 'grade-escolha mb-4';
+
+		programacoesFiltradas.forEach((p) => {
+			const btn = document.createElement('button');
+			btn.className = 'btn btn-outline-dark';
+
+			const iconesTipoVisita = {
+				Evangelização: 'bi bi-book',
+				Música: 'bi bi-music-note-beamed',
+			};
+
+			const tipo = dataStore.tipos_visita?.find((t) => t.id == p.tipo_visita_id);
+			const nomeTipo = tipo?.nome || 'Tipo não encontrado';
+			const icone = iconesTipoVisita[nomeTipo] || 'bi bi-calendar-event';
+			const qtdInscritos = inscritosPorProgramacao[p.id] || 0;
+			const limite = Number(escolha.local.limite) || 0;
+			const vagasRestantes = limite - qtdInscritos;
+			const lotado = limite > 0 && vagasRestantes <= 0;
+
+			const badgeVagas = lotado
+				? `<span class="badge bg-danger ms-2">Lotado</span>`
+				: limite > 0
+					? `<span class="badge bg-secondary ms-2">${vagasRestantes} vaga${vagasRestantes !== 1 ? 's' : ''}</span>`
+					: '';
+
+			btn.innerHTML = `
+				<i class="${icone}"></i>
+				<span>
+					<strong>${nomeTipo} &bull; ${formatarData(p.data)} ${badgeVagas}</strong><br>
+					<small class="text-muted">${p.descricao} &bull; ${formatarHorario(p.horario)}</small>
+				</span>
+			`;
+
+			btn.style.alignItems = 'flex-start';
+
+			if (lotado) {
+				btn.disabled = true;
+				btn.classList.add('opacity-50');
+			} else {
+				btn.onclick = () => selecionarData(p);
+			}
+
+			g.appendChild(btn);
+		});
+
+		const wrapper = document.createElement('div');
+		wrapper.innerHTML = Ui.ModalObservacao();
+		g.appendChild(wrapper.firstElementChild);
+
+		conteudo.innerHTML = '';
+		conteudo.appendChild(g);
+	} finally {
+		liberarUI();
+	}
 }
 
 function showEscolherInstrumento() {
@@ -295,61 +300,68 @@ let _nomeSelecionadoIntegracao = null;
 
 async function showConfirmar() {
 	setTitle('Digite o nome');
-	_confirmarModo = null;
-	_nomeSelecionadoIntegracao = null;
+	mostrarLoading('conteudo');
+	travarUI();
 
-	const nomeIntegracaoAtivo = nomeIntegracao;
-	const localTemIntegracao =
-		escolha.local?.integracoes === true ||
-		String(escolha.local?.integracoes).toUpperCase() === 'TRUE';
+	try {
+		_confirmarModo = null;
+		_nomeSelecionadoIntegracao = null;
 
-	// ── CENÁRIO C: local tem integração ──────────────────────────────────────
-	if (localTemIntegracao) {
-		_confirmarModo = 'integracao_local';
+		const nomeIntegracaoAtivo = nomeIntegracao;
+		const localTemIntegracao =
+			escolha.local?.integracoes === true ||
+			String(escolha.local?.integracoes).toUpperCase() === 'TRUE';
 
+		// ── CENÁRIO C: local tem integração ──────────────────────────────────────
+		if (localTemIntegracao) {
+			_confirmarModo = 'integracao_local';
+
+			if (nomeIntegracaoAtivo) {
+				// Tem nome salvo → mostra direto com opção de trocar
+				_nomeSelecionadoIntegracao = nomeIntegracaoAtivo;
+				_renderConfirmarIntegracaoComNome(nomeIntegracaoAtivo);
+			} else {
+				// Sem nome salvo → vai direto para a lista
+				await _showListaNomesIntegracao();
+			}
+			return;
+		}
+
+		// ── CENÁRIO A: local normal + navegador tem nome_integracao ──────────────
 		if (nomeIntegracaoAtivo) {
-			// Tem nome salvo → mostra direto com opção de trocar
-			_nomeSelecionadoIntegracao = nomeIntegracaoAtivo;
-			_renderConfirmarIntegracaoComNome(nomeIntegracaoAtivo);
-		} else {
-			// Sem nome salvo → vai direto para a lista
-			await _showListaNomesIntegracao();
+			_confirmarModo = 'nome_salvo';
+			conteudo.innerHTML = Ui.ConfirmarPresenca();
+			const cardSalvo = document.getElementById('nomeSalvoCard');
+			const textoSalvo = document.getElementById('nomeSalvoTexto');
+			const inputCard = document.getElementById('inputNomeCard');
+			if (cardSalvo && textoSalvo) {
+				// Rótulo específico para nome de integração
+				const rotulo = cardSalvo.querySelector('p.text-muted.small');
+				if (rotulo) rotulo.textContent = 'Nome vinculado ao seu link';
+				textoSalvo.textContent = nomeIntegracaoAtivo;
+				cardSalvo.classList.remove('d-none');
+				inputCard.classList.add('d-none');
+			}
+			return;
 		}
-		return;
-	}
 
-	// ── CENÁRIO A: local normal + navegador tem nome_integracao ──────────────
-	if (nomeIntegracaoAtivo) {
-		_confirmarModo = 'nome_salvo';
+		// ── CENÁRIO B: local normal + usuário comum ───────────────────────────────
+		_confirmarModo = 'input';
 		conteudo.innerHTML = Ui.ConfirmarPresenca();
-		const cardSalvo = document.getElementById('nomeSalvoCard');
-		const textoSalvo = document.getElementById('nomeSalvoTexto');
-		const inputCard = document.getElementById('inputNomeCard');
-		if (cardSalvo && textoSalvo) {
-			// Rótulo específico para nome de integração
-			const rotulo = cardSalvo.querySelector('p.text-muted.small');
-			if (rotulo) rotulo.textContent = 'Nome vinculado ao seu link';
-			textoSalvo.textContent = nomeIntegracaoAtivo;
-			cardSalvo.classList.remove('d-none');
-			inputCard.classList.add('d-none');
+		const nomeSalvoLocal = localStorageService.buscarNome();
+		if (nomeSalvoLocal) {
+			_confirmarModo = 'nome_salvo';
+			const cardSalvo = document.getElementById('nomeSalvoCard');
+			const textoSalvo = document.getElementById('nomeSalvoTexto');
+			const inputCard = document.getElementById('inputNomeCard');
+			if (cardSalvo && textoSalvo) {
+				textoSalvo.textContent = nomeSalvoLocal;
+				cardSalvo.classList.remove('d-none');
+				inputCard.classList.add('d-none');
+			}
 		}
-		return;
-	}
-
-	// ── CENÁRIO B: local normal + usuário comum ───────────────────────────────
-	_confirmarModo = 'input';
-	conteudo.innerHTML = Ui.ConfirmarPresenca();
-	const nomeSalvoLocal = localStorageService.buscarNome();
-	if (nomeSalvoLocal) {
-		_confirmarModo = 'nome_salvo';
-		const cardSalvo = document.getElementById('nomeSalvoCard');
-		const textoSalvo = document.getElementById('nomeSalvoTexto');
-		const inputCard = document.getElementById('inputNomeCard');
-		if (cardSalvo && textoSalvo) {
-			textoSalvo.textContent = nomeSalvoLocal;
-			cardSalvo.classList.remove('d-none');
-			inputCard.classList.add('d-none');
-		}
+	} finally {
+		liberarUI();
 	}
 }
 
@@ -388,70 +400,75 @@ function _renderConfirmarIntegracaoComNome(nome) {
 // ── Cenário C — passo 2: lista de nomes do local para trocar ─────────────────
 async function _showListaNomesIntegracao() {
 	conteudo.innerHTML = `<div class="text-center my-4"><div class="spinner-border text-dark"></div></div>`;
+	travarUI(); 
 
-	let nomes = [];
 	try {
-		const registros = dataStore.nomes_integracao ?? (await integracoesService.listar());
-		dataStore.nomes_integracao = registros || [];
-		nomes = registros
-			.filter((r) => Number(r.id_local) === Number(escolha.local.id))
-			.map((r) => r.nome)
-			.filter(Boolean)
-			.sort((a, b) => a.localeCompare(b, 'pt-BR'));
-	} catch (err) {
-		console.warn('Aviso ao buscar nomes de integração:', err);
+		let nomes = [];
+		try {
+			const registros = dataStore.nomes_integracao ?? (await integracoesService.listar());
+			dataStore.nomes_integracao = registros || [];
+			nomes = registros
+				.filter((r) => Number(r.id_local) === Number(escolha.local.id))
+				.map((r) => r.nome)
+				.filter(Boolean)
+				.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+		} catch (err) {
+			console.warn('Aviso ao buscar nomes de integração:', err);
+		}
+
+		if (!nomes.length) {
+			conteudo.innerHTML = `
+	      <div class="alert alert-warning text-center col-md-6 mx-auto">
+	        Nenhum nome cadastrado para este local de integração
+	      </div>`;
+			return;
+		}
+
+		conteudo.innerHTML = '';
+
+		const wrapper = document.createElement('div');
+		wrapper.className = 'row justify-content-center';
+
+		const col = document.createElement('div');
+		col.className = 'col-12 col-sm-10 col-md-6';
+
+		col.innerHTML = `
+	    <p class="text-muted small fw-semibold text-uppercase mb-2" style="letter-spacing:.05em">
+	      Selecione seu nome
+	    </p>`;
+
+		const grid = document.createElement('div');
+		grid.className = 'd-grid gap-2';
+
+		nomes.forEach((nome) => {
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			const ehAtivo =
+				_nomeSelecionadoIntegracao &&
+				nome.toLowerCase().trim() === _nomeSelecionadoIntegracao.toLowerCase().trim();
+			btn.className = ehAtivo ? 'btn btn-dark btn-lg' : 'btn btn-outline-dark btn-lg';
+			btn.textContent = nome;
+			btn.dataset.nome = nome;
+			btn.onclick = () => _selecionarNomeIntegracao(nome, grid);
+			grid.appendChild(btn);
+		});
+
+		const btnConfirmar = document.createElement('button');
+		btnConfirmar.id = 'btnConfirmar';
+		btnConfirmar.type = 'button';
+		btnConfirmar.className = `btn btn-dark btn-lg mt-3${_nomeSelecionadoIntegracao ? '' : ' d-none'}`;
+		btnConfirmar.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Confirmar';
+		btnConfirmar.onclick = function () {
+			salvarInscricao(this);
+		};
+
+		col.appendChild(grid);
+		col.appendChild(btnConfirmar);
+		wrapper.appendChild(col);
+		conteudo.appendChild(wrapper);
+	} finally {
+		liberarUI(); 
 	}
-
-	if (!nomes.length) {
-		conteudo.innerHTML = `
-      <div class="alert alert-warning text-center col-md-6 mx-auto">
-        Nenhum nome cadastrado para este local de integração
-      </div>`;
-		return;
-	}
-
-	conteudo.innerHTML = '';
-
-	const wrapper = document.createElement('div');
-	wrapper.className = 'row justify-content-center';
-
-	const col = document.createElement('div');
-	col.className = 'col-12 col-sm-10 col-md-6';
-
-	col.innerHTML = `
-    <p class="text-muted small fw-semibold text-uppercase mb-2" style="letter-spacing:.05em">
-      Selecione seu nome
-    </p>`;
-
-	const grid = document.createElement('div');
-	grid.className = 'd-grid gap-2';
-
-	nomes.forEach((nome) => {
-		const btn = document.createElement('button');
-		btn.type = 'button';
-		const ehAtivo =
-			_nomeSelecionadoIntegracao &&
-			nome.toLowerCase().trim() === _nomeSelecionadoIntegracao.toLowerCase().trim();
-		btn.className = ehAtivo ? 'btn btn-dark btn-lg' : 'btn btn-outline-dark btn-lg';
-		btn.textContent = nome;
-		btn.dataset.nome = nome;
-		btn.onclick = () => _selecionarNomeIntegracao(nome, grid);
-		grid.appendChild(btn);
-	});
-
-	const btnConfirmar = document.createElement('button');
-	btnConfirmar.id = 'btnConfirmar';
-	btnConfirmar.type = 'button';
-	btnConfirmar.className = `btn btn-dark btn-lg mt-3${_nomeSelecionadoIntegracao ? '' : ' d-none'}`;
-	btnConfirmar.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Confirmar';
-	btnConfirmar.onclick = function () {
-		salvarInscricao(this);
-	};
-
-	col.appendChild(grid);
-	col.appendChild(btnConfirmar);
-	wrapper.appendChild(col);
-	conteudo.appendChild(wrapper);
 }
 
 function _selecionarNomeIntegracao(nome, grid) {

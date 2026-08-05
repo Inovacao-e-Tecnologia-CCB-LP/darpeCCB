@@ -11,12 +11,13 @@ let _calModoSomenteLeitura = false;
    PALETA DE CORES DO CALENDÁRIO
    OBS: Hospital recebe uma cor fixa
 ========================= */
+
 const _COR_HOSPITAL = {
-	bg: '#ffd6d6' /* fundo célula calendário — vermelho bem claro   */,
-	border: '#8b0000' /* borda/dot — vermelho sangue escuro              */,
-	dot: '#8b0000' /* bolinha da legenda                              */,
-	text: '#5c0000' /* texto nos cards de detalhe                     */,
-	bgCard: '#ffe4e4' /* fundo card de detalhe — rosinha suave           */,
+	bg: '#ffd6d6', /* fundo célula calendário — vermelho bem claro   */
+	border: '#8b0000',  /* borda/dot — vermelho sangue escuro              */
+	dot: '#8b0000',  /* bolinha da legenda                              */
+	text: '#5c0000',  /* texto nos cards de detalhe                     */
+	bgCard: '#ffe4e4',  /* fundo card de detalhe — rosinha suave           */
 };
 
 const _CAL_PALETA = [
@@ -166,6 +167,7 @@ function _getCorLocal(localId) {
 /* =========================
    ABRIR TELA PROGRAMAÇÕES
 ========================= */
+
 async function abrirTelaProgramacoes() {
 	_calModoSomenteLeitura = false;
 	setTitle('Programações');
@@ -185,6 +187,7 @@ async function abrirTelaCalendarioPublico() {
 /* =========================
    LISTAGEM
 ========================= */
+
 async function carregarProgramacoes(firstTime = false) {
 	const btnNova = document.getElementById('novaProgramacaoBtn');
 	if (btnNova) btnNova.style.display = 'none';
@@ -521,6 +524,7 @@ function _renderAcoesPublico() {
 /* =========================
     NAVEGAÇÃO
 ========================= */
+
 function _calNavegar(delta) {
 	const novo = _calIdx + delta;
 	if (novo < 0 || novo >= _calMeses.length) return;
@@ -540,6 +544,7 @@ function _calIrPara(idx) {
 /* =========================
    AÇÕES NO CALENDÁRIO
 ========================= */
+
 function _novaProgramacaoDoCalendario(dia) {
 	const { ano, mes } = _calMeses[_calIdx];
 
