@@ -1,8 +1,8 @@
 let nomesTemporarios = [];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Navegação
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Navegação
+========================= */
 
 async function abrirTelaIntegracoes() {
 	setTitle('Integrações');
@@ -10,9 +10,9 @@ async function abrirTelaIntegracoes() {
 	await carregarIntegracoes(true);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Carregamento
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Carregamento
+========================= */
 
 async function carregarIntegracoes(firstTime = false) {
 	travarUI();
@@ -41,9 +41,9 @@ async function carregarIntegracoes(firstTime = false) {
 	}
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Renderização
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Renderização
+========================= */
 
 function renderizarIntegracoes(nomes) {
 	const container = document.getElementById('listaIntegracoes');
@@ -136,9 +136,9 @@ function renderCardsIntegracoes(grupos) {
 	container.innerHTML = html;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Compartilhar (link temporário — apenas frontend)
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Compartilhar (link temporário — apenas frontend)
+========================= */
 
 async function compartilharNomeIntegracao(nomeEncoded, btn) {
 	const nome = decodeURIComponent(nomeEncoded);
@@ -165,9 +165,9 @@ async function compartilharNomeIntegracao(nomeEncoded, btn) {
 	}
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Modal de cadastro (Nova Integração)
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Modal de cadastro (Nova Integração)
+========================= */
 
 function abrirModalIntegracao() {
 	nomesTemporarios = [];
@@ -276,9 +276,9 @@ function _renderListaTemporaria() {
 	});
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Modal Editar Integração — adicionar nomes a local existente
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Modal Editar Integração — adicionar nomes a local existente
+========================= */
 
 function abrirModalEditarIntegracao(idLocal) {
 	nomesTemporarios = [];
@@ -341,9 +341,9 @@ async function salvarNomesNaIntegracao(idLocal) {
 	}
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Salvar Nova Integração
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Salvar Nova Integração
+========================= */
 
 async function salvarIntegracao() {
 	const erroLocal = document.getElementById('erroIntegracaoLocal');
@@ -418,9 +418,9 @@ async function salvarIntegracao() {
 	}
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Excluir nome
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Excluir nome
+========================= */
 
 function excluirNomeIntegracao(id, idLocal, btnTrash) {
 	document.getElementById('confirmTitle').innerText = 'Excluir';
@@ -530,9 +530,9 @@ function excluirIntegracao(idLocal, btnTrash) {
 	new bootstrap.Modal(document.getElementById('confirmModal')).show();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers de UI
-// ─────────────────────────────────────────────────────────────────────────────
+/* ========================= 
+	Helpers de UI
+========================= */
 
 // Delegados ao sistema central travarUI/liberarUI
 function desabilitarBotoesIntegracoes() {

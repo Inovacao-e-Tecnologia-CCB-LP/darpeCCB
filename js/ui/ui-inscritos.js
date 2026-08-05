@@ -489,7 +489,6 @@ function compartilhar(pid) {
 	);
 }
 
-// ── NOVO ──
 async function copiarMensagemProgramacao(pid) {
 	const mensagem = _montarMensagemProgramacao(pid);
 
