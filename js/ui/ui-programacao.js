@@ -13,11 +13,11 @@ let _calModoSomenteLeitura = false;
 ========================= */
 
 const _COR_HOSPITAL = {
-	bg: '#ffd6d6', /* fundo célula calendário — vermelho bem claro   */
-	border: '#8b0000',  /* borda/dot — vermelho sangue escuro              */
-	dot: '#8b0000',  /* bolinha da legenda                              */
-	text: '#5c0000',  /* texto nos cards de detalhe                     */
-	bgCard: '#ffe4e4',  /* fundo card de detalhe — rosinha suave           */
+	bg: '#ffd6d6' /* fundo célula calendário — vermelho bem claro   */,
+	border: '#8b0000' /* borda/dot — vermelho sangue escuro              */,
+	dot: '#8b0000' /* bolinha da legenda                              */,
+	text: '#5c0000' /* texto nos cards de detalhe                     */,
+	bgCard: '#ffe4e4' /* fundo card de detalhe — rosinha suave           */,
 };
 
 const _CAL_PALETA = [

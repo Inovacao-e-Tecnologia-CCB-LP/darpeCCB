@@ -15,7 +15,7 @@ function abrirTelaInstrumentos() {
 async function carregarInstrumentos(firstTime = false) {
 	const lista = document.getElementById('listaInstrumentos');
 	travarUI();
-	
+
 	try {
 		mostrarLoading('listaInstrumentos');
 
