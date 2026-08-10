@@ -151,7 +151,7 @@ async function showEscolherData() {
 			const lotado = limite > 0 && vagasRestantes <= 0;
 
 			const badgeVagas = lotado
-				? `<span class="badge bg-danger ms-2">Lotado</span>`
+				? `<span class="badge bg-danger ms-2">Sem vagas disponíveis</span>`
 				: limite > 0
 					? `<span class="badge bg-secondary ms-2">${vagasRestantes} vaga${vagasRestantes !== 1 ? 's' : ''}</span>`
 					: '';
@@ -400,7 +400,7 @@ function _renderConfirmarIntegracaoComNome(nome) {
 // ── Cenário C — passo 2: lista de nomes do local para trocar ─────────────────
 async function _showListaNomesIntegracao() {
 	conteudo.innerHTML = `<div class="text-center my-4"><div class="spinner-border text-dark"></div></div>`;
-	travarUI(); 
+	travarUI();
 
 	try {
 		let nomes = [];
@@ -467,7 +467,7 @@ async function _showListaNomesIntegracao() {
 		wrapper.appendChild(col);
 		conteudo.appendChild(wrapper);
 	} finally {
-		liberarUI(); 
+		liberarUI();
 	}
 }
 

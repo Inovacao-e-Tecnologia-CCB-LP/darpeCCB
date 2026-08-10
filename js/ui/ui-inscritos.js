@@ -85,16 +85,17 @@ function renderAccordionInscritos(grupos, adminMode = false) {
 			const nomeTipo = tipo?.nome || 'Tipo não encontrado';
 
 			html += `
-			<div class="card mb-3 border-dark">
-				<div class="card-header bg-dark text-white d-flex justify-content-between align-items-center gap-2 py-3">
-					<div class="text-start">
-						<div class="fw-semibold fs-6">
-							${nomeTipo} • ${formatarData(p.data)}
-						</div>
-						<div class="small opacity-75">
-							${p.descricao} • ${formatarHorario(p.horario)}
-						</div>
-					</div>
+	<div class="card mb-3 border-dark">
+		<div class="card-header bg-dark text-white d-flex justify-content-between align-items-center gap-2 py-3">
+			<div class="text-start">
+				<div class="fw-semibold fs-6">
+					${nomeTipo} • ${formatarData(p.data)}
+					<span class="badge bg-light text-dark ms-2">${inscritosLista.length} inscrito${inscritosLista.length !== 1 ? 's' : ''}</span>
+				</div>
+				<div class="small opacity-75">
+					${p.descricao} • ${formatarHorario(p.horario)}
+				</div>
+			</div>
 
 					${
 						!adminMode
@@ -214,15 +215,16 @@ function renderCardsInscricoesAdmin(grupos) {
 			const tipo = tiposVisitaMap[p.tipo_visita_id];
 
 			html += `
-					<div class="item-card">
-						<div class="item-card-body">
-							<div class="fw-semibold">
-								${tipo?.nome || ''} • ${formatarData(p.data)}
-							</div>
+			<div class="item-card">
+				<div class="item-card-body">
+					<div class="fw-semibold">
+						${tipo?.nome || ''} • ${formatarData(p.data)}
+						<span class="badge bg-secondary ms-2">${inscritos.length} inscrito${inscritos.length !== 1 ? 's' : ''}</span>
+					</div>
 
-							<div class="text-muted small mb-3">
-								${p.descricao} • ${formatarHorario(p.horario)}
-							</div>
+					<div class="text-muted small mb-3">
+						${p.descricao} • ${formatarHorario(p.horario)}
+					</div>
 							<div class="d-flex flex-column gap-2">
 					`;
 

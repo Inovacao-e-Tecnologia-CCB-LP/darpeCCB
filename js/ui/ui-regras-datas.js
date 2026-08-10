@@ -109,7 +109,7 @@ function renderCardsRegrasDatas(regras) {
               <div class="card-info-grid">
                 <div class="card-info-cell">
                   <i class="bi bi-calendar-week"></i>
-                  <span>${formatarQuando(r.dia_semana, r.ordinal)}</span>
+                  <span>${formatarQuando(r.dia_semana, r.ordinal, r.intervalo_meses)}</span>
                 </div>
                 <div class="card-info-cell">
                   <i class="bi bi-clock"></i>
@@ -139,6 +139,7 @@ function montarPayloadRegra() {
 	const ordinal = document.getElementById('regraOrdinal').value;
 	const horario = document.getElementById('regraHorario').value;
 	const ativo = document.getElementById('regraAtivo').checked;
+	const intervalo_meses = document.getElementById('regraIntervaloMeses').value;
 
 	if (!localId || !tipo_visita_id || !horario) {
 		mostrarErroCampo('erroValidacaoCamposRegra', 'Preencha todos os campos corretamente');
@@ -153,6 +154,7 @@ function montarPayloadRegra() {
 		ordinal: Number(ordinal),
 		horario: String(horario),
 		ativo: ativo,
+		intervalo_meses: Number(intervalo_meses) || 1,
 	};
 }
 
@@ -163,6 +165,7 @@ function preencherFormularioRegra(regra) {
 	document.getElementById('regraOrdinal').value = regra.ordinal;
 	document.getElementById('regraHorario').value = formatarHorario(regra.horario);
 	document.getElementById('regraAtivo').checked = regra.ativo;
+	document.getElementById('regraIntervaloMeses').value = regra.intervalo_meses || 1;
 
 	const selectLocal = document.getElementById('regraLocal');
 	selectLocal.innerHTML = '<option value="">Selecione o local</option>';
@@ -175,12 +178,16 @@ function preencherFormularioRegra(regra) {
 	});
 }
 
-function formatarQuando(dia, ordinal) {
+function formatarQuando(dia, ordinal, intervaloMeses) {
 	const dias = ['', 'Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 	const nomeDia = dias[dia] || 'Dia?';
-	if (Number(ordinal) === 0) return `Todas(os): ${nomeDia}`;
-	if (Number(ordinal) === -1) return `Última(o) ${nomeDia}`;
-	return `${ordinal}ª ${nomeDia}`;
+	let base;
+	if (Number(ordinal) === 0) base = `Todas(os): ${nomeDia}`;
+	else if (Number(ordinal) === -1) base = `Última(o) ${nomeDia}`;
+	else base = `${ordinal}ª ${nomeDia}`;
+
+	if (Number(intervaloMeses) > 1) base += ` · a cada ${intervaloMeses} meses`;
+	return base;
 }
 
 async function reloadRegras() {
@@ -193,25 +200,35 @@ async function reloadRegras() {
    MODAL • NOVO / EDITAR
 ========================= */
 
-function abrirModalNovaRegra() {
-	carregarTiposVisitaSelect('regraTipo');
-	limparErroCampo('erroValidacaoCamposRegra');
+async function abrirModalNovaRegra(btn) {
+	const textoOriginal = btn.innerHTML;
 
-	document.getElementById('modalRegraTitulo').innerText = 'Nova Regra';
-	limparFormularioRegra();
+	travarUI();
+	try {
+		btn.disabled = true;
+		btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
 
-	// Popular select de locais no novo registro
-	const selectLocal = document.getElementById('regraLocal');
-	selectLocal.innerHTML = '<option value="">Selecione o local</option>';
-	dataStore.locais.forEach((l) => {
-		const opt = document.createElement('option');
-		opt.value = l.id;
-		opt.text = l.nome;
-		selectLocal.appendChild(opt);
-	});
+		await carregarTiposVisitaSelect('regraTipo');
+		limparErroCampo('erroValidacaoCamposRegra');
+		document.getElementById('modalRegraTitulo').innerText = 'Nova Regra';
+		limparFormularioRegra();
 
-	document.getElementById('btnSalvarRegra').onclick = salvarRegra;
-	new bootstrap.Modal(document.getElementById('modalRegra')).show();
+		const selectLocal = document.getElementById('regraLocal');
+		selectLocal.innerHTML = '<option value="">Selecione o local</option>';
+		dataStore.locais.forEach((l) => {
+			const opt = document.createElement('option');
+			opt.value = l.id;
+			opt.text = l.nome;
+			selectLocal.appendChild(opt);
+		});
+
+		document.getElementById('btnSalvarRegra').onclick = salvarRegra;
+		new bootstrap.Modal(document.getElementById('modalRegra')).show();
+	} finally {
+		liberarUI();
+		btn.disabled = false;
+		btn.innerHTML = textoOriginal;
+	}
 }
 
 function limparFormularioRegra() {
@@ -221,6 +238,7 @@ function limparFormularioRegra() {
 	document.getElementById('regraOrdinal').value = '0';
 	document.getElementById('regraHorario').value = '';
 	document.getElementById('regraAtivo').checked = true;
+	document.getElementById('regraIntervaloMeses').value = '1';
 }
 
 /* =========================
@@ -237,6 +255,7 @@ async function salvarRegra() {
 	if (!payload) return;
 
 	_travarModal('modalRegra');
+	travarUI();
 	btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Salvando`;
 
 	try {
@@ -267,6 +286,7 @@ async function salvarRegra() {
 		abrirModalAviso('Erro', 'Erro ao salvar regra');
 	} finally {
 		_liberarModal('modalRegra');
+		liberarUI();
 		btn.innerHTML = textoOriginal;
 	}
 }
@@ -281,6 +301,7 @@ async function editarRegra(id, btn) {
 	let salvou = false;
 	const textoOriginal = btn.innerHTML;
 
+	travarUI();
 	try {
 		btn.disabled = true;
 		btn.innerHTML = `
@@ -295,6 +316,7 @@ async function editarRegra(id, btn) {
 			return;
 		}
 
+		await carregarTiposVisitaSelect('regraTipo');
 		limparFormularioRegra();
 		preencherFormularioRegra(regra);
 
@@ -323,6 +345,7 @@ async function editarRegra(id, btn) {
 		console.error(err);
 		abrirModalAviso('Erro', 'Erro ao carregar regra');
 	} finally {
+		liberarUI();
 		btn.disabled = false;
 		btn.innerHTML = textoOriginal;
 	}
@@ -343,6 +366,7 @@ function excluirRegra(id, btnTrash) {
 		const textoTrash = btnTrash.innerHTML;
 
 		_travarModal('confirmModal');
+		travarUI();
 		try {
 			btnOk.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Excluindo`;
 
@@ -363,6 +387,7 @@ function excluirRegra(id, btnTrash) {
 			abrirModalAviso('Erro', 'Erro ao excluir regra');
 		} finally {
 			_liberarModal('confirmModal');
+			liberarUI();
 			btnOk.innerHTML = textoOk;
 			btnTrash.innerHTML = textoTrash;
 			bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
