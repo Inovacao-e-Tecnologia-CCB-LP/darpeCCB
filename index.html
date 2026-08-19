@@ -145,13 +145,15 @@
 
 						<!-- NOME -->
 						<div class="mb-3">
-							<label class="form-label">Nome do Local</label>
+							<label class="form-label">Nome do Local
+								<span class="text-danger">*</span></label>
 							<input
 								type="text"
 								class="form-control"
 								id="localNome"
 								placeholder="Ex: Hospital"
 								data-input-filter="text-especial"
+								required
 							/>
 
 							<!-- ERRO DO CAMPO -->
@@ -164,32 +166,37 @@
 
 						<!-- ENDEREÇO -->
 						<div class="mb-3">
-							<label class="form-label">Endereço</label>
+							<label class="form-label">Endereço
+								<span class="text-danger">*</span></label>
 							<input
 								type="text"
 								class="form-control"
 								id="localEndereco"
 								placeholder="Ex: Rua das Flores, 123 - Centro"
 								data-input-filter="endereco"
+								required
 							/>
 							<small class="text-muted">Informe o endereço completo do local</small>
 						</div>
 
 						<!-- LIMITE -->
 						<div class="mb-3">
-							<label class="form-label">Limite de músicos no local</label>
+							<label class="form-label">Limite de músicos no local
+								<span class="text-danger">*</span></label>
 							<input
 								type="number"
 								class="form-control"
 								id="localLimite"
 								min="0"
 								data-input-filter="numero"
+								required
 							/>
 						</div>
 
 						<!-- PERMITE CORDAS -->
 						<div class="mb-3">
-							<label class="form-label d-block">Permite cordas?</label>
+							<label class="form-label d-block">Permite cordas?
+								<span class="text-danger">*</span></label>
 
 							<div class="form-check form-check-inline">
 								<input
@@ -198,6 +205,7 @@
 									name="permiteCordas"
 									id="permiteCordas"
 									value="true"
+									required
 								/>
 								<label class="form-check-label" for="permiteCordas"> Sim </label>
 							</div>
@@ -209,6 +217,7 @@
 									name="permiteCordas"
 									id="naoPermiteCordas"
 									value="false"
+									required
 								/>
 								<label class="form-check-label" for="naoPermiteCordas"> Não </label>
 							</div>
@@ -216,7 +225,8 @@
 
 						<!-- PERMITE SOPROS -->
 						<div class="mb-3">
-							<label class="form-label d-block">Permite sopros?</label>
+							<label class="form-label d-block">Permite sopros?
+								<span class="text-danger">*</span></label>
 
 							<div class="form-check form-check-inline">
 								<input
@@ -225,6 +235,7 @@
 									name="permiteSopros"
 									id="permiteSopros"
 									value="true"
+									required
 								/>
 								<label class="form-check-label" for="permiteSopros"> Sim </label>
 							</div>
@@ -236,6 +247,7 @@
 									name="permiteSopros"
 									id="naoPermiteSopros"
 									value="false"
+									required
 								/>
 								<label class="form-check-label" for="naoPermiteSopros"> Não </label>
 							</div>
@@ -349,13 +361,15 @@
 						<input type="hidden" id="instrumentoId" />
 
 						<div class="mb-3">
-							<label class="form-label">Nome do instrumento</label>
+							<label class="form-label">Nome do instrumento
+								<span class="text-danger">*</span></label>
 							<input
 								type="text"
 								class="form-control"
 								id="instrumentoNome"
 								placeholder="Ex: Violino"
 								data-input-filter="text-especial"
+								required
 							/>
 
 							<!-- ERRO DO CAMPO -->
@@ -368,7 +382,8 @@
 
 						<!-- TIPO DINÂMICO -->
 						<div class="mb-3">
-							<label class="form-label d-block">Tipo</label>
+							<label class="form-label d-block">Tipo
+								<span class="text-danger">*</span></label>
 
 							<!-- Radios gerados dinamicamente via JS -->
 							<div
@@ -466,18 +481,20 @@
 
 						<div class="mb-3">
 							<label class="form-label fw-semibold" for="regraLocal"
-								><i class="bi bi-geo-alt me-1"></i>Local</label
+								><i class="bi bi-geo-alt me-1"></i>Local
+								<span class="text-danger">*</span></label
 							>
-							<select class="form-select darpe-select" id="regraLocal">
+							<select class="form-select darpe-select" id="regraLocal" required>
 								<option value="">Selecione o local</option>
 							</select>
 						</div>
 
 						<div class="mb-3">
 							<label class="form-label fw-semibold" for="regraTipo"
-								><i class="bi bi-tag me-1"></i>Tipo de Visita</label
+								><i class="bi bi-tag me-1"></i>Tipo de Visita
+								<span class="text-danger">*</span></label
 							>
-							<select class="form-select darpe-select" id="regraTipo">
+							<select class="form-select darpe-select" id="regraTipo" required>
 								<option value="">Selecione o tipo</option>
 							</select>
 						</div>
@@ -542,8 +559,10 @@
 								class="form-control"
 								id="regraHorario"
 								placeholder="Horário"
+								required
 							/>
-							<label for="regraHorario">Horário</label>
+							<label for="regraHorario">Horário
+								<span class="text-danger">*</span></label>
 						</div>
 
 						<div class="form-check form-switch mb-3">
@@ -598,8 +617,9 @@
 						<div class="mb-3">
 							<label class="form-label fw-semibold" for="progLocal">
 								<i class="bi bi-geo-alt me-1"></i>Local
+								<span class="text-danger">*</span>
 							</label>
-							<select class="form-select darpe-select" id="progLocal">
+							<select class="form-select darpe-select" id="progLocal" required>
 								<option value="">Selecione o local</option>
 							</select>
 						</div>
@@ -608,8 +628,9 @@
 						<div class="mb-3">
 							<label class="form-label fw-semibold" for="progTipo">
 								<i class="bi bi-tag me-1"></i>Tipo de Visita
+								<span class="text-danger">*</span>
 							</label>
-							<select class="form-select darpe-select" id="progTipo">
+							<select class="form-select darpe-select" id="progTipo" required>
 								<option value="">Selecione o tipo</option>
 							</select>
 						</div>
@@ -618,8 +639,9 @@
 						<div class="mb-3">
 							<label for="progData" class="form-label fw-semibold">
 								<i class="bi bi-calendar-date me-1"></i>Data
+								<span class="text-danger">*</span>
 							</label>
-							<input type="date" class="form-control" id="progData" />
+							<input type="date" class="form-control" id="progData" required />
 						</div>
 
 						<!-- DIA DA SEMANA AUTOMÁTICO -->
@@ -634,8 +656,9 @@
 						<div class="mb-3">
 							<label for="progHorario" class="form-label fw-semibold">
 								<i class="bi bi-clock me-1"></i>Horário
+								<span class="text-danger">*</span>
 							</label>
-							<input type="time" class="form-control" id="progHorario" />
+							<input type="time" class="form-control" id="progHorario" required />
 						</div>
 
 						<div
@@ -906,6 +929,7 @@
 						<div class="mb-3">
 							<label class="form-label fw-semibold" for="tipoVisitaNome">
 								<i class="bi bi-tag me-1"></i>Nome
+								<span class="text-danger">*</span>
 							</label>
 							<input
 								type="text"
@@ -913,6 +937,7 @@
 								id="tipoVisitaNome"
 								placeholder="Ex: Evangelização"
 								maxlength="50"
+								required
 							/>
 						</div>
 
