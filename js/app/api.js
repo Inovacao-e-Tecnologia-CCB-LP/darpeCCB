@@ -3,7 +3,15 @@ class AppScriptApi {
 		'https://script.google.com/macros/s/AKfycbyF9EvnsumAkbY9cjj-2JCvwG3PqPFUouCR0V9QKg1zpCUVtrfm0iiP7JkjQzpn1fjs/exec';
 
 	async bootstrap() {
-		return await fetch(`${this.url}?action=bootstrap`).then((r) => r.json());
+		const r = await fetch(`${this.url}?action=bootstrap`);
+
+		if (!r.ok) {
+			throw new Error(`Bootstrap HTTP ${r.status}`);
+		}
+
+		const data = await r.json();
+
+		return data;
 	}
 
 	async auth(password) {
